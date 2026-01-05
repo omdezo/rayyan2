@@ -30,33 +30,33 @@ export default function AboutPage() {
                             نصنع <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/50">التميز</span> الرقمي
                         </h1>
                         <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-2xl mx-auto">
-                            نحن منصة رائدة متخصصة في توفير المحتوى الرقمي التعليمي والترفيهي المبتكر. نسعى لتمكين الأفراد والمؤسسات في دول الخليج بأدوات إبداعية تعزز التعلم والإنتاجية.
+                            نحن منصة رائدة متخصصة في توفير المحتوى الرقمي التعليمي والترفيهي المبتكر. نسعى لتمكين الأفراد والمؤسسات بأدوات إبداعية تعزز التعلم والإنتاجية.
                         </p>
                     </motion.div>
                 </div>
-            </section>
+            </section >
 
             {/* Mission & Vision */}
-            <section className="py-20 relative">
+            < section className="py-20 relative" >
                 <div className="container px-4">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {[
                             {
                                 icon: Target,
                                 title: "رؤيتنا",
-                                desc: "أن نكون المصدر الأول للمحتوى الرقمي العربي عالي الجودة، ونساهم في إثراء المحتوى التعليمي في المنطقة.",
+                                desc: "أن نكون مرجعًا رائدًا في صناعة المحتوى الرقمي الإبداعي، من خلال تقديم حلول تصميم مبتكرة وعالية الجودة تُحدث أثرًا حقيقيًا، وتواكب تطور العصر الرقمي وتلبي تطلعات الأفراد والمؤسسات",
                                 delay: 0
                             },
                             {
                                 icon: Users,
                                 title: "مجتمعنا",
-                                desc: "نخدم المعلمين، الطلاب، وأولياء الأمور في جميع دول الخليج، ونوفر لهم أدوات تناسب بيئتهم وثقافتهم.",
+                                desc: "نخدم جميع أفراد المجتمع من خلال محتوى رقمي وتصاميم مبتكرة تراعي التنوع، وتلبي احتياجات مختلفة، وتسهم في بناء بيئة رقمية أكثر وعيًا وتأثيرًا للجميع.",
                                 delay: 0.1
                             },
                             {
                                 icon: Trophy,
                                 title: "جودتنا",
-                                desc: "نلتزم بأعلى معايير التصميم والمحتوى، لضمان تجربة مستخدم استثنائية ومنتجات ذات قيمة حقيقية.",
+                                desc: "نلتزم بتقديم أعلى معايير الجودة في التصميم والمحتوى الرقمي، مع التركيز على الدقة، والابتكار، وتجربة استخدام سلسة تضمن قيمة حقيقية ومستدامة",
                                 delay: 0.2
                             }
                         ].map((item, index) => (
@@ -79,17 +79,16 @@ export default function AboutPage() {
                         ))}
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* Stats Section */}
-            <section className="py-24 relative overflow-hidden">
+            < section className="py-24 relative overflow-hidden" >
                 <div className="absolute inset-0 bg-primary/5 skew-y-3 transform origin-bottom-right" />
                 <div className="container px-4 relative">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
                         {[
                             { number: "500+", label: "منتج رقمي", icon: Zap },
                             { number: "10k+", label: "عميل سعيد", icon: Heart },
-                            { number: "6", label: "دول نخدمها", icon: Target },
                             { number: "24/7", label: "دعم فني", icon: Users },
                         ].map((stat, index) => (
                             <motion.div
@@ -111,10 +110,10 @@ export default function AboutPage() {
                         ))}
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* CTA */}
-            <section className="py-32 text-center relative overflow-hidden">
+            < section className="py-32 text-center relative overflow-hidden" >
                 <div className="absolute inset-0 w-full h-full">
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/5 blur-[100px] rounded-full animate-pulse" />
                 </div>
@@ -134,7 +133,7 @@ export default function AboutPage() {
                         </Button>
                     </motion.div>
                 </div>
-            </section>
-        </div>
+            </section >
+        </div >
     );
 }

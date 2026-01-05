@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Mail, Phone, MapPin, Send, MessageSquare, Sparkles } from "lucide-react";
+import { Instagram, Phone, MapPin, Send, MessageSquare, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function ContactPage() {
@@ -38,9 +38,9 @@ export default function ContactPage() {
                     {/* Contact Info Cards */}
                     <div className="lg:col-span-1 space-y-6">
                         {[
-                            { icon: Mail, title: "البريد الإلكتروني", desc: "فريقنا متاح للرد على رسائلك", link: "mailto:support@example.com", linkText: "support@example.com", delay: 0.2 },
-                            { icon: Phone, title: "الهاتف", desc: "من الأحد إلى الخميس، 9ص - 5م", link: "tel:+96812345678", linkText: "+968 1234 5678", delay: 0.3 },
-                            { icon: MapPin, title: "الموقع", desc: "مسقط، سلطنة عمان", link: null, linkText: null, delay: 0.4 }
+                            { icon: Instagram, title: "انستجرام", desc: "تابع أحدث أعمالنا", link: "https://instagram.com/Rayian_design", linkText: "@Rayian_design", delay: 0.2 },
+                            { icon: Phone, title: "الهاتف", desc: "من الأحد إلى الخميس، 9ص - 5م", link: "tel:+96895534007", linkText: "95534007", delay: 0.3 },
+                            { icon: MapPin, title: "الموقع", desc: "صحار، سلطنة عمان", link: null, linkText: null, delay: 0.4 }
                         ].map((item, index) => (
                             <motion.div
                                 key={index}

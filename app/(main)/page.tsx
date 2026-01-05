@@ -1,4 +1,5 @@
 import { Hero } from "@/components/features/hero";
+import { HowItWorks } from "@/components/features/how-it-works";
 import { products, categories } from "@/lib/products";
 import { ProductCard } from "@/components/features/product-card";
 import Link from "next/link";
@@ -11,6 +12,8 @@ export default function Home() {
     return (
         <div className="min-h-screen">
             <Hero />
+
+
 
             {/* Featured Section */}
             <section className="py-24 bg-secondary/30">
@@ -69,6 +72,8 @@ export default function Home() {
                     </div>
                 </div>
             </section>
+
+            <HowItWorks />
         </div>
     );
 }

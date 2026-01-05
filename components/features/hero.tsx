@@ -109,7 +109,7 @@ export function Hero() {
                     transition={{ duration: 0.8, delay: 0.5 }}
                     className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto mb-10 font-light tracking-wide"
                 >
-                    ألعاب وعروض تقديمية رقمية مصممة خصيصاً لتبهر أطفالك وتنمي مهاراتهم.
+                    محتوى رقمي يُقدَّم بأسلوب احترافي، يعتمد نهجًا مختلفًا يركّز على الجودة والتميّز
                 </motion.p>
 
                 <motion.div
@@ -120,7 +120,7 @@ export function Hero() {
                 >
                     <Button size="lg" className="h-14 px-8 rounded-full text-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 shadow-[0_0_20px_-5px_var(--primary)]" asChild>
                         <Link href="/products" className="flex items-center gap-2">
-                            اكتشف الألعاب <Gamepad2 className="h-5 w-5" />
+                            اكتشف المنتجات <ArrowLeft className="h-5 w-5" />
                         </Link>
                     </Button>
                     <Button size="lg" variant="outline" className="h-14 px-8 rounded-full text-lg border-border hover:bg-secondary/50 text-foreground transition-all duration-300" asChild>

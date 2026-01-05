@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
 import { Cairo } from "next/font/google";
 import "./globals.css";
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
+
 import { cn } from "@/lib/utils";
-import { MouseFollower } from "@/components/ui/mouse-follower";
 import { ThemeProvider } from "@/components/theme-provider";
 
 const cairo = Cairo({
@@ -27,14 +25,11 @@ export default function RootLayout({
       <body className={cn(cairo.variable, "min-h-screen flex flex-col bg-background text-foreground antialiased font-sans overflow-x-hidden")}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >
-          <MouseFollower />
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
+          {children}
         </ThemeProvider>
       </body>
     </html>

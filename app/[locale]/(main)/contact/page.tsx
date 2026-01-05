@@ -5,8 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Instagram, Phone, MapPin, Send, MessageSquare, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 
 export default function ContactPage() {
+    const t = useTranslations('Contact');
+
     return (
         <div className="min-h-screen pb-20 bg-background overflow-hidden">
             {/* Hero */}
@@ -24,11 +27,11 @@ export default function ContactPage() {
                 >
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/50 border border-secondary text-sm font-medium text-muted-foreground mb-4">
                         <Sparkles className="w-4 h-4 text-primary" />
-                        <span>نحن هنا للمساعدة</span>
+                        <span>{t('badge')}</span>
                     </div>
-                    <h1 className="text-5xl md:text-7xl font-black tracking-tight text-foreground">تواصل معنا</h1>
+                    <h1 className="text-5xl md:text-7xl font-black tracking-tight text-foreground">{t('title')}</h1>
                     <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto">
-                        نحن هنا للإجابة على استفساراتك ومساعدتك في أي وقت. لا تتردد في التواصل معنا.
+                        {t('description')}
                     </p>
                 </motion.div>
             </section>
@@ -38,9 +41,9 @@ export default function ContactPage() {
                     {/* Contact Info Cards */}
                     <div className="lg:col-span-1 space-y-6">
                         {[
-                            { icon: Instagram, title: "انستجرام", desc: "تابع أحدث أعمالنا", link: "https://instagram.com/Rayian_design", linkText: "@Rayian_design", delay: 0.2 },
-                            { icon: Phone, title: "الهاتف", desc: "من الأحد إلى الخميس، 9ص - 5م", link: "tel:+96895534007", linkText: "95534007", delay: 0.3 },
-                            { icon: MapPin, title: "الموقع", desc: "صحار، سلطنة عمان", link: null, linkText: null, delay: 0.4 }
+                            { icon: Instagram, title: t('instagram'), desc: t('instagram_desc'), link: "https://instagram.com/Rayian_design", linkText: "@Rayian_design", delay: 0.2 },
+                            { icon: Phone, title: t('phone'), desc: t('phone_desc'), link: "tel:+96895534007", linkText: "95534007", delay: 0.3 },
+                            { icon: MapPin, title: t('location'), desc: t('location_desc'), link: null, linkText: null, delay: 0.4 }
                         ].map((item, index) => (
                             <motion.div
                                 key={index}
@@ -81,39 +84,39 @@ export default function ContactPage() {
                                         <MessageSquare className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <h2 className="text-2xl font-bold">أرسل لنا رسالة</h2>
-                                        <p className="text-muted-foreground text-sm">سنرد عليك في أقرب وقت ممكن</p>
+                                        <h2 className="text-2xl font-bold">{t('form_title')}</h2>
+                                        <p className="text-muted-foreground text-sm">{t('form_desc')}</p>
                                     </div>
                                 </div>
 
                                 <form className="space-y-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-2">
-                                            <label htmlFor="name" className="text-sm font-medium">الاسم الكامل</label>
-                                            <Input id="name" placeholder="الاسم" className="h-12 bg-secondary/50 border-white/10 focus:bg-background transition-all" />
+                                            <label htmlFor="name" className="text-sm font-medium">{t('name_label')}</label>
+                                            <Input id="name" placeholder={t('name_placeholder')} className="h-12 bg-secondary/50 border-white/10 focus:bg-background transition-all" />
                                         </div>
                                         <div className="space-y-2">
-                                            <label htmlFor="email" className="text-sm font-medium">البريد الإلكتروني</label>
-                                            <Input id="email" type="email" placeholder="name@example.com" className="h-12 bg-secondary/50 border-white/10 focus:bg-background transition-all" />
+                                            <label htmlFor="email" className="text-sm font-medium">{t('email_label')}</label>
+                                            <Input id="email" type="email" placeholder={t('email_placeholder')} className="h-12 bg-secondary/50 border-white/10 focus:bg-background transition-all" />
                                         </div>
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label htmlFor="subject" className="text-sm font-medium">الموضوع</label>
-                                        <Input id="subject" placeholder="كيف يمكننا مساعدتك؟" className="h-12 bg-secondary/50 border-white/10 focus:bg-background transition-all" />
+                                        <label htmlFor="subject" className="text-sm font-medium">{t('subject_label')}</label>
+                                        <Input id="subject" placeholder={t('subject_placeholder')} className="h-12 bg-secondary/50 border-white/10 focus:bg-background transition-all" />
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label htmlFor="message" className="text-sm font-medium">الرسالة</label>
+                                        <label htmlFor="message" className="text-sm font-medium">{t('message_label')}</label>
                                         <textarea
                                             id="message"
                                             className="flex min-h-[150px] w-full rounded-md border border-white/10 bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none focus:bg-background transition-all"
-                                            placeholder="اكتب رسالتك هنا..."
+                                            placeholder={t('message_placeholder')}
                                         />
                                     </div>
 
                                     <Button type="submit" size="lg" className="w-full h-14 text-lg font-bold shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all">
-                                        إرسال الرسالة <Send className="mr-2 h-5 w-5" />
+                                        {t('submit_button')} <Send className="mr-2 h-5 w-5" />
                                     </Button>
                                 </form>
                             </CardContent>

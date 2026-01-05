@@ -4,51 +4,54 @@ import { products } from "@/lib/products";
 import { ProductCard } from "@/components/features/product-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
+import { Link, useRouter, usePathname } from "@/i18n/routing";
+import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Suspense, useState, useEffect } from "react";
 import { Filter, X, Search, Globe } from "lucide-react";
-
-const categories = [
-    {
-        id: "ai-games",
-        title: "ألعاب الذكاء الاصطناعي",
-        icon: "🤖"
-    },
-    {
-        id: "guidance",
-        title: "عروض إرشادية",
-        icon: "📚"
-    },
-    {
-        id: "general",
-        title: "تصاميم عامة",
-        icon: "🎨"
-    },
-    {
-        id: "stories",
-        title: "القصص",
-        icon: "📖"
-    },
-];
-
-const countries = [
-    { id: "omani", title: "عمان", flag: "🇴🇲" },
-    { id: "saudi", title: "السعودية", flag: "🇸🇦" },
-    { id: "emirati", title: "الإمارات", flag: "🇦🇪" },
-    { id: "qatari", title: "قطر", flag: "🇶🇦" },
-    { id: "bahraini", title: "البحرين", flag: "🇧🇭" },
-    { id: "kuwaiti", title: "الكويت", flag: "🇰🇼" },
-];
+import { useTranslations } from "next-intl";
 
 function ProductsContent() {
+    const t = useTranslations('Products');
     const searchParams = useSearchParams();
     const router = useRouter();
+    const pathname = usePathname();
     const currentCategory = searchParams.get("category");
     const currentSubcategory = searchParams.get("subcategory");
     const [searchQuery, setSearchQuery] = useState("");
+
+    const categories = [
+        {
+            id: "ai-games",
+            title: t('categories.ai-games'),
+            icon: "🤖"
+        },
+        {
+            id: "guidance",
+            title: t('categories.guidance'),
+            icon: "📚"
+        },
+        {
+            id: "general",
+            title: t('categories.general'),
+            icon: "🎨"
+        },
+        {
+            id: "stories",
+            title: t('categories.stories'),
+            icon: "📖"
+        },
+    ];
+
+    const countries = [
+        { id: "omani", title: t('countries.omani'), flag: "🇴🇲" },
+        { id: "saudi", title: t('countries.saudi'), flag: "🇸🇦" },
+        { id: "emirati", title: t('countries.emirati'), flag: "🇦🇪" },
+        { id: "qatari", title: t('countries.qatari'), flag: "🇶🇦" },
+        { id: "bahraini", title: t('countries.bahraini'), flag: "🇧🇭" },
+        { id: "kuwaiti", title: t('countries.kuwaiti'), flag: "🇰🇼" },
+    ];
 
     // Update local state when URL params change (optional, but good for sync)
     // For search, we might want to debounce or just filter locally if the list is small.
@@ -82,7 +85,7 @@ function ProductsContent() {
         // The design shows countries as a separate row, implying they might apply generally or per category.
         // I'll keep them independent if possible, or reset if they don't make sense.
         // For now, let's keep subcategory (country) if it exists.
-        router.push(`/products?${params.toString()}`);
+        router.push(`${pathname}?${params.toString()}`);
     };
 
     const handleCountryClick = (countryId: string | null) => {
@@ -92,7 +95,7 @@ function ProductsContent() {
         } else {
             params.delete("subcategory");
         }
-        router.push(`/products?${params.toString()}`);
+        router.push(`${pathname}?${params.toString()}`);
     };
 
     return (
@@ -103,14 +106,14 @@ function ProductsContent() {
                     <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-12">
                         {/* Title & Subtitle (Right) */}
                         <div className="text-center md:text-right space-y-2 order-1 md:order-1">
-                            <h1 className="text-3xl md:text-4xl font-bold">المتجر</h1>
-                            <p className="text-muted-foreground">تصفح أفضل المنتجات الرقمية المختارة بعناية</p>
+                            <h1 className="text-3xl md:text-4xl font-bold">{t('title')}</h1>
+                            <p className="text-muted-foreground">{t('subtitle')}</p>
                         </div>
 
                         {/* Search Bar (Left) */}
                         <div className="w-full md:w-96 relative order-2 md:order-2">
                             <Input
-                                placeholder="ابحث عن منتج..."
+                                placeholder={t('search_placeholder')}
                                 className="pl-10 h-12 rounded-full bg-secondary/30 border-border/50 focus:bg-background transition-all"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -146,13 +149,13 @@ function ProductsContent() {
                                 )}
                             >
                                 <Filter className="w-4 h-4 ml-2" />
-                                الكل
+                                {t('all_categories')}
                             </Button>
                         </div>
 
                         {/* Countries */}
                         <div className="flex flex-col md:flex-row items-center justify-start gap-4">
-                            <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">اختر الدولة:</span>
+                            <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">{t('filter_country')}</span>
                             <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
                                 <button
                                     onClick={() => handleCountryClick(null)}
@@ -164,7 +167,7 @@ function ProductsContent() {
                                     )}
                                 >
                                     <span className="text-2xl mb-1">🌍</span>
-                                    <span className="text-xs font-bold">الجميع</span>
+                                    <span className="text-xs font-bold">{t('all_countries')}</span>
                                 </button>
                                 {countries.map((country) => (
                                     <button
@@ -191,7 +194,7 @@ function ProductsContent() {
             <div className="container px-4 py-12">
                 <div className="flex items-center justify-between mb-8">
                     <p className="text-muted-foreground font-medium">
-                        {filteredProducts.length} منتج
+                        {t('products_count', { count: filteredProducts.length })}
                     </p>
 
                     {/* Active Filters Display */}
@@ -206,7 +209,7 @@ function ProductsContent() {
                             className="text-muted-foreground hover:text-destructive"
                         >
                             <X className="w-4 h-4 ml-2" />
-                            مسح التصفيات
+                            {t('clear_filters')}
                         </Button>
                     )}
                 </div>
@@ -229,13 +232,13 @@ function ProductsContent() {
                         <div className="w-20 h-20 bg-secondary/50 rounded-full flex items-center justify-center mb-6">
                             <Search className="w-10 h-10 text-muted-foreground" />
                         </div>
-                        <h3 className="text-xl font-bold mb-2">لا توجد منتجات</h3>
-                        <p className="text-muted-foreground mb-6">حاول تغيير خيارات التصفية أو البحث عن كلمة أخرى</p>
+                        <h3 className="text-xl font-bold mb-2">{t('no_products')}</h3>
+                        <p className="text-muted-foreground mb-6">{t('no_products_desc')}</p>
                         <Button onClick={() => {
                             setSearchQuery("");
                             router.push("/products");
                         }}>
-                            عرض جميع المنتجات
+                            {t('view_all_products')}
                         </Button>
                     </div>
                 )}
@@ -246,7 +249,7 @@ function ProductsContent() {
 
 export default function ProductsPage() {
     return (
-        <Suspense fallback={<div className="flex justify-center py-20">جاري التحميل...</div>}>
+        <Suspense fallback={<div className="flex justify-center py-20">Loading...</div>}>
             <ProductsContent />
         </Suspense>
     );

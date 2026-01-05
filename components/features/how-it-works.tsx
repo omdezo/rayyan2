@@ -4,23 +4,26 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export function HowItWorks() {
+    const t = useTranslations('HowItWorks');
+
     const steps = [
         {
             number: "01",
-            title: "تصفح المنتجات",
-            description: "اختر من بين مئات المنتجات المميزة."
+            title: t('step1_title'),
+            description: t('step1_desc')
         },
         {
             number: "02",
-            title: "أضف للسلة",
-            description: "عملية شراء آمنة وسريعة."
+            title: t('step2_title'),
+            description: t('step2_desc')
         },
         {
             number: "03",
-            title: "تحميل فوري",
-            description: "احصل على ملفاتك في ثوانٍ."
+            title: t('step3_title'),
+            description: t('step3_desc')
         }
     ];
 
@@ -54,8 +57,8 @@ export function HowItWorks() {
                                     </Button>
                                 </motion.div>
 
-                                <h3 className="text-3xl font-bold mb-2 relative z-10">ابدأ الآن</h3>
-                                <p className="text-muted-foreground relative z-10">انضم إلى مجتمع المبدعين</p>
+                                <h3 className="text-3xl font-bold mb-2 relative z-10">{t('card_title')}</h3>
+                                <p className="text-muted-foreground relative z-10">{t('card_desc')}</p>
                             </div>
                         </div>
                     </motion.div>
@@ -70,11 +73,10 @@ export function HowItWorks() {
                     >
                         <div className="space-y-4">
                             <h2 className="text-4xl md:text-5xl font-bold leading-tight">
-                                كيف تبدأ <br />
-                                <span className="text-transparent bg-clip-text bg-gradient-to-l from-primary to-secondary">رحلتك معنا؟</span>
+                                {t('main_title')}
                             </h2>
                             <p className="text-muted-foreground text-lg max-w-md">
-                                خطوات بسيطة تفصلك عن امتلاك أفضل المنتجات الرقمية. لقد صممنا تجربة المستخدم لتكون سلسة وسريعة.
+                                {t('main_desc')}
                             </p>
                         </div>
 

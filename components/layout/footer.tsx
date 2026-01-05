@@ -1,36 +1,39 @@
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { Phone, MapPin, Instagram } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export function Footer() {
+    const t = useTranslations('Footer');
+
     return (
         <footer className="border-t border-white/10 bg-[#0a0a0a] text-white pt-16 pb-8">
             <div className="container px-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-16">
                     {/* Brand & Description (Right) */}
                     <div className="space-y-6">
-                        <h3 className="text-2xl font-bold text-primary">ريان للتصميم</h3>
+                        <h3 className="text-2xl font-bold text-primary">{t('brand')}</h3>
                         <p className="text-gray-400 leading-relaxed max-w-md">
-                            نبتكر حلولًا رقمية متكاملة تجمع بين الإبداع والدقة، ونقدّم محتوى وتصاميم احترافية تُبنى على فهم عميق للتجربة والقيمة، لنصنع حضورًا رقميًا مؤثرًا ومستدامًا
+                            {t('description')}
                         </p>
                     </div>
 
                     {/* Quick Links (Center) */}
                     <div className="space-y-6 md:text-center">
-                        <h3 className="text-xl font-bold">روابط سريعة</h3>
+                        <h3 className="text-xl font-bold">{t('quick_links')}</h3>
                         <ul className="space-y-4 text-gray-400">
                             <li>
                                 <Link href="/" className="hover:text-primary transition-colors">
-                                    الرئيسية
+                                    {t('brand')}
                                 </Link>
                             </li>
                             <li>
                                 <Link href="/products" className="hover:text-primary transition-colors">
-                                    المنتجات
+                                    {t('quick_links')}
                                 </Link>
                             </li>
                             <li>
                                 <Link href="/contact" className="hover:text-primary transition-colors">
-                                    اتصل بنا
+                                    {t('contact_us')}
                                 </Link>
                             </li>
                         </ul>
@@ -38,7 +41,7 @@ export function Footer() {
 
                     {/* Contact Info (Left) */}
                     <div className="space-y-6 md:text-left">
-                        <h3 className="text-xl font-bold">تواصل معنا</h3>
+                        <h3 className="text-xl font-bold">{t('contact_us')}</h3>
                         <ul className="space-y-4 text-gray-400">
                             <li>
                                 <a href="tel:+96895534007" className="flex items-center gap-3 hover:text-primary transition-colors justify-start md:justify-end md:flex-row-reverse">
@@ -47,7 +50,7 @@ export function Footer() {
                                 </a>
                             </li>
                             <li className="flex items-center gap-3 justify-start md:justify-end md:flex-row-reverse">
-                                <span>صحار، سلطنة عمان</span>
+                                <span>{t('address')}</span>
                                 <MapPin className="w-5 h-5" />
                             </li>
                         </ul>
@@ -61,14 +64,14 @@ export function Footer() {
 
                 <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-400">
                     <p className="text-center md:text-right">
-                        جميع الحقوق محفوظة &copy; {new Date().getFullYear()} ريان للتصميم.
+                        {t('rights', { year: new Date().getFullYear() })}
                     </p>
                     <div className="flex items-center gap-6">
                         <Link href="/terms" className="hover:text-primary transition-colors">
-                            الشروط والأحكام
+                            {t('terms')}
                         </Link>
                         <Link href="/privacy" className="hover:text-primary transition-colors">
-                            سياسة الخصوصية
+                            {t('privacy')}
                         </Link>
                     </div>
                 </div>

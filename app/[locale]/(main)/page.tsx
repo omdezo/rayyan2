@@ -2,30 +2,30 @@ import { Hero } from "@/components/features/hero";
 import { HowItWorks } from "@/components/features/how-it-works";
 import { products, categories } from "@/lib/products";
 import { ProductCard } from "@/components/features/product-card";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export default function Home() {
     const featuredProducts = products.slice(0, 3);
+    const t = useTranslations('Home');
 
     return (
         <div className="min-h-screen">
             <Hero />
-
-
 
             {/* Featured Section */}
             <section className="py-24 bg-secondary/30">
                 <div className="container px-4">
                     <div className="flex items-center justify-between mb-12">
                         <div>
-                            <h2 className="text-3xl font-bold mb-2">أحدث المنتجات</h2>
-                            <p className="text-muted-foreground">اكتشف أحدث إضافاتنا المميزة</p>
+                            <h2 className="text-3xl font-bold mb-2">{t('latest_products')}</h2>
+                            <p className="text-muted-foreground">{t('latest_desc')}</p>
                         </div>
                         <Button variant="ghost" asChild className="hidden md:inline-flex">
                             <Link href="/products">
-                                عرض الكل <ArrowLeft className="mr-2 h-4 w-4" />
+                                {t('view_all')} <ArrowLeft className="mr-2 h-4 w-4" />
                             </Link>
                         </Button>
                     </div>
@@ -39,7 +39,7 @@ export default function Home() {
                     <div className="mt-8 text-center md:hidden">
                         <Button variant="outline" asChild className="w-full">
                             <Link href="/products">
-                                عرض كل المنتجات
+                                {t('view_all_products')}
                             </Link>
                         </Button>
                     </div>
@@ -49,7 +49,7 @@ export default function Home() {
             {/* Categories Grid */}
             <section className="py-24">
                 <div className="container px-4">
-                    <h2 className="text-3xl font-bold text-center mb-16">تصفح حسب القسم</h2>
+                    <h2 className="text-3xl font-bold text-center mb-16">{t('browse_category')}</h2>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {categories.map((category) => (

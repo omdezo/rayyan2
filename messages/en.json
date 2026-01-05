@@ -1,0 +1,116 @@
+{
+    "Navbar": {
+        "home": "Home",
+        "products": "Products",
+        "about": "About Us",
+        "contact": "Contact Us",
+        "cart": "Cart",
+        "login": "Login"
+    },
+    "Hero": {
+        "title": "Create a world of fun for them",
+        "description": "Digital content presented professionally, adopting a different approach focusing on quality and excellence.",
+        "cta_products": "Discover Products",
+        "cta_about": "Why Us?",
+        "games": "Interactive Games",
+        "adventures": "Exciting Adventures",
+        "puzzle": "Intelligence Development",
+        "presentations": "Fun Presentations"
+    },
+    "About": {
+        "badge": "Innovating for the future",
+        "title": "We create digital excellence",
+        "description": "We are a leading platform specializing in providing innovative educational and entertainment digital content. We strive to empower individuals and institutions with creative tools that enhance learning and productivity.",
+        "vision_title": "Our Vision",
+        "vision_desc": "To be a leading reference in the creative digital content industry, by providing innovative and high-quality design solutions that make a real impact, keep pace with the digital age, and meet the aspirations of individuals and institutions.",
+        "community_title": "Our Community",
+        "community_desc": "We serve all members of society through digital content and innovative designs that respect diversity, meet different needs, and contribute to building a more aware and influential digital environment for everyone.",
+        "quality_title": "Our Quality",
+        "quality_desc": "We are committed to providing the highest quality standards in design and digital content, focusing on precision, innovation, and a seamless user experience that ensures real and sustainable value.",
+        "stats_products": "Digital Product",
+        "stats_clients": "Happy Client",
+        "stats_support": "Technical Support",
+        "cta_title": "Ready to explore our products?",
+        "cta_desc": "Browse our diverse library and start your journey of learning and creativity today.",
+        "cta_button": "Browse Store"
+    },
+    "Home": {
+        "latest_products": "Latest Products",
+        "latest_desc": "Discover our latest featured additions",
+        "view_all": "View All",
+        "view_all_products": "View All Products",
+        "browse_category": "Browse by Category"
+    },
+    "HowItWorks": {
+        "step1_title": "Browse Products",
+        "step1_desc": "Choose from hundreds of unique products.",
+        "step2_title": "Add to Cart",
+        "step2_desc": "Secure and fast purchase process.",
+        "step3_title": "Instant Download",
+        "step3_desc": "Get your files in seconds.",
+        "card_title": "Start Now",
+        "card_desc": "Join the community of creators",
+        "main_title": "How to start your journey with us?",
+        "main_desc": "Simple steps separate you from owning the best digital products. We designed the user experience to be seamless and fast."
+    },
+    "Footer": {
+        "brand": "Rayan Design",
+        "description": "We innovate integrated digital solutions that combine creativity and precision, providing professional content and designs built on a deep understanding of experience and value, to create an influential and sustainable digital presence.",
+        "quick_links": "Quick Links",
+        "contact_us": "Contact Us",
+        "address": "Sohar, Oman",
+        "rights": "All rights reserved © {year} Rayan Design.",
+        "terms": "Terms and Conditions",
+        "privacy": "Privacy Policy"
+    },
+    "Products": {
+        "title": "Store",
+        "subtitle": "Browse the best carefully selected digital products",
+        "search_placeholder": "Search for a product...",
+        "all_categories": "All",
+        "filter_country": "Choose Country:",
+        "all_countries": "All",
+        "products_count": "{count} Product",
+        "clear_filters": "Clear Filters",
+        "no_products": "No products found",
+        "no_products_desc": "Try changing filter options or searching for another keyword",
+        "view_all_products": "View All Products",
+        "loading": "Loading...",
+        "categories": {
+            "ai-games": "AI Games",
+            "guidance": "Guidance Presentations",
+            "general": "General Designs",
+            "stories": "Stories"
+        },
+        "countries": {
+            "omani": "Oman",
+            "saudi": "Saudi Arabia",
+            "emirati": "UAE",
+            "qatari": "Qatar",
+            "bahraini": "Bahrain",
+            "kuwaiti": "Kuwait"
+        }
+    },
+    "Contact": {
+        "badge": "We are here to help",
+        "title": "Contact Us",
+        "description": "We are here to answer your inquiries and help you at any time. Feel free to contact us.",
+        "instagram": "Instagram",
+        "instagram_desc": "Follow our latest work",
+        "phone": "Phone",
+        "phone_desc": "Sunday to Thursday, 9am - 5pm",
+        "location": "Location",
+        "location_desc": "Sohar, Oman",
+        "form_title": "Send us a message",
+        "form_desc": "We will reply to you as soon as possible",
+        "name_label": "Full Name",
+        "name_placeholder": "Name",
+        "email_label": "Email",
+        "email_placeholder": "name@example.com",
+        "subject_label": "Subject",
+        "subject_placeholder": "How can we help you?",
+        "message_label": "Message",
+        "message_placeholder": "Write your message here...",
+        "submit_button": "Send Message"
+    }
+}

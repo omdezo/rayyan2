@@ -1,16 +1,21 @@
 "use client";
 
-import Link from "next/link";
-import { ShoppingCart, Menu, X } from "lucide-react";
+import { Link, usePathname, useRouter } from "@/i18n/routing";
+import { ShoppingCart, Menu, X, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { cn } from "@/lib/utils";
+import { useTranslations, useLocale } from "next-intl";
 
 export function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+    const t = useTranslations('Navbar');
+    const locale = useLocale();
+    const router = useRouter();
+    const pathname = usePathname();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -21,11 +26,16 @@ export function Header() {
     }, []);
 
     const navItems = [
-        { name: "الرئيسية", href: "/" },
-        { name: "المنتجات", href: "/products" },
-        { name: "من نحن", href: "/about" },
-        { name: "تواصل معنا", href: "/contact" },
+        { name: t('home'), href: "/" },
+        { name: t('products'), href: "/products" },
+        { name: t('about'), href: "/about" },
+        { name: t('contact'), href: "/contact" },
     ];
+
+    const toggleLanguage = () => {
+        const nextLocale = locale === 'ar' ? 'en' : 'ar';
+        router.replace(pathname, { locale: nextLocale });
+    };
 
     return (
         <header
@@ -61,17 +71,20 @@ export function Header() {
                 </nav>
 
                 <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon" onClick={toggleLanguage} aria-label="Switch Language">
+                        <Globe className="h-5 w-5" />
+                    </Button>
                     <ThemeToggle />
                     <Button variant="ghost" size="icon" aria-label="Cart" className="relative" asChild>
                         <Link href="/cart">
                             <ShoppingCart className="h-5 w-5" />
-                            <span className="sr-only">سلة المشتريات</span>
+                            <span className="sr-only">{t('cart')}</span>
                         </Link>
                     </Button>
 
                     <Button variant="default" size="sm" className="hidden md:flex font-bold" asChild>
                         <Link href="/login">
-                            تسجيل الدخول
+                            {t('login')}
                         </Link>
                     </Button>
 

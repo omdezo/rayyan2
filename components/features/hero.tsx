@@ -2,12 +2,14 @@
 
 import { Button } from "@/components/ui/button";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { ArrowLeft, Gamepad2, Rocket, Puzzle, Presentation, Sparkles } from "lucide-react";
 import { useRef } from "react";
+import { useTranslations } from "next-intl";
 
 export function Hero() {
     const ref = useRef<HTMLDivElement>(null);
+    const t = useTranslations('Hero');
 
     // Mouse movement for parallax
     const x = useMotionValue(0);
@@ -50,22 +52,22 @@ export function Hero() {
             <div className="absolute inset-0 z-[1] pointer-events-none">
                 {/* Game Controller */}
                 <FloatingElement x={mouseX} y={mouseY} depth={30} className="top-[15%] left-[10%] md:left-[15%]">
-                    <GlassIcon icon={<Gamepad2 className="w-12 h-12 text-primary" />} label="ألعاب تفاعلية" />
+                    <GlassIcon icon={<Gamepad2 className="w-12 h-12 text-primary" />} label={t('games')} />
                 </FloatingElement>
 
                 {/* Rocket Ship */}
                 <FloatingElement x={mouseX} y={mouseY} depth={-20} className="top-[20%] right-[10%] md:right-[15%]">
-                    <GlassIcon icon={<Rocket className="w-10 h-10 text-primary" />} label="مغامرات شيقة" />
+                    <GlassIcon icon={<Rocket className="w-10 h-10 text-primary" />} label={t('adventures')} />
                 </FloatingElement>
 
                 {/* Puzzle Piece */}
                 <FloatingElement x={mouseX} y={mouseY} depth={25} className="bottom-[20%] left-[5%] md:left-[12%]">
-                    <GlassIcon icon={<Puzzle className="w-10 h-10 text-primary" />} label="تنمية ذكاء" />
+                    <GlassIcon icon={<Puzzle className="w-10 h-10 text-primary" />} label={t('puzzle')} />
                 </FloatingElement>
 
                 {/* Presentation/Slideshow */}
                 <FloatingElement x={mouseX} y={mouseY} depth={-25} className="bottom-[25%] right-[5%] md:right-[12%]">
-                    <GlassIcon icon={<Presentation className="w-10 h-10 text-primary" />} label="عروض ممتعة" />
+                    <GlassIcon icon={<Presentation className="w-10 h-10 text-primary" />} label={t('presentations')} />
                 </FloatingElement>
             </div>
 
@@ -99,7 +101,7 @@ export function Hero() {
                     className="text-4xl md:text-6xl font-bold mb-6"
                 >
                     <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-foreground/80">
-                        اصنع لهم عالماً من المرح
+                        {t('title')}
                     </span>
                 </motion.h1>
 
@@ -109,7 +111,7 @@ export function Hero() {
                     transition={{ duration: 0.8, delay: 0.5 }}
                     className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto mb-10 font-light tracking-wide"
                 >
-                    محتوى رقمي يُقدَّم بأسلوب احترافي، يعتمد نهجًا مختلفًا يركّز على الجودة والتميّز
+                    {t('description')}
                 </motion.p>
 
                 <motion.div
@@ -120,12 +122,12 @@ export function Hero() {
                 >
                     <Button size="lg" className="h-14 px-8 rounded-full text-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 shadow-[0_0_20px_-5px_var(--primary)]" asChild>
                         <Link href="/products" className="flex items-center gap-2">
-                            اكتشف المنتجات <ArrowLeft className="h-5 w-5" />
+                            {t('cta_products')} <ArrowLeft className="h-5 w-5" />
                         </Link>
                     </Button>
                     <Button size="lg" variant="outline" className="h-14 px-8 rounded-full text-lg border-border hover:bg-secondary/50 text-foreground transition-all duration-300" asChild>
                         <Link href="/about">
-                            لماذا نحن؟
+                            {t('cta_about')}
                         </Link>
                     </Button>
                 </motion.div>

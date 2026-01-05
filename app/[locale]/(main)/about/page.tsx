@@ -2,10 +2,13 @@
 
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { ArrowLeft, CheckCircle2, Users, Trophy, Target, Sparkles, Zap, Heart } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export default function AboutPage() {
+    const t = useTranslations('About');
+
     return (
         <div className="min-h-screen bg-background overflow-hidden">
             {/* Hero Section */}
@@ -24,13 +27,13 @@ export default function AboutPage() {
                     >
                         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/50 border border-secondary text-sm font-medium text-muted-foreground mb-4">
                             <Sparkles className="w-4 h-4 text-primary" />
-                            <span>نبتكر للمستقبل</span>
+                            <span>{t('badge')}</span>
                         </div>
                         <h1 className="text-5xl md:text-7xl font-black tracking-tight text-foreground leading-tight">
-                            نصنع <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/50">التميز</span> الرقمي
+                            {t('title')}
                         </h1>
                         <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-2xl mx-auto">
-                            نحن منصة رائدة متخصصة في توفير المحتوى الرقمي التعليمي والترفيهي المبتكر. نسعى لتمكين الأفراد والمؤسسات بأدوات إبداعية تعزز التعلم والإنتاجية.
+                            {t('description')}
                         </p>
                     </motion.div>
                 </div>
@@ -43,20 +46,20 @@ export default function AboutPage() {
                         {[
                             {
                                 icon: Target,
-                                title: "رؤيتنا",
-                                desc: "أن نكون مرجعًا رائدًا في صناعة المحتوى الرقمي الإبداعي، من خلال تقديم حلول تصميم مبتكرة وعالية الجودة تُحدث أثرًا حقيقيًا، وتواكب تطور العصر الرقمي وتلبي تطلعات الأفراد والمؤسسات",
+                                title: t('vision_title'),
+                                desc: t('vision_desc'),
                                 delay: 0
                             },
                             {
                                 icon: Users,
-                                title: "مجتمعنا",
-                                desc: "نخدم جميع أفراد المجتمع من خلال محتوى رقمي وتصاميم مبتكرة تراعي التنوع، وتلبي احتياجات مختلفة، وتسهم في بناء بيئة رقمية أكثر وعيًا وتأثيرًا للجميع.",
+                                title: t('community_title'),
+                                desc: t('community_desc'),
                                 delay: 0.1
                             },
                             {
                                 icon: Trophy,
-                                title: "جودتنا",
-                                desc: "نلتزم بتقديم أعلى معايير الجودة في التصميم والمحتوى الرقمي، مع التركيز على الدقة، والابتكار، وتجربة استخدام سلسة تضمن قيمة حقيقية ومستدامة",
+                                title: t('quality_title'),
+                                desc: t('quality_desc'),
                                 delay: 0.2
                             }
                         ].map((item, index) => (
@@ -87,9 +90,9 @@ export default function AboutPage() {
                 <div className="container px-4 relative">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
                         {[
-                            { number: "500+", label: "منتج رقمي", icon: Zap },
-                            { number: "10k+", label: "عميل سعيد", icon: Heart },
-                            { number: "24/7", label: "دعم فني", icon: Users },
+                            { number: "500+", label: t('stats_products'), icon: Zap },
+                            { number: "10k+", label: t('stats_clients'), icon: Heart },
+                            { number: "24/7", label: t('stats_support'), icon: Users },
                         ].map((stat, index) => (
                             <motion.div
                                 key={index}
@@ -118,9 +121,9 @@ export default function AboutPage() {
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/5 blur-[100px] rounded-full animate-pulse" />
                 </div>
                 <div className="container px-4 space-y-8 relative z-10">
-                    <h2 className="text-4xl md:text-5xl font-bold tracking-tight">جاهز لاستكشاف منتجاتنا؟</h2>
+                    <h2 className="text-4xl md:text-5xl font-bold tracking-tight">{t('cta_title')}</h2>
                     <p className="text-muted-foreground max-w-2xl mx-auto text-xl">
-                        تصفح مكتبتنا المتنوعة وابدأ رحلة التعلم والإبداع اليوم.
+                        {t('cta_desc')}
                     </p>
                     <motion.div
                         whileHover={{ scale: 1.05 }}
@@ -128,7 +131,7 @@ export default function AboutPage() {
                     >
                         <Button size="lg" className="h-16 px-10 rounded-full text-xl shadow-xl shadow-primary/20 hover:shadow-primary/40 transition-all" asChild>
                             <Link href="/products">
-                                تصفح المتجر <ArrowLeft className="mr-2 h-6 w-6" />
+                                {t('cta_button')} <ArrowLeft className="mr-2 h-6 w-6" />
                             </Link>
                         </Button>
                     </motion.div>

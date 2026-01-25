@@ -17,35 +17,49 @@ export const authConfig: NextAuthConfig = {
                 const email = credentials?.email as string | undefined;
                 const password = credentials?.password as string | undefined;
 
+                console.log('🔐 Login attempt for email:', email);
+
                 if (!email || !password) {
+                    console.log('❌ Missing email or password');
                     return null;
                 }
 
                 try {
                     await connectDB();
+                    console.log('✅ DB connected, looking for user...');
 
                     const user = await User.findOne({
                         email: email.toLowerCase(), // ✅ Now safe to use toLowerCase()
                     });
 
                     if (!user) {
+                        console.log('❌ User not found in database for email:', email.toLowerCase());
                         return null;
                     }
 
+                    console.log('✅ User found:', { email: user.email, role: user.role, status: user.status });
+
                     // Check if user is banned
                     if (user.status === 'banned') {
+                        console.log('❌ User is banned');
                         throw new Error('Your account has been banned');
                     }
 
                     // Compare password
+                    console.log('🔑 Comparing passwords...');
                     const isPasswordValid = await bcrypt.compare(
                         password,
                         user.password
                     );
 
+                    console.log('🔑 Password valid?', isPasswordValid);
+
                     if (!isPasswordValid) {
+                        console.log('❌ Invalid password');
                         return null;
                     }
+
+                    console.log('✅ Login successful for:', user.email);
 
                     // Return user object
                     return {
@@ -55,7 +69,7 @@ export const authConfig: NextAuthConfig = {
                         role: user.role,
                     };
                 } catch (error) {
-                    console.error('Auth error:', error);
+                    console.error('❌ Auth error:', error);
                     return null;
                 }
             },

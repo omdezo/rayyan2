@@ -15,14 +15,19 @@ export default async function middleware(request: NextRequest) {
 
     if (isDashboardRoute) {
         console.log('🔐 [Middleware] Dashboard route accessed:', pathname);
+        console.log('🍪 [Middleware] Cookies:', request.cookies.getAll().map(c => c.name));
 
         // Get the token using next-auth/jwt which works in Edge runtime
         const token = await getToken({
             req: request,
-            secret: process.env.NEXTAUTH_SECRET
+            secret: process.env.NEXTAUTH_SECRET,
+            secureCookie: process.env.NODE_ENV === 'production',
         });
 
         console.log('🎫 [Middleware] Token:', token ? 'EXISTS' : 'NULL');
+        if (token) {
+            console.log('🎫 [Middleware] Token details:', JSON.stringify(token));
+        }
         console.log('👑 [Middleware] Role:', token?.role);
 
         // If no token, redirect to login

@@ -17,27 +17,46 @@ export default function LoginPage() {
     const { data: session, status } = useSession();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
+    const [isRedirecting, setIsRedirecting] = useState(false);
 
     const callbackUrl = searchParams.get('callbackUrl');
 
     // Redirect if already logged in
     useEffect(() => {
-        if (status === 'authenticated' && session?.user) {
+        if (status === 'authenticated' && session?.user && !isRedirecting) {
             console.log('✅ Already logged in, redirecting...');
+            setIsRedirecting(true);
+
             const role = (session.user as any)?.role;
+            let redirectUrl = '/ar';
 
             if (callbackUrl) {
                 console.log('🔗 Redirecting to callback:', callbackUrl);
-                router.push(callbackUrl);
+                redirectUrl = callbackUrl;
             } else if (role === 'admin') {
                 console.log('👑 Admin user, redirecting to dashboard');
-                router.push('/ar/dashboard');
+                redirectUrl = '/ar/dashboard';
             } else {
                 console.log('👤 Regular user, redirecting to home');
-                router.push('/ar');
+                redirectUrl = '/ar';
             }
+
+            // Use window.location for a hard redirect to avoid loops
+            window.location.href = redirectUrl;
         }
-    }, [status, session, router, callbackUrl]);
+    }, [status, session, callbackUrl, isRedirecting]);
+
+    // Show loading spinner while checking auth or redirecting
+    if (status === 'loading' || isRedirecting) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+                    <p className="mt-4 text-muted-foreground">جاري التحميل...</p>
+                </div>
+            </div>
+        );
+    }
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -62,26 +81,33 @@ export default function LoginPage() {
                 });
             } else {
                 toast.success("تم تسجيل الدخول بنجاح!");
+                setIsRedirecting(true);
 
-                // Get session to check user role
-                const sessionResponse = await fetch('/api/auth/session');
-                const session = await sessionResponse.json();
+                // Small delay to let the toast show
+                setTimeout(async () => {
+                    // Get session to check user role
+                    const sessionResponse = await fetch('/api/auth/session');
+                    const session = await sessionResponse.json();
 
-                console.log('📋 Session after login:', session);
-                console.log('👤 User role:', session?.user?.role);
+                    console.log('📋 Session after login:', session);
+                    console.log('👤 User role:', session?.user?.role);
 
-                // Redirect based on callback URL or role
-                if (callbackUrl) {
-                    console.log('🔗 Redirecting to callback URL:', callbackUrl);
-                    router.push(callbackUrl);
-                } else if (session?.user?.role === 'admin') {
-                    console.log('👑 Admin detected, redirecting to dashboard');
-                    router.push("/ar/dashboard");
-                } else {
-                    console.log('👤 Regular user, redirecting to home');
-                    router.push("/ar");
-                }
-                router.refresh();
+                    // Determine redirect URL
+                    let redirectUrl = '/ar';
+                    if (callbackUrl) {
+                        console.log('🔗 Redirecting to callback URL:', callbackUrl);
+                        redirectUrl = callbackUrl;
+                    } else if (session?.user?.role === 'admin') {
+                        console.log('👑 Admin detected, redirecting to dashboard');
+                        redirectUrl = '/ar/dashboard';
+                    } else {
+                        console.log('👤 Regular user, redirecting to home');
+                        redirectUrl = '/ar';
+                    }
+
+                    // Hard redirect to avoid any routing issues
+                    window.location.href = redirectUrl;
+                }, 500);
             }
         } catch (error) {
             console.error("Login error:", error);

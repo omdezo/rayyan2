@@ -47,12 +47,18 @@ export default function LoginPage() {
                 const sessionResponse = await fetch('/api/auth/session');
                 const session = await sessionResponse.json();
 
+                console.log('📋 Session after login:', session);
+                console.log('👤 User role:', session?.user?.role);
+
                 // Redirect based on callback URL or role
                 if (callbackUrl) {
+                    console.log('🔗 Redirecting to callback URL:', callbackUrl);
                     router.push(callbackUrl);
                 } else if (session?.user?.role === 'admin') {
+                    console.log('👑 Admin detected, redirecting to dashboard');
                     router.push("/ar/dashboard");
                 } else {
+                    console.log('👤 Regular user, redirecting to home');
                     router.push("/ar");
                 }
                 router.refresh();

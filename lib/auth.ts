@@ -80,6 +80,7 @@ export const authConfig: NextAuthConfig = {
             if (user) {
                 token.id = user.id;
                 token.role = (user as any).role;
+                console.log('🔑 JWT callback - Setting token:', { id: token.id, role: token.role });
             }
             return token;
         },
@@ -87,6 +88,10 @@ export const authConfig: NextAuthConfig = {
             if (session.user) {
                 (session.user as any).id = token.id;
                 (session.user as any).role = token.role;
+                console.log('📋 Session callback - Setting session:', {
+                    email: session.user.email,
+                    role: token.role
+                });
             }
             return session;
         },

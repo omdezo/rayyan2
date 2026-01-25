@@ -8,6 +8,8 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
+import { Toaster } from 'sonner';
+import { AuthProvider } from '@/components/providers';
 
 const cairo = Cairo({
   subsets: ["arabic", "latin"],
@@ -40,16 +42,19 @@ export default async function RootLayout({
   return (
     <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'} suppressHydrationWarning>
       <body className={cn(cairo.variable, "min-h-screen flex flex-col bg-background text-foreground antialiased font-sans overflow-x-hidden")}>
-        <NextIntlClientProvider messages={messages}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="light"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-          </ThemeProvider>
-        </NextIntlClientProvider>
+        <AuthProvider>
+          <NextIntlClientProvider messages={messages}>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="light"
+              enableSystem
+              disableTransitionOnChange
+            >
+              {children}
+              <Toaster position="top-center" richColors />
+            </ThemeProvider>
+          </NextIntlClientProvider>
+        </AuthProvider>
       </body>
     </html>
   );

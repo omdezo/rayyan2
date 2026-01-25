@@ -8,17 +8,58 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowLeft, Lock, Mail, User } from "lucide-react";
+import { toast } from "sonner";
 
 export default function RegisterPage() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsLoading(true);
-        // Simulate registration
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        router.push("/");
+        setError("");
+
+        const formData = new FormData(e.currentTarget);
+        const name = formData.get("name") as string;
+        const email = formData.get("email") as string;
+        const password = formData.get("password") as string;
+
+        // Client-side validation
+        if (password.length < 6) {
+            setError("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+            toast.error("كلمة المرور قصيرة جداً");
+            setIsLoading(false);
+            return;
+        }
+
+        try {
+            const response = await fetch("/api/auth/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, email, password }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                toast.success("تم إنشاء الحساب بنجاح!", {
+                    description: "يمكنك الآن تسجيل الدخول",
+                });
+                router.push("/ar/login");
+            } else {
+                setError(data.error || "حدث خطأ أثناء إنشاء الحساب");
+                toast.error("فشل إنشاء الحساب", {
+                    description: data.error || "حدث خطأ غير متوقع",
+                });
+            }
+        } catch (error) {
+            console.error("Registration error:", error);
+            setError("حدث خطأ أثناء الاتصال بالخادم");
+            toast.error("حدث خطأ أثناء إنشاء الحساب");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -60,6 +101,7 @@ export default function RegisterPage() {
                                     <User className="absolute right-3 top-3 h-5 w-5 text-muted-foreground" />
                                     <Input
                                         id="name"
+                                        name="name"
                                         placeholder="الاسم"
                                         required
                                         className="pr-10 h-12 bg-secondary/50 border-white/10 focus:bg-background transition-all"
@@ -77,6 +119,7 @@ export default function RegisterPage() {
                                     <Mail className="absolute right-3 top-3 h-5 w-5 text-muted-foreground" />
                                     <Input
                                         id="email"
+                                        name="email"
                                         type="email"
                                         placeholder="name@example.com"
                                         required
@@ -95,11 +138,16 @@ export default function RegisterPage() {
                                     <Lock className="absolute right-3 top-3 h-5 w-5 text-muted-foreground" />
                                     <Input
                                         id="password"
+                                        name="password"
                                         type="password"
                                         required
+                                        minLength={6}
                                         className="pr-10 h-12 bg-secondary/50 border-white/10 focus:bg-background transition-all"
                                     />
                                 </div>
+                                {error && (
+                                    <p className="text-sm text-red-500 mt-2">{error}</p>
+                                )}
                             </motion.div>
                             <motion.div
                                 initial={{ y: 20, opacity: 0 }}
@@ -118,7 +166,7 @@ export default function RegisterPage() {
                             className="mt-8 text-center text-sm text-muted-foreground"
                         >
                             لديك حساب بالفعل؟{" "}
-                            <Link href="/login" className="text-primary hover:text-primary/80 font-bold hover:underline transition-all inline-flex items-center gap-1">
+                            <Link href="/ar/login" className="text-primary hover:text-primary/80 font-bold hover:underline transition-all inline-flex items-center gap-1">
                                 تسجيل الدخول <ArrowLeft className="w-3 h-3" />
                             </Link>
                         </motion.div>

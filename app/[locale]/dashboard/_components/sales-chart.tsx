@@ -6,42 +6,55 @@ import { cn } from "@/lib/utils";
 
 type Period = "week" | "month" | "year";
 
-const data = {
+// Default fallback data (in case API data is missing or loading)
+const defaultData = {
     week: [
-        { label: "السبت", value: 150 },
-        { label: "الأحد", value: 230 },
-        { label: "الاثنين", value: 180 },
-        { label: "الثلاثاء", value: 320 },
-        { label: "الأربعاء", value: 290 },
-        { label: "الخميس", value: 450 },
-        { label: "الجمعة", value: 380 },
+        { label: "السبت", value: 0 },
+        { label: "الأحد", value: 0 },
+        { label: "الاثنين", value: 0 },
+        { label: "الثلاثاء", value: 0 },
+        { label: "الأربعاء", value: 0 },
+        { label: "الخميس", value: 0 },
+        { label: "الجمعة", value: 0 },
     ],
     month: [
-        { label: "أسبوع 1", value: 1200 },
-        { label: "أسبوع 2", value: 1500 },
-        { label: "أسبوع 3", value: 1100 },
-        { label: "أسبوع 4", value: 1800 },
+        { label: "أسبوع 1", value: 0 },
+        { label: "أسبوع 2", value: 0 },
+        { label: "أسبوع 3", value: 0 },
+        { label: "أسبوع 4", value: 0 },
     ],
     year: [
-        { label: "يناير", value: 4500 },
-        { label: "فبراير", value: 5200 },
-        { label: "مارس", value: 4800 },
-        { label: "أبريل", value: 6100 },
-        { label: "مايو", value: 5500 },
-        { label: "يونيو", value: 6700 },
-        { label: "يوليو", value: 7200 },
-        { label: "أغسطس", value: 6900 },
-        { label: "سبتمبر", value: 7500 },
-        { label: "أكتوبر", value: 8100 },
-        { label: "نوفمبر", value: 7800 },
-        { label: "ديسمبر", value: 8500 },
+        { label: "يناير", value: 0 },
+        { label: "فبراير", value: 0 },
+        { label: "مارس", value: 0 },
+        { label: "أبريل", value: 0 },
+        { label: "مايو", value: 0 },
+        { label: "يونيو", value: 0 },
+        { label: "يوليو", value: 0 },
+        { label: "أغسطس", value: 0 },
+        { label: "سبتمبر", value: 0 },
+        { label: "أكتوبر", value: 0 },
+        { label: "نوفمبر", value: 0 },
+        { label: "ديسمبر", value: 0 },
     ],
 };
 
-export function SalesChart() {
+// ✅ Fix: Define the interface to accept 'data'
+interface SalesChartProps {
+    data?: any;
+}
+
+export function SalesChart({ data }: SalesChartProps) {
     const [period, setPeriod] = useState<Period>("week");
-    const currentData = data[period];
-    const maxValue = Math.max(...currentData.map(d => d.value));
+    
+    // ✅ Use passed data if available, otherwise use defaultData
+    const chartData = data || defaultData;
+    
+    // Safety check: ensure the period key exists, otherwise empty array
+    const currentData = chartData[period] || [];
+    
+    // Calculate max value for bar height scaling (avoid division by zero)
+    const maxValue = Math.max(...currentData.map((d: any) => d.value)) || 100;
 
     return (
         <div className="w-full h-full flex flex-col">
@@ -65,25 +78,31 @@ export function SalesChart() {
             </div>
 
             <div className="flex-1 flex items-end justify-between gap-2 min-h-[300px] pb-2">
-                {currentData.map((item, index) => (
-                    <div key={index} className="flex-1 flex flex-col items-center gap-2 group">
-                        <div className="w-full relative flex items-end justify-center h-[250px]">
-                            <motion.div
-                                initial={{ height: 0 }}
-                                animate={{ height: `${(item.value / maxValue) * 100}%` }}
-                                transition={{ duration: 0.5, ease: "easeOut" }}
-                                className="w-full max-w-[40px] bg-primary/20 rounded-t-lg group-hover:bg-primary/40 transition-colors relative"
-                            >
-                                <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-popover text-popover-foreground text-xs px-2 py-1 rounded shadow-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                                    {item.value} ر.ع
-                                </div>
-                            </motion.div>
+                {currentData.length > 0 ? (
+                    currentData.map((item: any, index: number) => (
+                        <div key={index} className="flex-1 flex flex-col items-center gap-2 group">
+                            <div className="w-full relative flex items-end justify-center h-[250px]">
+                                <motion.div
+                                    initial={{ height: 0 }}
+                                    animate={{ height: `${(item.value / maxValue) * 100}%` }}
+                                    transition={{ duration: 0.5, ease: "easeOut" }}
+                                    className="w-full max-w-[40px] bg-primary/20 rounded-t-lg group-hover:bg-primary/40 transition-colors relative"
+                                >
+                                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-popover text-popover-foreground text-xs px-2 py-1 rounded shadow-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                        {item.value} ر.ع
+                                    </div>
+                                </motion.div>
+                            </div>
+                            <span className="text-xs text-muted-foreground font-medium truncate w-full text-center">
+                                {item.label}
+                            </span>
                         </div>
-                        <span className="text-xs text-muted-foreground font-medium truncate w-full text-center">
-                            {item.label}
-                        </span>
+                    ))
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                        لا توجد بيانات لهذه الفترة
                     </div>
-                ))}
+                )}
             </div>
         </div>
     );

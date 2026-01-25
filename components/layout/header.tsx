@@ -1,17 +1,20 @@
 "use client";
 
 import { Link, usePathname, useRouter } from "@/i18n/routing";
-import { ShoppingCart, Menu, X, Globe } from "lucide-react";
+import { ShoppingCart, Menu, X, Globe, User, LogOut, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { cn } from "@/lib/utils";
 import { useTranslations, useLocale } from "next-intl";
+import { useSession, signOut } from "next-auth/react";
 
 export function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+    const [cartCount, setCartCount] = useState(0);
+    const { data: session, status } = useSession();
     const t = useTranslations('Navbar');
     const locale = useLocale();
     const router = useRouter();
@@ -24,6 +27,32 @@ export function Header() {
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
+
+    // Update cart count
+    useEffect(() => {
+        const updateCartCount = () => {
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            setCartCount(cart.length);
+        };
+
+        updateCartCount();
+
+        // Listen for storage changes
+        window.addEventListener('storage', updateCartCount);
+        // Listen for custom cart update event
+        window.addEventListener('cartUpdated', updateCartCount);
+
+        return () => {
+            window.removeEventListener('storage', updateCartCount);
+            window.removeEventListener('cartUpdated', updateCartCount);
+        };
+    }, []);
+
+    const handleLogout = async () => {
+        await signOut({ redirect: false });
+        router.push('/');
+        router.refresh();
+    };
 
     const navItems = [
         { name: t('home'), href: "/" },
@@ -78,15 +107,39 @@ export function Header() {
                     <Button variant="ghost" size="icon" aria-label="Cart" className="relative" asChild>
                         <Link href="/cart">
                             <ShoppingCart className="h-5 w-5" />
+                            {cartCount > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                                    {cartCount}
+                                </span>
+                            )}
                             <span className="sr-only">{t('cart')}</span>
                         </Link>
                     </Button>
 
-                    <Button variant="default" size="sm" className="hidden md:flex font-bold" asChild>
-                        <Link href="/login">
-                            {t('login')}
-                        </Link>
-                    </Button>
+                    {status === 'authenticated' && session?.user ? (
+                        <>
+                            <Button variant="ghost" size="icon" aria-label="My Orders" asChild>
+                                <Link href="/my-orders" className="relative">
+                                    <Package className="h-5 w-5" />
+                                    <span className="sr-only">طلباتي</span>
+                                </Link>
+                            </Button>
+                            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary/50">
+                                <User className="h-4 w-4" />
+                                <span className="text-sm font-medium">{session.user.name || session.user.email}</span>
+                            </div>
+                            <Button variant="ghost" size="sm" className="hidden md:flex gap-2" onClick={handleLogout}>
+                                <LogOut className="h-4 w-4" />
+                                تسجيل الخروج
+                            </Button>
+                        </>
+                    ) : (
+                        <Button variant="default" size="sm" className="hidden md:flex font-bold" asChild>
+                            <Link href="/login">
+                                {t('login')}
+                            </Link>
+                        </Button>
+                    )}
 
                     {/* Mobile Menu Toggle */}
                     <Button
@@ -110,6 +163,14 @@ export function Header() {
                         className="md:hidden border-t border-border/40 bg-background/95 backdrop-blur-md overflow-hidden"
                     >
                         <div className="container flex flex-col gap-2 p-4">
+                            {/* User Info (Mobile) */}
+                            {status === 'authenticated' && session?.user && (
+                                <div className="flex items-center gap-2 px-4 py-3 mb-2 rounded-lg bg-secondary/50">
+                                    <User className="h-5 w-5" />
+                                    <span className="text-sm font-medium">{session.user.name || session.user.email}</span>
+                                </div>
+                            )}
+
                             {navItems.map((item) => (
                                 <Link
                                     key={item.href}
@@ -120,6 +181,31 @@ export function Header() {
                                     {item.name}
                                 </Link>
                             ))}
+
+                            {/* Auth Buttons (Mobile) */}
+                            {status === 'authenticated' && session?.user ? (
+                                <Button
+                                    variant="ghost"
+                                    className="w-full justify-start text-lg font-medium p-4 h-auto"
+                                    onClick={() => {
+                                        handleLogout();
+                                        setIsMenuOpen(false);
+                                    }}
+                                >
+                                    <LogOut className="h-5 w-5 ml-2" />
+                                    تسجيل الخروج
+                                </Button>
+                            ) : (
+                                <Button
+                                    variant="default"
+                                    className="w-full mt-2 font-bold"
+                                    asChild
+                                >
+                                    <Link href="/login" onClick={() => setIsMenuOpen(false)}>
+                                        {t('login')}
+                                    </Link>
+                                </Button>
+                            )}
                         </div>
                     </motion.div>
                 )}

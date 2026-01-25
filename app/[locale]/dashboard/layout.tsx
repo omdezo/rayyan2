@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
     LayoutDashboard,
@@ -11,31 +11,32 @@ import {
     Settings,
     LogOut,
     Menu,
-    X
+    X,
+    Loader2
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { ThemeProvider } from "@/components/theme-provider";
+import { useSession, signOut } from "next-auth/react";
 
 const sidebarItems = [
     {
         title: "لوحة التحكم",
-        href: "/dashboard",
+        href: "/ar/dashboard",
         icon: LayoutDashboard,
     },
     {
         title: "المنتجات",
-        href: "/dashboard/products",
+        href: "/ar/dashboard/products",
         icon: Package,
     },
     {
         title: "المستخدمين",
-        href: "/dashboard/users",
+        href: "/ar/dashboard/users",
         icon: Users,
     },
     {
         title: "الفواتير",
-        href: "/dashboard/orders",
+        href: "/ar/dashboard/orders",
         icon: Receipt,
     },
 ];
@@ -46,7 +47,34 @@ export default function DashboardLayout({
     children: React.ReactNode;
 }) {
     const pathname = usePathname();
+    const router = useRouter();
+    const { data: session, status } = useSession();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+    // Redirect if not authenticated
+    useEffect(() => {
+        if (status === "unauthenticated") {
+            router.push("/ar/login");
+        }
+    }, [status, router]);
+
+    // Show loading while checking authentication
+    if (status === "loading") {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        );
+    }
+
+    // Don't render dashboard if not authenticated
+    if (!session) {
+        return null;
+    }
+
+    const handleLogout = async () => {
+        await signOut({ redirect: true, callbackUrl: "/ar" });
+    };
 
     return (
         <div className="min-h-screen bg-background flex">
@@ -104,19 +132,19 @@ export default function DashboardLayout({
                     {/* Sidebar Footer */}
                     <div className="p-4 border-t border-border space-y-2">
                         <Link
-                            href="/dashboard/settings"
+                            href="/ar/dashboard/settings"
                             className="flex items-center gap-3 px-4 py-3 rounded-xl text-muted-foreground hover:bg-secondary hover:text-foreground transition-all"
                         >
                             <Settings className="h-5 w-5" />
                             <span className="font-medium">الإعدادات</span>
                         </Link>
-                        <Link
-                            href="/"
-                            className="flex items-center gap-3 px-4 py-3 rounded-xl text-destructive hover:bg-destructive/10 transition-all"
+                        <button
+                            onClick={handleLogout}
+                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-destructive hover:bg-destructive/10 transition-all"
                         >
                             <LogOut className="h-5 w-5" />
                             <span className="font-medium">تسجيل الخروج</span>
-                        </Link>
+                        </button>
                     </div>
                 </div>
             </aside>
@@ -137,8 +165,8 @@ export default function DashboardLayout({
                     <div className="flex items-center gap-4 mr-auto">
                         <div className="flex items-center gap-3">
                             <div className="text-left hidden md:block">
-                                <p className="text-sm font-bold">المسؤول</p>
-                                <p className="text-xs text-muted-foreground">admin@rayan.com</p>
+                                <p className="text-sm font-bold">{session.user?.name || "Admin"}</p>
+                                <p className="text-xs text-muted-foreground">{session.user?.email}</p>
                             </div>
                             <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center border border-border">
                                 <Users className="h-5 w-5 text-muted-foreground" />

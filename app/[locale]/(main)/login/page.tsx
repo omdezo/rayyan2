@@ -5,20 +5,64 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowLeft, Lock, Mail } from "lucide-react";
+import { signIn } from "next-auth/react";
+import { toast } from "sonner";
 
 export default function LoginPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const callbackUrl = searchParams.get('callbackUrl');
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsLoading(true);
-        // Simulate login
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        router.push("/");
+        setError("");
+
+        const formData = new FormData(e.currentTarget);
+        const email = formData.get("email") as string;
+        const password = formData.get("password") as string;
+
+        try {
+            const result = await signIn("credentials", {
+                email,
+                password,
+                redirect: false,
+            });
+
+            if (result?.error) {
+                setError("البريد الإلكتروني أو كلمة المرور غير صحيحة");
+                toast.error("فشل تسجيل الدخول", {
+                    description: "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+                });
+            } else {
+                toast.success("تم تسجيل الدخول بنجاح!");
+
+                // Get session to check user role
+                const sessionResponse = await fetch('/api/auth/session');
+                const session = await sessionResponse.json();
+
+                // Redirect based on callback URL or role
+                if (callbackUrl) {
+                    router.push(callbackUrl);
+                } else if (session?.user?.role === 'admin') {
+                    router.push("/ar/dashboard");
+                } else {
+                    router.push("/ar");
+                }
+                router.refresh();
+            }
+        } catch (error) {
+            console.error("Login error:", error);
+            toast.error("حدث خطأ أثناء تسجيل الدخول");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -60,6 +104,7 @@ export default function LoginPage() {
                                     <Mail className="absolute right-3 top-3 h-5 w-5 text-muted-foreground" />
                                     <Input
                                         id="email"
+                                        name="email"
                                         type="email"
                                         placeholder="name@example.com"
                                         required
@@ -81,11 +126,15 @@ export default function LoginPage() {
                                     <Lock className="absolute right-3 top-3 h-5 w-5 text-muted-foreground" />
                                     <Input
                                         id="password"
+                                        name="password"
                                         type="password"
                                         required
                                         className="pr-10 h-12 bg-secondary/50 border-white/10 focus:bg-background transition-all"
                                     />
                                 </div>
+                                {error && (
+                                    <p className="text-sm text-red-500 mt-2">{error}</p>
+                                )}
                             </motion.div>
                             <motion.div
                                 initial={{ y: 20, opacity: 0 }}
@@ -104,7 +153,7 @@ export default function LoginPage() {
                             className="mt-8 text-center text-sm text-muted-foreground"
                         >
                             ليس لديك حساب؟{" "}
-                            <Link href="/register" className="text-primary hover:text-primary/80 font-bold hover:underline transition-all inline-flex items-center gap-1">
+                            <Link href="/ar/register" className="text-primary hover:text-primary/80 font-bold hover:underline transition-all inline-flex items-center gap-1">
                                 إنشاء حساب جديد <ArrowLeft className="w-3 h-3" />
                             </Link>
                         </motion.div>

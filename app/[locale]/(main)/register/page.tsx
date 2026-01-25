@@ -25,10 +25,38 @@ export default function RegisterPage() {
         const email = formData.get("email") as string;
         const password = formData.get("password") as string;
 
-        // Client-side validation
-        if (password.length < 6) {
-            setError("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+        // Client-side strong password validation
+        if (password.length < 8) {
+            setError("كلمة المرور يجب أن تكون 8 أحرف على الأقل");
             toast.error("كلمة المرور قصيرة جداً");
+            setIsLoading(false);
+            return;
+        }
+
+        if (!/[A-Z]/.test(password)) {
+            setError("كلمة المرور يجب أن تحتوي على حرف كبير واحد على الأقل");
+            toast.error("كلمة المرور ضعيفة");
+            setIsLoading(false);
+            return;
+        }
+
+        if (!/[a-z]/.test(password)) {
+            setError("كلمة المرور يجب أن تحتوي على حرف صغير واحد على الأقل");
+            toast.error("كلمة المرور ضعيفة");
+            setIsLoading(false);
+            return;
+        }
+
+        if (!/[0-9]/.test(password)) {
+            setError("كلمة المرور يجب أن تحتوي على رقم واحد على الأقل");
+            toast.error("كلمة المرور ضعيفة");
+            setIsLoading(false);
+            return;
+        }
+
+        if (!/[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/]/.test(password)) {
+            setError("كلمة المرور يجب أن تحتوي على رمز خاص واحد على الأقل (!@#$%...)");
+            toast.error("كلمة المرور ضعيفة");
             setIsLoading(false);
             return;
         }
@@ -141,12 +169,22 @@ export default function RegisterPage() {
                                         name="password"
                                         type="password"
                                         required
-                                        minLength={6}
+                                        minLength={8}
                                         className="pr-10 h-12 bg-secondary/50 border-white/10 focus:bg-background transition-all"
                                     />
                                 </div>
+                                <div className="text-xs text-muted-foreground mt-2 space-y-1 bg-secondary/30 p-3 rounded-md">
+                                    <p className="font-semibold mb-1">متطلبات كلمة المرور:</p>
+                                    <ul className="space-y-0.5 mr-4 list-disc">
+                                        <li>8 أحرف على الأقل</li>
+                                        <li>حرف كبير واحد (A-Z)</li>
+                                        <li>حرف صغير واحد (a-z)</li>
+                                        <li>رقم واحد (0-9)</li>
+                                        <li>رمز خاص واحد (!@#$%...)</li>
+                                    </ul>
+                                </div>
                                 {error && (
-                                    <p className="text-sm text-red-500 mt-2">{error}</p>
+                                    <p className="text-sm text-red-500 mt-2 font-medium">{error}</p>
                                 )}
                             </motion.div>
                             <motion.div

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowLeft, Lock, Mail } from "lucide-react";
@@ -17,41 +17,40 @@ export default function LoginPage() {
     const { data: session, status } = useSession();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
-    const redirectAttempted = useRef(false);
 
     const callbackUrl = searchParams.get('callbackUrl');
 
-    // Redirect if already logged in - only once, use window.location for reliability
-    useEffect(() => {
-        if (status === 'authenticated' && session?.user && !redirectAttempted.current) {
-            redirectAttempted.current = true;
+    // NO auto-redirect - let the login form handle it
+    // This prevents NetworkError and redirect loops
 
-            const role = (session.user as any)?.role;
-            const redirectUrl = callbackUrl || (role === 'admin' ? '/ar/dashboard' : '/ar');
-
-            console.log('🔐 Auth status:', status);
-            console.log('👤 User:', session.user);
-            console.log('👑 Role:', role);
-            console.log('🔗 CallbackUrl:', callbackUrl);
-            console.log('➡️  Redirecting to:', redirectUrl);
-
-            // Small delay to ensure render completes, then redirect
-            setTimeout(() => {
-                console.log('🚀 Executing redirect now...');
-                window.location.href = redirectUrl;
-            }, 100);
-        }
-    }, [status, session, callbackUrl]);
-
-    // Show loading spinner while checking auth OR if authenticated (redirecting)
-    if (status === 'loading' || status === 'authenticated') {
+    // Show loading spinner while checking auth
+    if (status === 'loading') {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-                    <p className="mt-4 text-muted-foreground">
-                        {status === 'loading' ? 'جاري التحميل...' : 'جاري التوجيه...'}
-                    </p>
+                    <p className="mt-4 text-muted-foreground">جاري التحميل...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // If already authenticated, redirect immediately
+    if (status === 'authenticated' && session?.user) {
+        const role = (session.user as any)?.role;
+        const redirectUrl = callbackUrl || (role === 'admin' ? '/ar/dashboard' : '/ar');
+
+        // Redirect immediately
+        if (typeof window !== 'undefined') {
+            window.location.replace(redirectUrl);
+        }
+
+        // Show loading while redirecting
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+                    <p className="mt-4 text-muted-foreground">جاري التوجيه...</p>
                 </div>
             </div>
         );
@@ -67,8 +66,7 @@ export default function LoginPage() {
         const password = formData.get("password") as string;
 
         try {
-            // Use Next-Auth's built-in redirect
-            const redirectUrl = callbackUrl || "/ar/dashboard";
+            console.log('🔐 Starting login process...');
 
             const result = await signIn("credentials", {
                 email,
@@ -76,22 +74,31 @@ export default function LoginPage() {
                 redirect: false,
             });
 
+            console.log('📋 SignIn result:', result);
+
             if (result?.error) {
+                console.log('❌ Login failed:', result.error);
                 setError("البريد الإلكتروني أو كلمة المرور غير صحيحة");
                 toast.error("فشل تسجيل الدخول", {
                     description: "البريد الإلكتروني أو كلمة المرور غير صحيحة",
                 });
                 setIsLoading(false);
             } else if (result?.ok) {
+                console.log('✅ Login successful!');
                 toast.success("تم تسجيل الدخول بنجاح!");
 
-                // Use window.location for reliable redirect after successful login
+                // Determine redirect URL
+                const redirectUrl = callbackUrl || "/ar/dashboard";
+                console.log('➡️  Will redirect to:', redirectUrl);
+
+                // Wait a moment, then do a clean redirect
                 setTimeout(() => {
+                    console.log('🚀 Redirecting now...');
                     window.location.href = redirectUrl;
-                }, 500);
+                }, 1000);
             }
         } catch (error) {
-            console.error("Login error:", error);
+            console.error("❌ Login error:", error);
             toast.error("حدث خطأ أثناء تسجيل الدخول");
             setIsLoading(false);
         }

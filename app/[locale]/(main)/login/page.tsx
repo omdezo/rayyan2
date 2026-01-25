@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowLeft, Lock, Mail } from "lucide-react";
@@ -17,26 +17,26 @@ export default function LoginPage() {
     const { data: session, status } = useSession();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
-    const [hasRedirected, setHasRedirected] = useState(false);
+    const redirectAttempted = useRef(false);
 
     const callbackUrl = searchParams.get('callbackUrl');
 
     // Redirect if already logged in - only once
     useEffect(() => {
-        if (status === 'authenticated' && session?.user && !hasRedirected) {
-            setHasRedirected(true);
+        if (status === 'authenticated' && session?.user && !redirectAttempted.current) {
+            redirectAttempted.current = true;
 
             const role = (session.user as any)?.role;
             const redirectUrl = callbackUrl || (role === 'admin' ? '/ar/dashboard' : '/ar');
 
             console.log('✅ Already logged in, redirecting to:', redirectUrl);
 
-            // Use router.replace to avoid adding to history
-            router.replace(redirectUrl);
+            // Immediate redirect using router
+            router.push(redirectUrl);
         }
-    }, [status, session, callbackUrl, router, hasRedirected]);
+    }, [status, session, callbackUrl, router]);
 
-    // Show loading spinner only while initially checking auth
+    // Show loading spinner while checking auth
     if (status === 'loading') {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -48,8 +48,8 @@ export default function LoginPage() {
         );
     }
 
-    // If authenticated and already set redirect flag, show loading to prevent flash
-    if (status === 'authenticated' && hasRedirected) {
+    // If authenticated and redirect attempted, show brief loading
+    if (status === 'authenticated' && redirectAttempted.current) {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
@@ -70,6 +70,9 @@ export default function LoginPage() {
         const password = formData.get("password") as string;
 
         try {
+            // Use Next-Auth's built-in redirect
+            const redirectUrl = callbackUrl || "/ar/dashboard";
+
             const result = await signIn("credentials", {
                 email,
                 password,
@@ -81,25 +84,18 @@ export default function LoginPage() {
                 toast.error("فشل تسجيل الدخول", {
                     description: "البريد الإلكتروني أو كلمة المرور غير صحيحة",
                 });
-            } else {
+                setIsLoading(false);
+            } else if (result?.ok) {
                 toast.success("تم تسجيل الدخول بنجاح!");
 
-                // Small delay to let the toast show, then redirect
+                // Use window.location for reliable redirect after successful login
                 setTimeout(() => {
-                    // Redirect based on callback URL or just refresh
-                    // The useEffect above will handle the role-based redirect
-                    if (callbackUrl) {
-                        router.replace(callbackUrl);
-                    } else {
-                        // Just refresh to trigger the useEffect redirect logic
-                        router.refresh();
-                    }
-                }, 800);
+                    window.location.href = redirectUrl;
+                }, 500);
             }
         } catch (error) {
             console.error("Login error:", error);
             toast.error("حدث خطأ أثناء تسجيل الدخول");
-        } finally {
             setIsLoading(false);
         }
     };

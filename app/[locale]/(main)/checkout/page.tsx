@@ -41,6 +41,14 @@ interface CartItem {
     fileUrl?: string;
 }
 
+interface OrderItem {
+    productId: string;
+    title: string;
+    price: number;
+    language?: 'ar' | 'en';
+    fileUrl?: string;
+}
+
 function CheckoutContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -150,8 +158,8 @@ function CheckoutContent() {
 
         try {
             // Prepare order data
-            let orderItems;
-            let total;
+            let orderItems: OrderItem[];
+            let total: number;
 
             if (fromCart) {
                 // Multiple products from cart (each cart item already has language and fileUrl)

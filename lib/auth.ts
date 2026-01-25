@@ -104,6 +104,18 @@ export const authConfig: NextAuthConfig = {
         strategy: 'jwt',
         maxAge: 30 * 24 * 60 * 60, // 30 days
     },
+    cookies: {
+        sessionToken: {
+            name: `__Secure-next-auth.session-token`,
+            options: {
+                httpOnly: true,
+                sameSite: 'lax',
+                path: '/',
+                secure: true,
+                domain: '.rayiandesign.com', // Works for both www and non-www
+            },
+        },
+    },
     secret: process.env.NEXTAUTH_SECRET,
 };
 

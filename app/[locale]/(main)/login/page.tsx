@@ -87,13 +87,12 @@ export default function LoginPage() {
                 const redirectUrl = callbackUrl || "/ar/dashboard";
                 console.log('➡️  Will redirect to:', redirectUrl);
 
-                // Wait for cookies to be set, then use router.push (not window.location)
-                // Router.push works better with NextAuth
+                // Wait longer for cookies to be properly set before redirecting
                 setTimeout(() => {
-                    console.log('🚀 Redirecting via router.push...');
-                    router.push(redirectUrl);
-                    router.refresh(); // Force a refresh to update auth state
-                }, 300);
+                    console.log('🚀 Redirecting with window.location...');
+                    // Use window.location.href to ensure cookies are sent with the request
+                    window.location.href = redirectUrl;
+                }, 1000); // 1 second delay to ensure cookies are set
             }
         } catch (error) {
             console.error("❌ Login error:", error);

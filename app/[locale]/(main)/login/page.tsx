@@ -68,12 +68,19 @@ export default function LoginPage() {
         try {
             console.log('🔐 Starting login process...');
 
+            // Determine redirect URL
+            const redirectUrl = callbackUrl || "/ar/dashboard";
+            console.log('➡️  Will redirect to:', redirectUrl);
+
+            // Use NextAuth's built-in redirect - this handles cookies properly
             const result = await signIn("credentials", {
                 email,
                 password,
-                redirect: false,
+                redirect: true, // Let NextAuth handle the redirect
+                callbackUrl: redirectUrl,
             });
 
+            // This code won't execute if redirect: true succeeds
             console.log('📋 SignIn result:', result);
 
             if (result?.error) {
@@ -83,19 +90,6 @@ export default function LoginPage() {
                     description: "البريد الإلكتروني أو كلمة المرور غير صحيحة",
                 });
                 setIsLoading(false);
-            } else if (result?.ok) {
-                console.log('✅ Login successful!');
-                toast.success("تم تسجيل الدخول بنجاح!");
-
-                // Determine redirect URL
-                const redirectUrl = callbackUrl || "/ar/dashboard";
-                console.log('➡️  Will redirect to:', redirectUrl);
-
-                // Wait a moment, then do a clean redirect
-                setTimeout(() => {
-                    console.log('🚀 Redirecting now...');
-                    window.location.href = redirectUrl;
-                }, 1000);
             }
         } catch (error) {
             console.error("❌ Login error:", error);

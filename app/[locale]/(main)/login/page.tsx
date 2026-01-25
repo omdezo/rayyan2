@@ -17,42 +17,44 @@ export default function LoginPage() {
     const { data: session, status } = useSession();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
-    const [isRedirecting, setIsRedirecting] = useState(false);
+    const [hasRedirected, setHasRedirected] = useState(false);
 
     const callbackUrl = searchParams.get('callbackUrl');
 
-    // Redirect if already logged in
+    // Redirect if already logged in - only once
     useEffect(() => {
-        if (status === 'authenticated' && session?.user && !isRedirecting) {
-            console.log('✅ Already logged in, redirecting...');
-            setIsRedirecting(true);
+        if (status === 'authenticated' && session?.user && !hasRedirected) {
+            setHasRedirected(true);
 
             const role = (session.user as any)?.role;
-            let redirectUrl = '/ar';
+            const redirectUrl = callbackUrl || (role === 'admin' ? '/ar/dashboard' : '/ar');
 
-            if (callbackUrl) {
-                console.log('🔗 Redirecting to callback:', callbackUrl);
-                redirectUrl = callbackUrl;
-            } else if (role === 'admin') {
-                console.log('👑 Admin user, redirecting to dashboard');
-                redirectUrl = '/ar/dashboard';
-            } else {
-                console.log('👤 Regular user, redirecting to home');
-                redirectUrl = '/ar';
-            }
+            console.log('✅ Already logged in, redirecting to:', redirectUrl);
 
-            // Use window.location for a hard redirect to avoid loops
-            window.location.href = redirectUrl;
+            // Use router.replace to avoid adding to history
+            router.replace(redirectUrl);
         }
-    }, [status, session, callbackUrl, isRedirecting]);
+    }, [status, session, callbackUrl, router, hasRedirected]);
 
-    // Show loading spinner while checking auth or redirecting
-    if (status === 'loading' || isRedirecting) {
+    // Show loading spinner only while initially checking auth
+    if (status === 'loading') {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
                     <p className="mt-4 text-muted-foreground">جاري التحميل...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // If authenticated and already set redirect flag, show loading to prevent flash
+    if (status === 'authenticated' && hasRedirected) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+                    <p className="mt-4 text-muted-foreground">جاري التوجيه...</p>
                 </div>
             </div>
         );
@@ -81,33 +83,18 @@ export default function LoginPage() {
                 });
             } else {
                 toast.success("تم تسجيل الدخول بنجاح!");
-                setIsRedirecting(true);
 
-                // Small delay to let the toast show
-                setTimeout(async () => {
-                    // Get session to check user role
-                    const sessionResponse = await fetch('/api/auth/session');
-                    const session = await sessionResponse.json();
-
-                    console.log('📋 Session after login:', session);
-                    console.log('👤 User role:', session?.user?.role);
-
-                    // Determine redirect URL
-                    let redirectUrl = '/ar';
+                // Small delay to let the toast show, then redirect
+                setTimeout(() => {
+                    // Redirect based on callback URL or just refresh
+                    // The useEffect above will handle the role-based redirect
                     if (callbackUrl) {
-                        console.log('🔗 Redirecting to callback URL:', callbackUrl);
-                        redirectUrl = callbackUrl;
-                    } else if (session?.user?.role === 'admin') {
-                        console.log('👑 Admin detected, redirecting to dashboard');
-                        redirectUrl = '/ar/dashboard';
+                        router.replace(callbackUrl);
                     } else {
-                        console.log('👤 Regular user, redirecting to home');
-                        redirectUrl = '/ar';
+                        // Just refresh to trigger the useEffect redirect logic
+                        router.refresh();
                     }
-
-                    // Hard redirect to avoid any routing issues
-                    window.location.href = redirectUrl;
-                }, 500);
+                }, 800);
             }
         } catch (error) {
             console.error("Login error:", error);

@@ -1,0 +1,15 @@
+{
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "rayiandesign.com"
+        }
+      ],
+      "destination": "https://www.rayiandesign.com/:path*",
+      "permanent": true
+    }
+  ]
+}

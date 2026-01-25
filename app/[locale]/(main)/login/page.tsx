@@ -8,53 +8,19 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowLeft, Lock, Mail } from "lucide-react";
-import { signIn, useSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { toast } from "sonner";
 
 export default function LoginPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { data: session, status } = useSession();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
 
     const callbackUrl = searchParams.get('callbackUrl');
 
-    // NO auto-redirect - let the login form handle it
-    // This prevents NetworkError and redirect loops
-
-    // Show loading spinner while checking auth
-    if (status === 'loading') {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-                    <p className="mt-4 text-muted-foreground">جاري التحميل...</p>
-                </div>
-            </div>
-        );
-    }
-
-    // If already authenticated, redirect immediately
-    if (status === 'authenticated' && session?.user) {
-        const role = (session.user as any)?.role;
-        const redirectUrl = callbackUrl || (role === 'admin' ? '/ar/dashboard' : '/ar');
-
-        // Redirect immediately
-        if (typeof window !== 'undefined') {
-            window.location.replace(redirectUrl);
-        }
-
-        // Show loading while redirecting
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-                    <p className="mt-4 text-muted-foreground">جاري التوجيه...</p>
-                </div>
-            </div>
-        );
-    }
+    // NO auto-redirect logic at all - just show the login form
+    // NextAuth will handle everything with redirect: true
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -68,19 +34,12 @@ export default function LoginPage() {
         try {
             console.log('🔐 Starting login process...');
 
-            // Determine redirect URL
-            const redirectUrl = callbackUrl || "/ar/dashboard";
-            console.log('➡️  Will redirect to:', redirectUrl);
-
-            // Use NextAuth's built-in redirect - this handles cookies properly
             const result = await signIn("credentials", {
                 email,
                 password,
-                redirect: true, // Let NextAuth handle the redirect
-                callbackUrl: redirectUrl,
+                redirect: false, // Handle redirect manually
             });
 
-            // This code won't execute if redirect: true succeeds
             console.log('📋 SignIn result:', result);
 
             if (result?.error) {
@@ -90,6 +49,20 @@ export default function LoginPage() {
                     description: "البريد الإلكتروني أو كلمة المرور غير صحيحة",
                 });
                 setIsLoading(false);
+            } else if (result?.ok) {
+                console.log('✅ Login successful!');
+
+                // Determine redirect URL
+                const redirectUrl = callbackUrl || "/ar/dashboard";
+                console.log('➡️  Will redirect to:', redirectUrl);
+
+                // Wait for cookies to be set, then use router.push (not window.location)
+                // Router.push works better with NextAuth
+                setTimeout(() => {
+                    console.log('🚀 Redirecting via router.push...');
+                    router.push(redirectUrl);
+                    router.refresh(); // Force a refresh to update auth state
+                }, 300);
             }
         } catch (error) {
             console.error("❌ Login error:", error);

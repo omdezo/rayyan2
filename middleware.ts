@@ -14,14 +14,20 @@ export default async function middleware(request: NextRequest) {
     const isDashboardRoute = pathname.includes('/dashboard');
 
     if (isDashboardRoute) {
+        console.log('🔐 [Middleware] Dashboard route accessed:', pathname);
+
         // Get the token using next-auth/jwt which works in Edge runtime
         const token = await getToken({
             req: request,
             secret: process.env.NEXTAUTH_SECRET
         });
 
+        console.log('🎫 [Middleware] Token:', token ? 'EXISTS' : 'NULL');
+        console.log('👑 [Middleware] Role:', token?.role);
+
         // If no token, redirect to login
         if (!token) {
+            console.log('❌ [Middleware] No token - redirecting to login');
             const locale = pathname.split('/')[1] || 'ar';
             const loginUrl = new URL(`/${locale}/login`, request.url);
             loginUrl.searchParams.set('callbackUrl', pathname);
@@ -31,10 +37,13 @@ export default async function middleware(request: NextRequest) {
         // Check if user is admin
         const userRole = token?.role;
         if (userRole !== 'admin') {
+            console.log('❌ [Middleware] Not admin - redirecting to home');
             // Non-admin trying to access dashboard - redirect to home
             const locale = pathname.split('/')[1] || 'ar';
             return NextResponse.redirect(new URL(`/${locale}`, request.url));
         }
+
+        console.log('✅ [Middleware] Admin access granted');
     }
 
     // Continue with i18n middleware

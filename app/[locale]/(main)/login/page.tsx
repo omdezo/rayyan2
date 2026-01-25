@@ -4,20 +4,40 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowLeft, Lock, Mail } from "lucide-react";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { toast } from "sonner";
 
 export default function LoginPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { data: session, status } = useSession();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
 
     const callbackUrl = searchParams.get('callbackUrl');
+
+    // Redirect if already logged in
+    useEffect(() => {
+        if (status === 'authenticated' && session?.user) {
+            console.log('✅ Already logged in, redirecting...');
+            const role = (session.user as any)?.role;
+
+            if (callbackUrl) {
+                console.log('🔗 Redirecting to callback:', callbackUrl);
+                router.push(callbackUrl);
+            } else if (role === 'admin') {
+                console.log('👑 Admin user, redirecting to dashboard');
+                router.push('/ar/dashboard');
+            } else {
+                console.log('👤 Regular user, redirecting to home');
+                router.push('/ar');
+            }
+        }
+    }, [status, session, router, callbackUrl]);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();

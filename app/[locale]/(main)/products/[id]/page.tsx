@@ -384,7 +384,7 @@ export default function ProductDetailsPage() {
                             const languages = getAvailableLanguages();
                             const hasLanguages = languages.ar || languages.en;
                             const total = calculateTotal();
-                            const isDisabled = hasLanguages && total === 0;
+                            const isDisabled = !!(hasLanguages && total === 0);
 
                             return (
                                 <>

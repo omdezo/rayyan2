@@ -21,7 +21,7 @@ export default function LoginPage() {
 
     const callbackUrl = searchParams.get('callbackUrl');
 
-    // Redirect if already logged in - only once
+    // Redirect if already logged in - only once, use window.location for reliability
     useEffect(() => {
         if (status === 'authenticated' && session?.user && !redirectAttempted.current) {
             redirectAttempted.current = true;
@@ -29,32 +29,29 @@ export default function LoginPage() {
             const role = (session.user as any)?.role;
             const redirectUrl = callbackUrl || (role === 'admin' ? '/ar/dashboard' : '/ar');
 
-            console.log('✅ Already logged in, redirecting to:', redirectUrl);
+            console.log('🔐 Auth status:', status);
+            console.log('👤 User:', session.user);
+            console.log('👑 Role:', role);
+            console.log('🔗 CallbackUrl:', callbackUrl);
+            console.log('➡️  Redirecting to:', redirectUrl);
 
-            // Immediate redirect using router
-            router.push(redirectUrl);
+            // Small delay to ensure render completes, then redirect
+            setTimeout(() => {
+                console.log('🚀 Executing redirect now...');
+                window.location.href = redirectUrl;
+            }, 100);
         }
-    }, [status, session, callbackUrl, router]);
+    }, [status, session, callbackUrl]);
 
-    // Show loading spinner while checking auth
-    if (status === 'loading') {
+    // Show loading spinner while checking auth OR if authenticated (redirecting)
+    if (status === 'loading' || status === 'authenticated') {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-                    <p className="mt-4 text-muted-foreground">جاري التحميل...</p>
-                </div>
-            </div>
-        );
-    }
-
-    // If authenticated and redirect attempted, show brief loading
-    if (status === 'authenticated' && redirectAttempted.current) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-                    <p className="mt-4 text-muted-foreground">جاري التوجيه...</p>
+                    <p className="mt-4 text-muted-foreground">
+                        {status === 'loading' ? 'جاري التحميل...' : 'جاري التوجيه...'}
+                    </p>
                 </div>
             </div>
         );

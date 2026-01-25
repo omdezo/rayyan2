@@ -8,19 +8,50 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowLeft, Lock, Mail } from "lucide-react";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { toast } from "sonner";
 
 export default function LoginPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { data: session, status } = useSession();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
 
     const callbackUrl = searchParams.get('callbackUrl');
 
-    // NO auto-redirect logic at all - just show the login form
-    // NextAuth will handle everything with redirect: true
+    // If already logged in, redirect to dashboard
+    if (status === 'authenticated' && session?.user) {
+        const role = (session.user as any)?.role;
+        const redirectUrl = callbackUrl || (role === 'admin' ? '/ar/dashboard' : '/ar');
+
+        console.log('✅ Already authenticated, redirecting to:', redirectUrl);
+
+        // Use router.push for client-side navigation
+        router.push(redirectUrl);
+
+        // Show loading while redirecting
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+                    <p className="mt-4 text-muted-foreground">جاري التوجيه...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Show loading while checking authentication
+    if (status === 'loading') {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+                    <p className="mt-4 text-muted-foreground">جاري التحميل...</p>
+                </div>
+            </div>
+        );
+    }
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();

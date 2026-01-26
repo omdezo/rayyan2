@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
         if (authError) return authError;
 
         const body = await req.json();
-        const { title, description, category, subcategory, image, languages, status } = body;
+        const { title, description, category, subcategory, image, media, languages, status } = body;
 
         // Validation
         if (!title || !description || !category || !image) {
@@ -106,6 +106,7 @@ export async function POST(req: NextRequest) {
                 category,
                 subcategory,
                 image,
+                media: media || [], // Media gallery (images/videos)
                 languages,
                 status: status || 'active',
             });

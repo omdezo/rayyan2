@@ -48,7 +48,6 @@ export default function ProductDetailsPage() {
         en: false,
     });
     const [showFloatingCTA, setShowFloatingCTA] = useState(false);
-    const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
 
     const productId = params.id as string;
 
@@ -565,118 +564,6 @@ export default function ProductDetailsPage() {
                                 </div>
                             </motion.div>
                         </div>
-                    </div>
-                </div>
-
-                {/* Additional Information Section */}
-                <div className="container px-4 md:px-6 lg:px-8 py-12">
-                    <div className="max-w-4xl mx-auto space-y-12">
-                        {/* What You'll Get */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            className="bg-gradient-to-br from-blue-50/50 to-indigo-50/30 dark:from-blue-950/20 dark:to-indigo-950/10 rounded-2xl p-8 shadow-sm"
-                        >
-                            <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center">
-                                    <Package className="w-5 h-5 text-primary" />
-                                </div>
-                                ماذا ستحصل عليه؟
-                            </h2>
-                            <div className="grid md:grid-cols-2 gap-4">
-                                {[
-                                    { icon: FileText, title: "ملف احترافي", desc: "عرض تقديمي بتصميم احترافي عالي الجودة" },
-                                    { icon: Download, title: "تحميل فوري", desc: "احصل على الملف مباشرة بعد إتمام الدفع" },
-                                    { icon: Clock, title: "وصول دائم", desc: "استخدم الملف في أي وقت بدون قيود" },
-                                    { icon: Users, title: "دعم مستمر", desc: "فريق الدعم جاهز للمساعدة في أي وقت" }
-                                ].map((item, index) => (
-                                    <div key={index} className="flex items-start gap-4 p-4 bg-white/60 dark:bg-gray-900/40 rounded-xl">
-                                        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                            <item.icon className="w-6 h-6 text-primary" />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-bold mb-1">{item.title}</h3>
-                                            <p className="text-sm text-muted-foreground">{item.desc}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </motion.div>
-
-                        {/* FAQ Section */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                        >
-                            <h2 className="text-2xl font-bold mb-6">الأسئلة الشائعة</h2>
-                            <div className="space-y-3">
-                                {[
-                                    {
-                                        q: "كيف أحصل على الملف بعد الشراء؟",
-                                        a: "بعد إتمام عملية الدفع بنجاح، سيتم إرسال رابط التحميل إلى بريدك الإلكتروني مباشرة. كما يمكنك تحميل الملف من صفحة حسابك."
-                                    },
-                                    {
-                                        q: "هل يمكنني استرجاع أو استبدال المنتج؟",
-                                        a: "نعم، وفقاً لقانون حماية المستهلك، يمكنك طلب الاسترجاع أو الاستبدال خلال 15 يوماً من تاريخ الشراء في حال وجود عيب في المنتج أو عدم مطابقته للمواصفات."
-                                    },
-                                    {
-                                        q: "ما هي طرق الدفع المتاحة؟",
-                                        a: "نوفر الدفع الآمن عبر البطاقات البنكية (Visa, Mastercard) وأبل باي من خلال بوابة Thawani الآمنة."
-                                    },
-                                    {
-                                        q: "هل يمكنني استخدام الملف لأغراض تجارية؟",
-                                        a: "يرجى التواصل مع فريق الدعم لمعرفة شروط الاستخدام التجاري. في العادة، الملفات مخصصة للاستخدام الشخصي أو التعليمي."
-                                    }
-                                ].map((faq, index) => (
-                                    <div key={index} className="bg-card rounded-xl overflow-hidden shadow-sm">
-                                        <button
-                                            onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
-                                            className="w-full px-6 py-4 flex items-center justify-between text-right hover:bg-accent/50 transition-colors"
-                                        >
-                                            <span className="font-semibold">{faq.q}</span>
-                                            <ChevronRightIcon className={cn(
-                                                "w-5 h-5 transition-transform flex-shrink-0",
-                                                expandedFaq === index ? "rotate-90" : ""
-                                            )} />
-                                        </button>
-                                        {expandedFaq === index && (
-                                            <motion.div
-                                                initial={{ height: 0, opacity: 0 }}
-                                                animate={{ height: "auto", opacity: 1 }}
-                                                exit={{ height: 0, opacity: 0 }}
-                                                className="px-6 pb-4 text-muted-foreground"
-                                            >
-                                                {faq.a}
-                                            </motion.div>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        </motion.div>
-
-                        {/* Trust Badges */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            className="grid grid-cols-2 md:grid-cols-4 gap-4"
-                        >
-                            {[
-                                { icon: Shield, text: "دفع آمن 100%" },
-                                { icon: Download, text: "تحميل فوري" },
-                                { icon: Users, text: "دعم فني" },
-                                { icon: Award, text: "جودة عالية" }
-                            ].map((badge, index) => (
-                                <div key={index} className="flex flex-col items-center gap-3 p-6 bg-card rounded-xl shadow-sm">
-                                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                                        <badge.icon className="w-6 h-6 text-primary" />
-                                    </div>
-                                    <span className="text-sm font-semibold text-center">{badge.text}</span>
-                                </div>
-                            ))}
-                        </motion.div>
                     </div>
                 </div>
             </div>

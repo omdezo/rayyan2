@@ -152,10 +152,10 @@ function ProductsContent() {
     };
 
     return (
-        <div className="min-h-screen pb-20 bg-background">
+        <div className="min-h-screen pb-20 bg-gradient-to-b from-background via-background to-secondary/10">
             {/* Header Section */}
-            <div className="pt-24 sm:pt-32 pb-6 sm:pb-8 px-4">
-                <div className="container">
+            <div className="pt-24 sm:pt-32 pb-8 sm:pb-12 px-4">
+                <div className="container max-w-7xl">
                     <div className="flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6 mb-8 sm:mb-12">
                         {/* Title & Subtitle (Right) */}
                         <div className="text-center md:text-right space-y-1 sm:space-y-2 order-1 md:order-1 w-full md:w-auto">
@@ -167,18 +167,18 @@ function ProductsContent() {
                         <div className="w-full md:w-96 relative order-2 md:order-2">
                             <Input
                                 placeholder={t('search_placeholder')}
-                                className="pl-10 h-10 sm:h-12 text-sm sm:text-base rounded-full bg-secondary/30 border-border/50 focus:bg-background transition-all"
+                                className="pl-10 h-12 sm:h-14 text-sm sm:text-base rounded-2xl bg-secondary/30 border-none focus:bg-background focus:ring-2 focus:ring-primary/20 transition-all shadow-sm"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                         </div>
                     </div>
 
                     {/* Filters */}
                     <div className="space-y-4 sm:space-y-8">
                         {/* Categories */}
-                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 sm:gap-3">
+                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
                             {categories.map((cat) => (
                                 <Button
                                     key={cat.id}
@@ -186,11 +186,13 @@ function ProductsContent() {
                                     onClick={() => handleCategoryClick(cat.id)}
                                     size="sm"
                                     className={cn(
-                                        "rounded-full h-8 sm:h-10 px-3 sm:px-6 border-border/50 text-xs sm:text-sm",
-                                        currentCategory === cat.id ? "shadow-lg shadow-primary/20" : "hover:border-primary/50 bg-card"
+                                        "rounded-2xl h-11 sm:h-12 px-5 sm:px-7 text-sm sm:text-base font-semibold transition-all duration-300",
+                                        currentCategory === cat.id
+                                            ? "shadow-md shadow-primary/30 scale-105"
+                                            : "border-none bg-secondary/40 hover:bg-secondary/60 hover:scale-105 hover:shadow-sm"
                                     )}
                                 >
-                                    <span className="ml-1 sm:ml-2 text-sm sm:text-base">{cat.icon}</span>
+                                    <span className="ml-2 text-lg">{cat.icon}</span>
                                     {cat.title}
                                 </Button>
                             ))}
@@ -199,43 +201,45 @@ function ProductsContent() {
                                 onClick={() => handleCategoryClick(null)}
                                 size="sm"
                                 className={cn(
-                                    "rounded-full h-8 sm:h-10 px-3 sm:px-6 border-border/50 text-xs sm:text-sm",
-                                    !currentCategory ? "shadow-lg shadow-primary/20" : "hover:border-primary/50 bg-card"
+                                    "rounded-2xl h-11 sm:h-12 px-5 sm:px-7 text-sm sm:text-base font-semibold transition-all duration-300",
+                                    !currentCategory
+                                        ? "shadow-md shadow-primary/30 scale-105"
+                                        : "border-none bg-secondary/40 hover:bg-secondary/60 hover:scale-105 hover:shadow-sm"
                                 )}
                             >
-                                <Filter className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
+                                <Filter className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
                                 {t('all_categories')}
                             </Button>
                         </div>
 
                         {/* Countries */}
-                        <div className="flex flex-col items-center md:flex-row md:items-center justify-start gap-3 sm:gap-4">
-                            <span className="text-xs sm:text-sm font-medium text-muted-foreground whitespace-nowrap">{t('filter_country')}</span>
-                            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 sm:gap-3">
+                        <div className="flex flex-col items-center md:flex-row md:items-center justify-start gap-4 sm:gap-5">
+                            <span className="text-sm font-semibold text-foreground whitespace-nowrap">{t('filter_country')}</span>
+                            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
                                 <button
                                     onClick={() => handleCountryClick(null)}
                                     className={cn(
-                                        "flex flex-col items-center justify-center w-20 h-16 sm:w-24 sm:h-20 rounded-xl sm:rounded-2xl border transition-all duration-200 flex-shrink-0",
+                                        "flex flex-col items-center justify-center w-24 h-20 sm:w-28 sm:h-24 rounded-2xl transition-all duration-300 flex-shrink-0 shadow-sm",
                                         !currentSubcategory
-                                            ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-105"
-                                            : "bg-card border-border/50 hover:border-primary/50 hover:shadow-md"
+                                            ? "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-lg shadow-primary/30 scale-105"
+                                            : "bg-secondary/50 hover:bg-secondary/70 hover:scale-105 hover:shadow-md"
                                     )}
                                 >
-                                    <span className="text-xl sm:text-2xl mb-0.5 sm:mb-1">🌍</span>
-                                    <span className="text-[10px] sm:text-xs font-bold">{t('all_countries')}</span>
+                                    <span className="text-2xl sm:text-3xl mb-1 sm:mb-2">🌍</span>
+                                    <span className="text-xs sm:text-sm font-bold">{t('all_countries')}</span>
                                 </button>
                                 {countries.map((country) => (
                                     <button
                                         key={country.id}
                                         onClick={() => handleCountryClick(country.id)}
                                         className={cn(
-                                            "flex flex-col items-center justify-center w-20 h-16 sm:w-24 sm:h-20 rounded-xl sm:rounded-2xl border transition-all duration-200 flex-shrink-0",
+                                            "flex flex-col items-center justify-center w-24 h-20 sm:w-28 sm:h-24 rounded-2xl transition-all duration-300 flex-shrink-0 shadow-sm",
                                             currentSubcategory === country.id
-                                                ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-105"
-                                                : "bg-card border-border/50 hover:border-primary/50 hover:shadow-md"
+                                                ? "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-lg shadow-primary/30 scale-105"
+                                                : "bg-secondary/50 hover:bg-secondary/70 hover:scale-105 hover:shadow-md"
                                         )}
                                     >
-                                        <span className="text-[10px] sm:text-sm font-bold text-center px-1">{country.title}</span>
+                                        <span className="text-xs sm:text-sm font-bold text-center px-2">{country.title}</span>
                                     </button>
                                 ))}
                             </div>
@@ -245,9 +249,9 @@ function ProductsContent() {
             </div>
 
             {/* Products Grid */}
-            <div className="container px-4 py-6 sm:py-12">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-6 sm:mb-8">
-                    <p className="text-sm sm:text-base text-muted-foreground font-medium">
+            <div className="container max-w-7xl px-4 py-8 sm:py-16">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 sm:mb-10">
+                    <p className="text-base sm:text-lg font-semibold">
                         {loading ? t('loading') || 'Loading...' : t('products_count', { count: filteredProducts.length })}
                     </p>
 
@@ -260,7 +264,7 @@ function ProductsContent() {
                                 setSearchQuery("");
                                 router.push("/products");
                             }}
-                            className="text-muted-foreground hover:text-destructive"
+                            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl transition-all"
                         >
                             <X className="w-4 h-4 ml-2" />
                             {t('clear_filters')}
@@ -270,11 +274,14 @@ function ProductsContent() {
 
                 {loading ? (
                     <div className="flex justify-center items-center py-32">
-                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                        <div className="flex flex-col items-center gap-4">
+                            <Loader2 className="w-12 h-12 animate-spin text-primary" />
+                            <p className="text-muted-foreground">جاري التحميل...</p>
+                        </div>
                     </div>
                 ) : filteredProducts.length > 0 ? (
                     <>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
                             {filteredProducts.map((product, index) => (
                                 <motion.div
                                     key={product._id}
@@ -289,19 +296,19 @@ function ProductsContent() {
 
                         {/* Pagination */}
                         {pagination.pages > 1 && (
-                            <div className="flex items-center justify-center gap-2 mt-12">
+                            <div className="flex items-center justify-center gap-3 mt-16">
                                 <Button
                                     variant="outline"
                                     size="sm"
                                     onClick={() => handlePageChange(currentPage - 1)}
                                     disabled={currentPage === 1}
-                                    className="h-9 px-3 sm:px-4"
+                                    className="h-11 px-4 sm:px-6 rounded-xl font-semibold shadow-sm hover:shadow-md transition-all disabled:opacity-40"
                                 >
-                                    <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
-                                    <span className="hidden sm:inline mr-1">السابق</span>
+                                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                                    <span className="hidden sm:inline mr-2">السابق</span>
                                 </Button>
 
-                                <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-2">
                                     {Array.from({ length: Math.min(pagination.pages, window.innerWidth < 640 ? 5 : 7) }, (_, i) => {
                                         const maxPages = window.innerWidth < 640 ? 5 : 7;
                                         let pageNum;
@@ -320,7 +327,12 @@ function ProductsContent() {
                                                 variant={pageNum === currentPage ? "default" : "outline"}
                                                 size="sm"
                                                 onClick={() => handlePageChange(pageNum)}
-                                                className="w-8 h-9 sm:w-10 text-xs sm:text-sm p-0"
+                                                className={cn(
+                                                    "w-10 h-11 sm:w-12 text-sm sm:text-base p-0 rounded-xl font-semibold transition-all",
+                                                    pageNum === currentPage
+                                                        ? "shadow-md shadow-primary/30"
+                                                        : "border-none bg-secondary/40 hover:bg-secondary/60 hover:scale-105"
+                                                )}
                                             >
                                                 {pageNum}
                                             </Button>
@@ -333,25 +345,29 @@ function ProductsContent() {
                                     size="sm"
                                     onClick={() => handlePageChange(currentPage + 1)}
                                     disabled={currentPage === pagination.pages}
-                                    className="h-9 px-3 sm:px-4"
+                                    className="h-11 px-4 sm:px-6 rounded-xl font-semibold shadow-sm hover:shadow-md transition-all disabled:opacity-40"
                                 >
-                                    <span className="hidden sm:inline ml-1">التالي</span>
-                                    <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" />
+                                    <span className="hidden sm:inline ml-2">التالي</span>
+                                    <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
                                 </Button>
                             </div>
                         )}
                     </>
                 ) : (
                     <div className="flex flex-col items-center justify-center py-32 text-center">
-                        <div className="w-20 h-20 bg-secondary/50 rounded-full flex items-center justify-center mb-6">
-                            <Search className="w-10 h-10 text-muted-foreground" />
+                        <div className="w-28 h-28 bg-gradient-to-br from-secondary/40 to-secondary/20 rounded-full flex items-center justify-center mb-8 shadow-lg">
+                            <Search className="w-12 h-12 text-muted-foreground" />
                         </div>
-                        <h3 className="text-xl font-bold mb-2">{t('no_products')}</h3>
-                        <p className="text-muted-foreground mb-6">{t('no_products_desc')}</p>
-                        <Button onClick={() => {
-                            setSearchQuery("");
-                            router.push("/products");
-                        }}>
+                        <h3 className="text-2xl font-bold mb-3">{t('no_products')}</h3>
+                        <p className="text-muted-foreground mb-8 max-w-md">{t('no_products_desc')}</p>
+                        <Button
+                            onClick={() => {
+                                setSearchQuery("");
+                                router.push("/products");
+                            }}
+                            size="lg"
+                            className="rounded-xl shadow-lg"
+                        >
                             {t('view_all_products')}
                         </Button>
                     </div>

@@ -66,6 +66,7 @@ function CheckoutContent() {
         email: "",
         phone: "",
     });
+    const [agreedToPolicy, setAgreedToPolicy] = useState(false);
 
     // Require authentication
     useEffect(() => {
@@ -141,6 +142,11 @@ function CheckoutContent() {
         // Validation
         if (!formData.name || !formData.email || !formData.phone) {
             toast.error('الرجاء ملء جميع الحقول');
+            return;
+        }
+
+        if (!agreedToPolicy) {
+            toast.error('الرجاء الموافقة على سياسة الاسترجاع والاستبدال');
             return;
         }
 
@@ -367,6 +373,76 @@ function CheckoutContent() {
                                                 🔒 جميع المعاملات مشفرة وآمنة. نحن لا نقوم بتخزين معلومات بطاقتك الائتمانية.
                                             </p>
                                         </div>
+                                    </div>
+
+                                    {/* Return & Exchange Policy Agreement */}
+                                    <div className="space-y-4">
+                                        <h3 className="text-lg font-semibold">سياسة الاسترجاع والاستبدال</h3>
+                                        <div className="bg-secondary/30 border border-border/60 rounded-xl p-4 max-h-64 overflow-y-auto">
+                                            <div className="space-y-4 text-sm">
+                                                <div className="grid md:grid-cols-2 gap-4">
+                                                    {/* Arabic Section */}
+                                                    <div className="space-y-2 text-right">
+                                                        <h4 className="font-bold text-base mb-3">سياسة الاسترجاع والاستبدال</h4>
+                                                        <p className="text-muted-foreground leading-relaxed">
+                                                            يمنح قانون حماية المستهلك الحق في استبدال أو استرجاع المنتج وذلك حسب السعر المدفوع أو وجود عيوب بالمنتج خلال 15 يوماً.
+                                                        </p>
+                                                        <ul className="list-disc mr-4 space-y-1 text-muted-foreground">
+                                                            <li>يمكنك استبدال أو استرجاع السلعة خلال 15 يوماً من شرائها.</li>
+                                                            <li>لا تنطبق هذه السياسة على المنتجات التي يجب فتحها لاستخدامها أو إذا كان غرض الشراء خاص.</li>
+                                                            <li>يمكن استبدال أو استرجاع السلعة فقط إذا كانت في مواصفاتها الأصلية غير مفتوحة أو بها عيب أو إذا كانت ليست كما جاء في مواصفات المنتج أو الخدمة.</li>
+                                                            <li>يجب تقديم الفاتورة أو ما يثبت الشراء عند طلب الاسترجاع.</li>
+                                                        </ul>
+                                                    </div>
+
+                                                    {/* English Section */}
+                                                    <div className="space-y-2 text-left" dir="ltr">
+                                                        <h4 className="font-bold text-base mb-3">Return & Exchange Policy</h4>
+                                                        <p className="text-muted-foreground leading-relaxed">
+                                                            Consumer Protection Law grants you the right to exchange or return and redeem the price of an item within 15 days of receipt.
+                                                        </p>
+                                                        <ul className="list-disc ml-4 space-y-1 text-muted-foreground">
+                                                            <li>You may exchange or return and redeem the price of an item within 15 days of receipt.</li>
+                                                            <li>This policy does not apply to the products that should be opened for use or if the purpose is for personal use only.</li>
+                                                            <li>An item may be exchanged or returned only if it's in its original standard specifications or not as described or if it has any defect for its purpose of use.</li>
+                                                            <li>A valid receipt must be provided.</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+
+                                                <div className="pt-3 border-t border-border/40 text-center text-xs text-muted-foreground">
+                                                    <p className="font-semibold mb-1">هيئة حماية المستهلك | Consumer Protection Authority</p>
+                                                    <p className="flex items-center justify-center gap-2 flex-wrap">
+                                                        <span>☎️ 80079009 / 80077997</span>
+                                                        <span>•</span>
+                                                        <span>🌐 www.pacp.gov.om</span>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Checkbox Agreement */}
+                                        <label className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                                            agreedToPolicy
+                                                ? 'border-primary bg-primary/5'
+                                                : 'border-border/60 hover:border-primary/50'
+                                        }`}>
+                                            <input
+                                                type="checkbox"
+                                                checked={agreedToPolicy}
+                                                onChange={(e) => setAgreedToPolicy(e.target.checked)}
+                                                className="w-5 h-5 mt-0.5 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                                                required
+                                            />
+                                            <div className="flex-1 text-sm">
+                                                <span className="font-medium">
+                                                    أوافق على سياسة الاسترجاع والاستبدال
+                                                </span>
+                                                <p className="text-xs text-muted-foreground mt-1">
+                                                    بالموافقة، أنت تقر بأنك قرأت وفهمت سياسة الاسترجاع والاستبدال الخاصة بنا
+                                                </p>
+                                            </div>
+                                        </label>
                                     </div>
 
                                     <Button

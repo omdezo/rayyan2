@@ -1,0 +1,74 @@
+========================================
+VERCEL ENVIRONMENT VARIABLES
+Copy-paste these into Vercel Dashboard
+Domain: rayiandesign.com
+========================================
+
+ADD THESE NOW (Required):
+========================================
+
+Name: MONGODB_URI
+Value: mongodb+srv://ivuxi2_db_user:0EsjRkbsRfQKN29N@rayan-store-prod.sf1xnsk.mongodb.net/rayan-store?retryWrites=true&w=majority&appName=rayan-store-prod
+
+Name: NEXTAUTH_SECRET
+Value: FaRKDdluKfhO84Wzl6+qptWL2pgWc7S0f8uMKbh8B9w=
+
+Name: NEXTAUTH_URL
+Value: https://rayiandesign.com
+
+Name: CLOUDINARY_CLOUD_NAME
+Value: ddauocagf
+
+Name: CLOUDINARY_API_KEY
+Value: 144578892867628
+
+Name: CLOUDINARY_API_SECRET
+Value: wBy7punWxYJ3HBksFQswW9_4hGI
+
+Name: NEXT_PUBLIC_APP_URL
+Value: https://rayiandesign.com
+
+========================================
+ADD THESE LATER (When you get Thawani keys):
+========================================
+
+Name: NEXT_PUBLIC_THAWANI_ENV
+Value: production
+
+Name: THAWANI_SECRET_KEY
+Value: (get from Thawani dashboard - contact sales@thawani.om)
+
+Name: NEXT_PUBLIC_THAWANI_PUBLISHABLE_KEY
+Value: (get from Thawani dashboard)
+
+Name: THAWANI_WEBHOOK_SECRET
+Value: (get from Thawani dashboard)
+
+========================================
+CLOUDFLARE DNS RECORDS
+Add these in Cloudflare Dashboard
+========================================
+
+Record 1:
+Type: CNAME
+Name: @
+Target: cname.vercel-dns.com
+Proxy status: DNS only (gray cloud)
+
+Record 2:
+Type: CNAME
+Name: www
+Target: cname.vercel-dns.com
+Proxy status: DNS only (gray cloud)
+
+========================================
+IMPORTANT NOTES:
+========================================
+
+1. Add all "Required" variables BEFORE deploying
+2. Add Thawani variables when you receive keys from Thawani
+3. After adding Thawani keys, redeploy from Vercel dashboard
+4. Webhook URL for Thawani: https://rayiandesign.com/api/thawani/webhook
+5. Make sure DNS is set to "DNS only" NOT "Proxied" in Cloudflare
+
+========================================

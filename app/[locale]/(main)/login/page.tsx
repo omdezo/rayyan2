@@ -154,9 +154,8 @@ export default function LoginPage() {
                                 transition={{ delay: 0.4 }}
                                 className="space-y-2"
                             >
-                                <div className="flex items-center justify-between">
+                                <div>
                                     <label htmlFor="password" className="text-sm font-medium mr-1">كلمة المرور</label>
-                                    <Link href="#" className="text-xs text-primary hover:underline">نسيت كلمة المرور؟</Link>
                                 </div>
                                 <div className="relative">
                                     <Lock className="absolute right-3 top-3 h-5 w-5 text-muted-foreground" />

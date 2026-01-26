@@ -1,36 +1,135 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ريان للتصميم | Rayan Design Store
 
-## Getting Started
+E-commerce platform for selling digital products (presentations, templates, educational materials) with multi-language support and secure payment processing.
 
-First, run the development server:
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **Styling**: Tailwind CSS + shadcn/ui
+- **Database**: MongoDB Atlas
+- **Authentication**: NextAuth v5
+- **Payment**: Thawani Payment Gateway (Oman)
+- **Storage**: Cloudflare R2
+- **Deployment**: Vercel
+- **i18n**: next-intl (Arabic/English)
+
+## Key Features
+
+- ✅ Bilingual support (Arabic/English)
+- ✅ Multi-language product variants (AR/EN PDFs/PPTs)
+- ✅ Secure payment with Thawani (Apple Pay, Credit Cards)
+- ✅ Admin dashboard for product management
+- ✅ Media gallery with image/video support
+- ✅ Responsive design (mobile-first)
+- ✅ Real-time cart system
+- ✅ Return & exchange policy (15 days)
+
+## Quick Start
+
+### 1. Install Dependencies
+
+```bash
+npm install
+```
+
+### 2. Setup Environment Variables
+
+Create `.env` file:
+
+```bash
+# MongoDB Atlas
+MONGODB_URI=your_mongodb_connection_string
+
+# NextAuth
+NEXTAUTH_SECRET=your_nextauth_secret
+NEXTAUTH_URL=https://your-domain.com
+
+# Cloudflare R2
+R2_ACCOUNT_ID=your_account_id
+R2_ACCESS_KEY_ID=your_access_key
+R2_SECRET_ACCESS_KEY=your_secret_key
+R2_BUCKET_NAME=your_bucket_name
+R2_PUBLIC_URL=https://your-r2-public-url
+
+# Thawani Payment Gateway (see thawani_gateaway.md)
+NEXT_PUBLIC_THAWANI_ENV=uat
+THAWANI_SECRET_KEY=your_secret_key
+NEXT_PUBLIC_THAWANI_PUBLISHABLE_KEY=your_publishable_key
+THAWANI_WEBHOOK_SECRET=your_webhook_secret
+
+# App URL
+NEXT_PUBLIC_APP_URL=https://your-domain.com
+```
+
+### 3. Run Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Admin Access
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Default admin credentials (change after first login):
+- Email: `admin@rayiandesign.com`
+- Password: `Admin@123.rayyan`
 
-## Learn More
+Access dashboard: `/ar/dashboard`
 
-To learn more about Next.js, take a look at the following resources:
+## Project Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+app/
+├── [locale]/              # i18n routes (ar/en)
+│   ├── (main)/           # Public pages
+│   │   ├── products/     # Product listing & detail
+│   │   ├── checkout/     # Checkout flow
+│   │   ├── cart/         # Shopping cart
+│   │   └── login/        # Authentication
+│   └── dashboard/        # Admin panel
+├── api/                  # API routes
+│   ├── products/        # Product CRUD
+│   ├── orders/          # Order management
+│   ├── thawani/         # Payment integration
+│   └── upload/          # File uploads
+components/
+├── features/            # Feature components
+├── ui/                  # UI components (shadcn)
+└── dashboard/           # Admin components
+lib/
+├── models/             # MongoDB models
+├── thawani.ts          # Payment gateway
+└── mongodb.ts          # Database connection
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Payment Integration
 
-## Deploy on Vercel
+See `thawani_gateaway.md` for detailed Thawani payment gateway integration guide.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Important**: The publishable key in payment URLs is safe to expose client-side. The secret key is only used server-side.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deployment
+
+Deployed on Vercel at: [rayiandesign.com](https://www.rayiandesign.com)
+
+### Deploy to Vercel
+
+1. Push to GitHub
+2. Import project in Vercel
+3. Add environment variables
+4. Deploy
+
+**Domain Setup**: Configure DNS to point to Vercel and set up redirect from non-www to www.
+
+## Security Notes
+
+- Strong password validation (8+ chars, uppercase, lowercase, number, special char)
+- Admin-only routes protected by middleware
+- JWT-based sessions (30-day expiry)
+- Secure payment processing (PCI compliant via Thawani)
+- Return policy as per Oman Consumer Protection Law
+
+## Support
+
+For technical support or questions, contact: support@rayiandesign.com

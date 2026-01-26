@@ -95,6 +95,11 @@ export async function createCheckoutSession(
 
 /**
  * Get the payment URL for a session
+ *
+ * SECURITY NOTE: The 'key' parameter in the URL is the PUBLISHABLE key, which is
+ * safe to expose publicly (similar to Stripe's publishable key). It's used client-side
+ * for the checkout UI. The SECRET key is NEVER exposed and only used server-side for
+ * API authentication. This is the correct and secure implementation.
  */
 export function getPaymentUrl(sessionId: string): string {
     return `${THAWANI_CHECKOUT_BASE_URL}/pay/${sessionId}?key=${THAWANI_PUBLISHABLE_KEY}`;

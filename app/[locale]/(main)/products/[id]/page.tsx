@@ -5,10 +5,18 @@ import { useParams } from "next/navigation";
 import { useRouter } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRight, Check, ShoppingCart, Loader2, Package } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import {
+    ArrowRight, Check, ShoppingCart, Loader2, Package,
+    Star, Shield, Download, Clock, Share2, Home, ChevronRight as ChevronRightIcon,
+    Award, Users, FileText, Zap
+} from "lucide-react";
 import { toast } from "sonner";
 import { ProductMediaGallery } from "@/components/features/product-media-gallery";
 import type { IProductMedia } from "@/lib/types/models";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 interface LanguageVariant {
     lang: 'ar' | 'en';
@@ -125,7 +133,6 @@ export default function ProductDetailsPage() {
         const hasLanguages = languages.ar || languages.en;
 
         if (hasLanguages) {
-            // New product with language variants
             const selected = getSelectedLanguagesData();
 
             if (selected.length === 0) {
@@ -133,11 +140,9 @@ export default function ProductDetailsPage() {
                 return;
             }
 
-            // Pass selected languages as URL parameters
             const languagesParam = selected.map(l => l.lang).join(',');
             router.push(`/checkout?productId=${productId}&languages=${languagesParam}` as any);
         } else {
-            // Old product without language variants - direct checkout
             router.push(`/checkout?productId=${productId}` as any);
         }
     };
@@ -149,7 +154,6 @@ export default function ProductDetailsPage() {
         const cart = JSON.parse(localStorage.getItem('cart') || '[]');
 
         if (hasLanguages) {
-            // New product with language variants
             const selected = getSelectedLanguagesData();
 
             if (selected.length === 0) {
@@ -157,7 +161,6 @@ export default function ProductDetailsPage() {
                 return;
             }
 
-            // Add each selected language as a separate cart item
             selected.forEach((langData) => {
                 const itemKey = `${productId}_${langData.lang}`;
                 const existingItem = cart.find((item: any) => item.id === itemKey);
@@ -176,7 +179,6 @@ export default function ProductDetailsPage() {
                 }
             });
         } else {
-            // Old product without language variants
             const existingItem = cart.find((item: any) => item.productId === productId);
 
             if (!existingItem) {
@@ -194,13 +196,9 @@ export default function ProductDetailsPage() {
         }
 
         localStorage.setItem('cart', JSON.stringify(cart));
-
-        // Dispatch event to update cart count in header
         window.dispatchEvent(new Event('cartUpdated'));
-
         toast.success('تم إضافة المنتج إلى السلة');
 
-        // Redirect to cart after a short delay
         setTimeout(() => {
             router.push('/cart' as any);
         }, 1000);
@@ -216,10 +214,28 @@ export default function ProductDetailsPage() {
         return categories[category] || category;
     };
 
+    const handleShare = async () => {
+        const url = window.location.href;
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: product?.title,
+                    text: product?.description,
+                    url: url,
+                });
+            } catch (error) {
+                console.log('Share cancelled');
+            }
+        } else {
+            navigator.clipboard.writeText(url);
+            toast.success('تم نسخ الرابط إلى الحافظة');
+        }
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <Loader2 className="w-12 h-12 animate-spin text-primary" />
             </div>
         );
     }
@@ -227,198 +243,282 @@ export default function ProductDetailsPage() {
     if (notFound || !product) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center px-4">
-                <Package className="w-20 h-20 text-muted-foreground mb-4" />
-                <h1 className="text-2xl font-bold mb-2">المنتج غير موجود</h1>
-                <p className="text-muted-foreground mb-6">عذراً، لم نتمكن من العثور على هذا المنتج</p>
-                <Button onClick={() => router.push('/products' as any)}>
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                    العودة للمنتجات
-                </Button>
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="text-center"
+                >
+                    <div className="w-24 h-24 bg-secondary/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Package className="w-12 h-12 text-muted-foreground" />
+                    </div>
+                    <h1 className="text-3xl font-bold mb-3">المنتج غير موجود</h1>
+                    <p className="text-muted-foreground mb-8 max-w-md">عذراً، لم نتمكن من العثور على هذا المنتج. قد يكون قد تم حذفه أو نقله.</p>
+                    <Button onClick={() => router.push('/products' as any)} size="lg">
+                        <ArrowRight className="w-5 h-5 ml-2" />
+                        العودة للمنتجات
+                    </Button>
+                </motion.div>
             </div>
         );
     }
 
     return (
-        <div className="container py-10 px-4">
-            <button
-                onClick={() => router.back()}
-                className="inline-flex items-center text-sm text-muted-foreground hover:text-primary mb-6 transition-colors"
-            >
-                <ArrowRight className="ml-2 h-4 w-4" />
-                العودة للمنتجات
-            </button>
+        <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
+            {/* Breadcrumbs */}
+            <div className="container py-6 px-4">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <button onClick={() => router.push('/' as any)} className="hover:text-primary transition-colors flex items-center gap-1">
+                        <Home className="w-4 h-4" />
+                        الرئيسية
+                    </button>
+                    <ChevronRightIcon className="w-4 h-4 rotate-180" />
+                    <button onClick={() => router.push('/products' as any)} className="hover:text-primary transition-colors">
+                        المنتجات
+                    </button>
+                    <ChevronRightIcon className="w-4 h-4 rotate-180" />
+                    <span className="text-foreground font-medium truncate max-w-[200px]">{product.title}</span>
+                </div>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16">
-                {/* Product Media Gallery */}
-                <ProductMediaGallery
-                    media={product.media || []}
-                    coverImage={product.image}
-                />
-
-                {/* Product Info */}
-                <div className="flex flex-col space-y-6">
-                    <div>
-                        <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">{product.title}</h1>
-                        <div className="flex items-center gap-2">
-                            <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary text-primary-foreground hover:bg-primary/80">
-                                {getCategoryLabel(product.category)}
-                            </span>
-                            {product.subcategory && (
-                                <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80">
-                                    {product.subcategory}
-                                </span>
-                            )}
-                        </div>
+            <div className="container py-8 px-4">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+                    {/* Left: Media Gallery */}
+                    <div className="lg:col-span-7">
+                        <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.5 }}
+                        >
+                            <ProductMediaGallery
+                                media={product.media || []}
+                                coverImage={product.image}
+                            />
+                        </motion.div>
                     </div>
 
-                    <p className="text-muted-foreground text-lg leading-relaxed">
-                        {product.description}
-                    </p>
-
-                    {/* Language Selection or Price Display */}
-                    {(() => {
-                        const languages = getAvailableLanguages();
-                        const hasLanguages = languages.ar || languages.en;
-
-                        if (hasLanguages) {
-                            return (
-                                <div className="space-y-4 pt-6 border-t border-border/40">
-                                    <h3 className="font-semibold text-lg">اختر اللغة:</h3>
-                                    <div className="space-y-3">
-                                        {languages.ar && (
-                                            <label className="flex items-center justify-between p-4 rounded-lg border border-border/60 cursor-pointer hover:bg-accent/50 transition-colors">
-                                                <div className="flex items-center gap-3">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={selectedLanguages.ar}
-                                                        onChange={(e) => setSelectedLanguages(prev => ({ ...prev, ar: e.target.checked }))}
-                                                        className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary"
-                                                    />
-                                                    <div>
-                                                        <div className="font-medium flex items-center gap-2">
-                                                            <span className="text-sm font-bold">AR</span>
-                                                            <span>النسخة العربية</span>
-                                                        </div>
-                                                        <div className="text-sm text-muted-foreground">
-                                                            ملف PDF/PPT باللغة العربية
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="text-xl font-bold text-primary">
-                                                    {languages.ar.price.toFixed(3)} ر.ع
-                                                </div>
-                                            </label>
-                                        )}
-
-                                        {languages.en && (
-                                            <label className="flex items-center justify-between p-4 rounded-lg border border-border/60 cursor-pointer hover:bg-accent/50 transition-colors">
-                                                <div className="flex items-center gap-3">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={selectedLanguages.en}
-                                                        onChange={(e) => setSelectedLanguages(prev => ({ ...prev, en: e.target.checked }))}
-                                                        className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary"
-                                                    />
-                                                    <div>
-                                                        <div className="font-medium flex items-center gap-2">
-                                                            <span className="text-sm font-bold">EN</span>
-                                                            <span>English Version</span>
-                                                        </div>
-                                                        <div className="text-sm text-muted-foreground">
-                                                            PDF/PPT file in English
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="text-xl font-bold text-primary">
-                                                    {languages.en.price.toFixed(3)} OMR
-                                                </div>
-                                            </label>
-                                        )}
+                    {/* Right: Product Info - Sticky on desktop */}
+                    <div className="lg:col-span-5">
+                        <div className="lg:sticky lg:top-24 space-y-6">
+                            <motion.div
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.5 }}
+                                className="space-y-6"
+                            >
+                                {/* Header */}
+                                <div className="space-y-4">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <Badge variant="secondary" className="text-xs">
+                                                    {getCategoryLabel(product.category)}
+                                                </Badge>
+                                                {product.subcategory && (
+                                                    <Badge variant="outline" className="text-xs">
+                                                        {product.subcategory}
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                            <h1 className="text-3xl lg:text-4xl font-bold tracking-tight leading-tight">
+                                                {product.title}
+                                            </h1>
+                                        </div>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={handleShare}
+                                            className="rounded-full h-10 w-10"
+                                        >
+                                            <Share2 className="w-5 h-5" />
+                                        </Button>
                                     </div>
 
-                                    {/* Total Price */}
-                                    {calculateTotal() > 0 && (
-                                        <div className="flex items-center justify-between p-4 bg-primary/5 rounded-lg border-2 border-primary/20">
-                                            <span className="font-semibold text-lg">المجموع:</span>
-                                            <span className="text-2xl font-bold text-primary">
-                                                {calculateTotal().toFixed(3)} ر.ع
-                                            </span>
+                                    {/* Rating placeholder */}
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-1">
+                                            {[1, 2, 3, 4, 5].map((star) => (
+                                                <Star key={star} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                            ))}
                                         </div>
-                                    )}
+                                        <span className="text-sm text-muted-foreground">(24 تقييم)</span>
+                                    </div>
+
+                                    <p className="text-lg text-muted-foreground leading-relaxed">
+                                        {product.description}
+                                    </p>
                                 </div>
-                            );
-                        } else {
-                            // Fallback for old products without language variants
-                            return (
-                                <div className="text-3xl font-bold text-primary pt-6 border-t border-border/40">
-                                    {product.price.toFixed(3)} ر.ع
+
+                                <Separator />
+
+                                {/* Language Selection */}
+                                {(() => {
+                                    const languages = getAvailableLanguages();
+                                    const hasLanguages = languages.ar || languages.en;
+
+                                    if (hasLanguages) {
+                                        return (
+                                            <Card className="border-2">
+                                                <CardContent className="p-6 space-y-4">
+                                                    <h3 className="font-bold text-lg flex items-center gap-2">
+                                                        <FileText className="w-5 h-5 text-primary" />
+                                                        اختر اللغة المناسبة
+                                                    </h3>
+                                                    <div className="space-y-3">
+                                                        {languages.ar && (
+                                                            <label className={cn(
+                                                                "flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all duration-200",
+                                                                selectedLanguages.ar
+                                                                    ? "bg-primary/5 border-primary shadow-sm"
+                                                                    : "border-border hover:border-primary/50 hover:bg-accent/50"
+                                                            )}>
+                                                                <div className="flex items-center gap-4">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={selectedLanguages.ar}
+                                                                        onChange={(e) => setSelectedLanguages(prev => ({ ...prev, ar: e.target.checked }))}
+                                                                        className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary"
+                                                                    />
+                                                                    <div>
+                                                                        <div className="font-bold text-base flex items-center gap-2">
+                                                                            <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">AR</span>
+                                                                            <span>النسخة العربية</span>
+                                                                        </div>
+                                                                        <div className="text-xs text-muted-foreground mt-1">
+                                                                            ملف PDF/PPT باللغة العربية
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="text-xl font-bold text-primary">
+                                                                    {languages.ar.price.toFixed(3)} ر.ع
+                                                                </div>
+                                                            </label>
+                                                        )}
+
+                                                        {languages.en && (
+                                                            <label className={cn(
+                                                                "flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all duration-200",
+                                                                selectedLanguages.en
+                                                                    ? "bg-primary/5 border-primary shadow-sm"
+                                                                    : "border-border hover:border-primary/50 hover:bg-accent/50"
+                                                            )}>
+                                                                <div className="flex items-center gap-4">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={selectedLanguages.en}
+                                                                        onChange={(e) => setSelectedLanguages(prev => ({ ...prev, en: e.target.checked }))}
+                                                                        className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary"
+                                                                    />
+                                                                    <div>
+                                                                        <div className="font-bold text-base flex items-center gap-2">
+                                                                            <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">EN</span>
+                                                                            <span>English Version</span>
+                                                                        </div>
+                                                                        <div className="text-xs text-muted-foreground mt-1">
+                                                                            PDF/PPT file in English
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="text-xl font-bold text-primary">
+                                                                    {languages.en.price.toFixed(3)} OMR
+                                                                </div>
+                                                            </label>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Total Price */}
+                                                    {calculateTotal() > 0 && (
+                                                        <div className="flex items-center justify-between p-5 bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl border-2 border-primary/30">
+                                                            <span className="font-bold text-lg">المجموع:</span>
+                                                            <span className="text-3xl font-bold text-primary">
+                                                                {calculateTotal().toFixed(3)} ر.ع
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                </CardContent>
+                                            </Card>
+                                        );
+                                    } else {
+                                        return (
+                                            <div className="flex items-center justify-between p-6 bg-gradient-to-r from-primary/10 to-primary/5 rounded-2xl border-2 border-primary/30">
+                                                <span className="font-bold text-xl">السعر:</span>
+                                                <span className="text-4xl font-bold text-primary">
+                                                    {product.price.toFixed(3)} ر.ع
+                                                </span>
+                                            </div>
+                                        );
+                                    }
+                                })()}
+
+                                {/* Features */}
+                                <Card>
+                                    <CardContent className="p-6">
+                                        <h3 className="font-bold mb-4 flex items-center gap-2">
+                                            <Award className="w-5 h-5 text-primary" />
+                                            مميزات المنتج
+                                        </h3>
+                                        <ul className="space-y-3">
+                                            {[
+                                                { icon: Zap, text: "تحميل فوري بعد الدفع" },
+                                                { icon: FileText, text: "ملف عالي الجودة (PDF/PPT)" },
+                                                { icon: Users, text: "دعم فني متواصل" },
+                                                { icon: Shield, text: "دفع آمن 100%" }
+                                            ].map((feature, index) => (
+                                                <li key={index} className="flex items-center gap-3 text-sm">
+                                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                                        <feature.icon className="w-4 h-4 text-primary" />
+                                                    </div>
+                                                    <span className="text-muted-foreground">{feature.text}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Action Buttons */}
+                                <div className="space-y-3">
+                                    {(() => {
+                                        const languages = getAvailableLanguages();
+                                        const hasLanguages = languages.ar || languages.en;
+                                        const total = calculateTotal();
+                                        const isDisabled = !!(hasLanguages && total === 0);
+
+                                        return (
+                                            <>
+                                                <Button
+                                                    size="lg"
+                                                    className="w-full text-lg h-14 rounded-xl shadow-lg shadow-primary/20"
+                                                    onClick={handleBuyNow}
+                                                    disabled={isDisabled}
+                                                >
+                                                    {hasLanguages ? (
+                                                        total > 0
+                                                            ? `شراء الآن - ${total.toFixed(3)} ر.ع`
+                                                            : 'اختر لغة للمتابعة'
+                                                    ) : (
+                                                        `شراء الآن - ${product.price.toFixed(3)} ر.ع`
+                                                    )}
+                                                </Button>
+                                                <Button
+                                                    size="lg"
+                                                    variant="outline"
+                                                    className="w-full text-lg h-14 rounded-xl"
+                                                    onClick={handleAddToCart}
+                                                    disabled={isDisabled}
+                                                >
+                                                    <ShoppingCart className="w-5 h-5 ml-2" />
+                                                    إضافة للسلة
+                                                </Button>
+                                            </>
+                                        );
+                                    })()}
+
+                                    <p className="text-xs text-center text-muted-foreground flex items-center justify-center gap-2">
+                                        <Shield className="w-4 h-4" />
+                                        دفع آمن 100% عبر البطاقة البنكية أو أبل باي
+                                    </p>
                                 </div>
-                            );
-                        }
-                    })()}
-
-                    <div className="space-y-4 pt-6 border-t border-border/40">
-                        <h3 className="font-semibold">مميزات المنتج:</h3>
-                        <ul className="space-y-2">
-                            <li className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Check className="h-4 w-4 text-primary" />
-                                تحميل فوري بعد الدفع
-                            </li>
-                            <li className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Check className="h-4 w-4 text-primary" />
-                                ملف عالي الجودة (PDF/PPT)
-                            </li>
-                            <li className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Check className="h-4 w-4 text-primary" />
-                                دعم فني متواصل
-                            </li>
-                            <li className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Check className="h-4 w-4 text-primary" />
-                                إمكانية اختيار اللغة المناسبة
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div className="flex flex-col gap-3 pt-6">
-                        {(() => {
-                            const languages = getAvailableLanguages();
-                            const hasLanguages = languages.ar || languages.en;
-                            const total = calculateTotal();
-                            const isDisabled = !!(hasLanguages && total === 0);
-
-                            return (
-                                <>
-                                    <Button
-                                        size="lg"
-                                        className="w-full text-lg h-12"
-                                        onClick={handleBuyNow}
-                                        disabled={isDisabled}
-                                    >
-                                        {hasLanguages ? (
-                                            total > 0
-                                                ? `شراء الآن - ${total.toFixed(3)} ر.ع`
-                                                : 'اختر لغة للمتابعة'
-                                        ) : (
-                                            `شراء الآن - ${product.price.toFixed(3)} ر.ع`
-                                        )}
-                                    </Button>
-                                    <Button
-                                        size="lg"
-                                        variant="outline"
-                                        className="w-full text-lg h-12"
-                                        onClick={handleAddToCart}
-                                        disabled={isDisabled}
-                                    >
-                                        <ShoppingCart className="w-4 h-4 ml-2" />
-                                        إضافة للسلة
-                                    </Button>
-                                </>
-                            );
-                        })()}
-
-                        <p className="text-xs text-center text-muted-foreground">
-                            دفع آمن 100% عبر البطاقة البنكية أو أبل باي
-                        </p>
+                            </motion.div>
+                        </div>
                     </div>
                 </div>
             </div>

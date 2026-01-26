@@ -74,7 +74,7 @@ export function ProductMediaGallery({ media, coverImage }: ProductMediaGalleryPr
     return (
         <div className="space-y-4">
             {/* Main Viewer */}
-            <div className="relative aspect-video bg-muted rounded-xl overflow-hidden border border-border/50">
+            <div className="relative aspect-video bg-gradient-to-br from-secondary/30 to-secondary/10 rounded-2xl overflow-hidden shadow-lg">
                 {currentMedia.type === 'image' ? (
                     <R2Image
                         r2Key={currentMedia.url}
@@ -154,15 +154,15 @@ export function ProductMediaGallery({ media, coverImage }: ProductMediaGalleryPr
 
             {/* Thumbnail Strip (only if multiple media) */}
             {displayMedia.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto pb-2">
+                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
                     {displayMedia.map((item, index) => (
                         <button
                             key={item.id}
                             onClick={() => handleThumbnailClick(index)}
-                            className={`relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                            className={`relative flex-shrink-0 w-24 h-24 rounded-xl overflow-hidden transition-all shadow-md ${
                                 index === currentIndex
-                                    ? 'border-primary ring-2 ring-primary/20'
-                                    : 'border-border hover:border-primary/50'
+                                    ? 'ring-3 ring-primary scale-105 shadow-lg'
+                                    : 'hover:ring-2 hover:ring-primary/40 hover:scale-105 opacity-70 hover:opacity-100'
                             }`}
                         >
                             {item.type === 'image' ? (

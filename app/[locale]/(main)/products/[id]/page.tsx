@@ -263,9 +263,9 @@ export default function ProductDetailsPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
+        <div className="min-h-screen bg-gradient-to-b from-background via-background to-secondary/10">
             {/* Breadcrumbs */}
-            <div className="container py-6 px-4">
+            <div className="container py-8 px-4">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <button onClick={() => router.push('/' as any)} className="hover:text-primary transition-colors flex items-center gap-1">
                         <Home className="w-4 h-4" />
@@ -280,8 +280,8 @@ export default function ProductDetailsPage() {
                 </div>
             </div>
 
-            <div className="container py-8 px-4">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+            <div className="container py-6 px-4 md:px-6 lg:px-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 xl:gap-20">
                     {/* Left: Media Gallery */}
                     <div className="lg:col-span-7">
                         <motion.div
@@ -298,7 +298,7 @@ export default function ProductDetailsPage() {
 
                     {/* Right: Product Info - Sticky on desktop */}
                     <div className="lg:col-span-5">
-                        <div className="lg:sticky lg:top-24 space-y-6">
+                        <div className="lg:sticky lg:top-24 space-y-8">
                             <motion.div
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
@@ -357,91 +357,89 @@ export default function ProductDetailsPage() {
 
                                     if (hasLanguages) {
                                         return (
-                                            <Card className="border-2">
-                                                <CardContent className="p-6 space-y-4">
-                                                    <h3 className="font-bold text-lg flex items-center gap-2">
-                                                        <FileText className="w-5 h-5 text-primary" />
-                                                        اختر اللغة المناسبة
-                                                    </h3>
-                                                    <div className="space-y-3">
-                                                        {languages.ar && (
-                                                            <label className={cn(
-                                                                "flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all duration-200",
-                                                                selectedLanguages.ar
-                                                                    ? "bg-primary/5 border-primary shadow-sm"
-                                                                    : "border-border hover:border-primary/50 hover:bg-accent/50"
-                                                            )}>
-                                                                <div className="flex items-center gap-4">
-                                                                    <input
-                                                                        type="checkbox"
-                                                                        checked={selectedLanguages.ar}
-                                                                        onChange={(e) => setSelectedLanguages(prev => ({ ...prev, ar: e.target.checked }))}
-                                                                        className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary"
-                                                                    />
-                                                                    <div>
-                                                                        <div className="font-bold text-base flex items-center gap-2">
-                                                                            <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">AR</span>
-                                                                            <span>النسخة العربية</span>
-                                                                        </div>
-                                                                        <div className="text-xs text-muted-foreground mt-1">
-                                                                            ملف PDF/PPT باللغة العربية
-                                                                        </div>
+                                            <div className="space-y-4">
+                                                <h3 className="font-bold text-xl flex items-center gap-2">
+                                                    <FileText className="w-5 h-5 text-primary" />
+                                                    اختر اللغة المناسبة
+                                                </h3>
+                                                <div className="space-y-3">
+                                                    {languages.ar && (
+                                                        <label className={cn(
+                                                            "flex items-center justify-between p-5 rounded-2xl cursor-pointer transition-all duration-300 shadow-sm",
+                                                            selectedLanguages.ar
+                                                                ? "bg-gradient-to-br from-primary/10 via-primary/5 to-transparent shadow-md ring-2 ring-primary/30"
+                                                                : "bg-card hover:bg-accent/30 hover:shadow-md"
+                                                        )}>
+                                                            <div className="flex items-center gap-4">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={selectedLanguages.ar}
+                                                                    onChange={(e) => setSelectedLanguages(prev => ({ ...prev, ar: e.target.checked }))}
+                                                                    className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary"
+                                                                />
+                                                                <div>
+                                                                    <div className="font-bold text-base flex items-center gap-2">
+                                                                        <span className="text-xs bg-primary/20 text-primary px-2.5 py-0.5 rounded-full font-semibold">AR</span>
+                                                                        <span>النسخة العربية</span>
+                                                                    </div>
+                                                                    <div className="text-xs text-muted-foreground mt-1">
+                                                                        ملف PDF/PPT باللغة العربية
                                                                     </div>
                                                                 </div>
-                                                                <div className="text-xl font-bold text-primary">
-                                                                    {languages.ar.price.toFixed(3)} ر.ع
-                                                                </div>
-                                                            </label>
-                                                        )}
-
-                                                        {languages.en && (
-                                                            <label className={cn(
-                                                                "flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all duration-200",
-                                                                selectedLanguages.en
-                                                                    ? "bg-primary/5 border-primary shadow-sm"
-                                                                    : "border-border hover:border-primary/50 hover:bg-accent/50"
-                                                            )}>
-                                                                <div className="flex items-center gap-4">
-                                                                    <input
-                                                                        type="checkbox"
-                                                                        checked={selectedLanguages.en}
-                                                                        onChange={(e) => setSelectedLanguages(prev => ({ ...prev, en: e.target.checked }))}
-                                                                        className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary"
-                                                                    />
-                                                                    <div>
-                                                                        <div className="font-bold text-base flex items-center gap-2">
-                                                                            <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">EN</span>
-                                                                            <span>English Version</span>
-                                                                        </div>
-                                                                        <div className="text-xs text-muted-foreground mt-1">
-                                                                            PDF/PPT file in English
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div className="text-xl font-bold text-primary">
-                                                                    {languages.en.price.toFixed(3)} OMR
-                                                                </div>
-                                                            </label>
-                                                        )}
-                                                    </div>
-
-                                                    {/* Total Price */}
-                                                    {calculateTotal() > 0 && (
-                                                        <div className="flex items-center justify-between p-5 bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl border-2 border-primary/30">
-                                                            <span className="font-bold text-lg">المجموع:</span>
-                                                            <span className="text-3xl font-bold text-primary">
-                                                                {calculateTotal().toFixed(3)} ر.ع
-                                                            </span>
-                                                        </div>
+                                                            </div>
+                                                            <div className="text-2xl font-bold text-primary">
+                                                                {languages.ar.price.toFixed(3)} ر.ع
+                                                            </div>
+                                                        </label>
                                                     )}
-                                                </CardContent>
-                                            </Card>
+
+                                                    {languages.en && (
+                                                        <label className={cn(
+                                                            "flex items-center justify-between p-5 rounded-2xl cursor-pointer transition-all duration-300 shadow-sm",
+                                                            selectedLanguages.en
+                                                                ? "bg-gradient-to-br from-primary/10 via-primary/5 to-transparent shadow-md ring-2 ring-primary/30"
+                                                                : "bg-card hover:bg-accent/30 hover:shadow-md"
+                                                        )}>
+                                                            <div className="flex items-center gap-4">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={selectedLanguages.en}
+                                                                    onChange={(e) => setSelectedLanguages(prev => ({ ...prev, en: e.target.checked }))}
+                                                                    className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary"
+                                                                />
+                                                                <div>
+                                                                    <div className="font-bold text-base flex items-center gap-2">
+                                                                        <span className="text-xs bg-primary/20 text-primary px-2.5 py-0.5 rounded-full font-semibold">EN</span>
+                                                                        <span>English Version</span>
+                                                                    </div>
+                                                                    <div className="text-xs text-muted-foreground mt-1">
+                                                                        PDF/PPT file in English
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div className="text-2xl font-bold text-primary">
+                                                                {languages.en.price.toFixed(3)} OMR
+                                                            </div>
+                                                        </label>
+                                                    )}
+                                                </div>
+
+                                                {/* Total Price */}
+                                                {calculateTotal() > 0 && (
+                                                    <div className="flex items-center justify-between p-6 bg-gradient-to-br from-primary/15 via-primary/10 to-primary/5 rounded-2xl shadow-md">
+                                                        <span className="font-bold text-xl">المجموع:</span>
+                                                        <span className="text-4xl font-bold text-primary">
+                                                            {calculateTotal().toFixed(3)} ر.ع
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
                                         );
                                     } else {
                                         return (
-                                            <div className="flex items-center justify-between p-6 bg-gradient-to-r from-primary/10 to-primary/5 rounded-2xl border-2 border-primary/30">
-                                                <span className="font-bold text-xl">السعر:</span>
-                                                <span className="text-4xl font-bold text-primary">
+                                            <div className="flex items-center justify-between p-8 bg-gradient-to-br from-primary/15 via-primary/10 to-primary/5 rounded-2xl shadow-md">
+                                                <span className="font-bold text-2xl">السعر:</span>
+                                                <span className="text-5xl font-bold text-primary">
                                                     {product.price.toFixed(3)} ر.ع
                                                 </span>
                                             </div>
@@ -450,32 +448,30 @@ export default function ProductDetailsPage() {
                                 })()}
 
                                 {/* Features */}
-                                <Card>
-                                    <CardContent className="p-6">
-                                        <h3 className="font-bold mb-4 flex items-center gap-2">
-                                            <Award className="w-5 h-5 text-primary" />
-                                            مميزات المنتج
-                                        </h3>
-                                        <ul className="space-y-3">
-                                            {[
-                                                { icon: Zap, text: "تحميل فوري بعد الدفع" },
-                                                { icon: FileText, text: "ملف عالي الجودة (PDF/PPT)" },
-                                                { icon: Users, text: "دعم فني متواصل" },
-                                                { icon: Shield, text: "دفع آمن 100%" }
-                                            ].map((feature, index) => (
-                                                <li key={index} className="flex items-center gap-3 text-sm">
-                                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                                        <feature.icon className="w-4 h-4 text-primary" />
-                                                    </div>
-                                                    <span className="text-muted-foreground">{feature.text}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </CardContent>
-                                </Card>
+                                <div className="bg-gradient-to-br from-secondary/40 via-secondary/20 to-transparent rounded-2xl p-6 shadow-sm">
+                                    <h3 className="font-bold text-xl mb-5 flex items-center gap-2">
+                                        <Award className="w-5 h-5 text-primary" />
+                                        مميزات المنتج
+                                    </h3>
+                                    <ul className="space-y-4">
+                                        {[
+                                            { icon: Zap, text: "تحميل فوري بعد الدفع" },
+                                            { icon: FileText, text: "ملف عالي الجودة (PDF/PPT)" },
+                                            { icon: Users, text: "دعم فني متواصل" },
+                                            { icon: Shield, text: "دفع آمن 100%" }
+                                        ].map((feature, index) => (
+                                            <li key={index} className="flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0 shadow-sm">
+                                                    <feature.icon className="w-5 h-5 text-primary" />
+                                                </div>
+                                                <span className="text-foreground font-medium">{feature.text}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
 
                                 {/* Action Buttons */}
-                                <div className="space-y-3">
+                                <div className="space-y-4 pt-2">
                                     {(() => {
                                         const languages = getAvailableLanguages();
                                         const hasLanguages = languages.ar || languages.en;
@@ -486,7 +482,7 @@ export default function ProductDetailsPage() {
                                             <>
                                                 <Button
                                                     size="lg"
-                                                    className="w-full text-lg h-14 rounded-xl shadow-lg shadow-primary/20"
+                                                    className="w-full text-lg h-16 rounded-2xl shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all duration-300 font-bold"
                                                     onClick={handleBuyNow}
                                                     disabled={isDisabled}
                                                 >
@@ -501,7 +497,7 @@ export default function ProductDetailsPage() {
                                                 <Button
                                                     size="lg"
                                                     variant="outline"
-                                                    className="w-full text-lg h-14 rounded-xl"
+                                                    className="w-full text-lg h-16 rounded-2xl hover:bg-accent/50 transition-all duration-300 font-semibold shadow-sm hover:shadow-md"
                                                     onClick={handleAddToCart}
                                                     disabled={isDisabled}
                                                 >
@@ -512,10 +508,12 @@ export default function ProductDetailsPage() {
                                         );
                                     })()}
 
-                                    <p className="text-xs text-center text-muted-foreground flex items-center justify-center gap-2">
-                                        <Shield className="w-4 h-4" />
-                                        دفع آمن 100% عبر البطاقة البنكية أو أبل باي
-                                    </p>
+                                    <div className="text-center py-3 px-4 bg-secondary/30 rounded-xl">
+                                        <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
+                                            <Shield className="w-4 h-4 text-green-500" />
+                                            <span>دفع آمن 100% عبر البطاقة البنكية أو أبل باي</span>
+                                        </p>
+                                    </div>
                                 </div>
                             </motion.div>
                         </div>

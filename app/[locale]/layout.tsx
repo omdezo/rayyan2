@@ -19,6 +19,11 @@ const cairo = Cairo({
 export const metadata: Metadata = {
   title: "ريان للتصميم",
   description: "أفضل المنتجات الرقمية والعروض التقديمية",
+  icons: {
+    icon: '/icon.png',
+    shortcut: '/icon.png',
+    apple: '/icon.png',
+  },
 };
 
 export default async function RootLayout({

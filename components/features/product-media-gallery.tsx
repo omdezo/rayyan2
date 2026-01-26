@@ -74,12 +74,12 @@ export function ProductMediaGallery({ media, coverImage }: ProductMediaGalleryPr
     return (
         <div className="space-y-4">
             {/* Main Viewer */}
-            <div className="relative aspect-video md:aspect-square bg-muted rounded-xl overflow-hidden border border-border/50">
+            <div className="relative aspect-video bg-muted rounded-xl overflow-hidden border border-border/50">
                 {currentMedia.type === 'image' ? (
                     <R2Image
                         r2Key={currentMedia.url}
                         alt={currentMedia.caption || 'Product image'}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                         fallback={
                             <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                                 <span className="text-2xl">🖼️</span>

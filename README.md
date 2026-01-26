@@ -71,11 +71,9 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ## Admin Access
 
-Default admin credentials (change after first login):
-- Email: `admin@rayiandesign.com`
-- Password: `Admin@123.rayyan`
-
 Access dashboard: `/ar/dashboard`
+
+Admin credentials are configured separately and not stored in the repository.
 
 ## Project Structure
 

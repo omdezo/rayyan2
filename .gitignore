@@ -38,6 +38,9 @@ yarn-error.log*
 VERCEL_ENV_VARIABLES.txt
 thawani_gateaway.md
 
+# scripts with sensitive data
+scripts/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

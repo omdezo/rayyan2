@@ -47,12 +47,27 @@ export default function ProductDetailsPage() {
         ar: false,
         en: false,
     });
+    const [showFloatingCTA, setShowFloatingCTA] = useState(false);
+    const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
 
     const productId = params.id as string;
 
     useEffect(() => {
         fetchProduct();
     }, [productId]);
+
+    // Handle scroll for floating CTA
+    useEffect(() => {
+        const handleScroll = () => {
+            // Show floating CTA when user scrolls past 500px on mobile
+            if (window.innerWidth < 1024) {
+                setShowFloatingCTA(window.scrollY > 500);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     // Auto-select first available language when product loads
     useEffect(() => {
@@ -136,14 +151,23 @@ export default function ProductDetailsPage() {
             const selected = getSelectedLanguagesData();
 
             if (selected.length === 0) {
-                toast.error('الرجاء اختيار لغة واحدة على الأقل');
+                toast.error('الرجاء اختيار لغة واحدة على الأقل', {
+                    description: 'اختر النسخة العربية أو الإنجليزية للمتابعة',
+                    duration: 3000,
+                });
                 return;
             }
 
+            toast.loading('جاري التحويل لصفحة الدفع...', { duration: 1000 });
             const languagesParam = selected.map(l => l.lang).join(',');
-            router.push(`/checkout?productId=${productId}&languages=${languagesParam}` as any);
+            setTimeout(() => {
+                router.push(`/checkout?productId=${productId}&languages=${languagesParam}` as any);
+            }, 500);
         } else {
-            router.push(`/checkout?productId=${productId}` as any);
+            toast.loading('جاري التحويل لصفحة الدفع...', { duration: 1000 });
+            setTimeout(() => {
+                router.push(`/checkout?productId=${productId}` as any);
+            }, 500);
         }
     };
 
@@ -157,10 +181,14 @@ export default function ProductDetailsPage() {
             const selected = getSelectedLanguagesData();
 
             if (selected.length === 0) {
-                toast.error('الرجاء اختيار لغة واحدة على الأقل');
+                toast.error('الرجاء اختيار لغة واحدة على الأقل', {
+                    description: 'اختر النسخة العربية أو الإنجليزية للمتابعة',
+                    duration: 3000,
+                });
                 return;
             }
 
+            let addedItems = 0;
             selected.forEach((langData) => {
                 const itemKey = `${productId}_${langData.lang}`;
                 const existingItem = cart.find((item: any) => item.id === itemKey);
@@ -176,32 +204,46 @@ export default function ProductDetailsPage() {
                         fileUrl: langData.fileUrl,
                         quantity: 1,
                     });
+                    addedItems++;
                 }
             });
+
+            if (addedItems === 0) {
+                toast.info('المنتج موجود بالفعل في السلة', {
+                    description: 'يمكنك إتمام عملية الشراء من السلة',
+                });
+                return;
+            }
         } else {
             const existingItem = cart.find((item: any) => item.productId === productId);
 
-            if (!existingItem) {
-                cart.push({
-                    id: productId,
-                    productId: productId,
-                    title: product?.title,
-                    price: product?.price,
-                    image: product?.image,
-                    quantity: 1,
+            if (existingItem) {
+                toast.info('المنتج موجود بالفعل في السلة', {
+                    description: 'يمكنك إتمام عملية الشراء من السلة',
                 });
-            } else {
-                toast.info('المنتج موجود بالفعل في السلة');
+                return;
             }
+
+            cart.push({
+                id: productId,
+                productId: productId,
+                title: product?.title,
+                price: product?.price,
+                image: product?.image,
+                quantity: 1,
+            });
         }
 
         localStorage.setItem('cart', JSON.stringify(cart));
         window.dispatchEvent(new Event('cartUpdated'));
-        toast.success('تم إضافة المنتج إلى السلة');
+        toast.success('تم إضافة المنتج إلى السلة', {
+            description: 'جاري التوجيه إلى السلة...',
+            duration: 2000,
+        });
 
         setTimeout(() => {
             router.push('/cart' as any);
-        }, 1000);
+        }, 1500);
     };
 
     const getCategoryLabel = (category: string) => {
@@ -364,12 +406,15 @@ export default function ProductDetailsPage() {
                                                 </h3>
                                                 <div className="space-y-3">
                                                     {languages.ar && (
-                                                        <label className={cn(
-                                                            "flex items-center justify-between p-5 rounded-2xl cursor-pointer transition-all duration-300 shadow-sm",
-                                                            selectedLanguages.ar
-                                                                ? "bg-gradient-to-br from-primary/10 via-primary/5 to-transparent shadow-md ring-2 ring-primary/30"
-                                                                : "bg-card hover:bg-accent/30 hover:shadow-md"
-                                                        )}>
+                                                        <motion.label
+                                                            whileTap={{ scale: 0.98 }}
+                                                            className={cn(
+                                                                "flex items-center justify-between p-5 rounded-2xl cursor-pointer transition-all duration-300 shadow-sm",
+                                                                selectedLanguages.ar
+                                                                    ? "bg-gradient-to-br from-primary/10 via-primary/5 to-transparent shadow-md ring-2 ring-primary/30"
+                                                                    : "bg-card hover:bg-accent/30 hover:shadow-md"
+                                                            )}
+                                                        >
                                                             <div className="flex items-center gap-4">
                                                                 <input
                                                                     type="checkbox"
@@ -390,16 +435,19 @@ export default function ProductDetailsPage() {
                                                             <div className="text-2xl font-bold text-primary">
                                                                 {languages.ar.price.toFixed(3)} ر.ع
                                                             </div>
-                                                        </label>
+                                                        </motion.label>
                                                     )}
 
                                                     {languages.en && (
-                                                        <label className={cn(
-                                                            "flex items-center justify-between p-5 rounded-2xl cursor-pointer transition-all duration-300 shadow-sm",
-                                                            selectedLanguages.en
-                                                                ? "bg-gradient-to-br from-primary/10 via-primary/5 to-transparent shadow-md ring-2 ring-primary/30"
-                                                                : "bg-card hover:bg-accent/30 hover:shadow-md"
-                                                        )}>
+                                                        <motion.label
+                                                            whileTap={{ scale: 0.98 }}
+                                                            className={cn(
+                                                                "flex items-center justify-between p-5 rounded-2xl cursor-pointer transition-all duration-300 shadow-sm",
+                                                                selectedLanguages.en
+                                                                    ? "bg-gradient-to-br from-primary/10 via-primary/5 to-transparent shadow-md ring-2 ring-primary/30"
+                                                                    : "bg-card hover:bg-accent/30 hover:shadow-md"
+                                                            )}
+                                                        >
                                                             <div className="flex items-center gap-4">
                                                                 <input
                                                                     type="checkbox"
@@ -420,7 +468,7 @@ export default function ProductDetailsPage() {
                                                             <div className="text-2xl font-bold text-primary">
                                                                 {languages.en.price.toFixed(3)} OMR
                                                             </div>
-                                                        </label>
+                                                        </motion.label>
                                                     )}
                                                 </div>
 
@@ -519,7 +567,156 @@ export default function ProductDetailsPage() {
                         </div>
                     </div>
                 </div>
+
+                {/* Additional Information Section */}
+                <div className="container px-4 md:px-6 lg:px-8 py-12">
+                    <div className="max-w-4xl mx-auto space-y-12">
+                        {/* What You'll Get */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            className="bg-gradient-to-br from-blue-50/50 to-indigo-50/30 dark:from-blue-950/20 dark:to-indigo-950/10 rounded-2xl p-8 shadow-sm"
+                        >
+                            <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center">
+                                    <Package className="w-5 h-5 text-primary" />
+                                </div>
+                                ماذا ستحصل عليه؟
+                            </h2>
+                            <div className="grid md:grid-cols-2 gap-4">
+                                {[
+                                    { icon: FileText, title: "ملف احترافي", desc: "عرض تقديمي بتصميم احترافي عالي الجودة" },
+                                    { icon: Download, title: "تحميل فوري", desc: "احصل على الملف مباشرة بعد إتمام الدفع" },
+                                    { icon: Clock, title: "وصول دائم", desc: "استخدم الملف في أي وقت بدون قيود" },
+                                    { icon: Users, title: "دعم مستمر", desc: "فريق الدعم جاهز للمساعدة في أي وقت" }
+                                ].map((item, index) => (
+                                    <div key={index} className="flex items-start gap-4 p-4 bg-white/60 dark:bg-gray-900/40 rounded-xl">
+                                        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                            <item.icon className="w-6 h-6 text-primary" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold mb-1">{item.title}</h3>
+                                            <p className="text-sm text-muted-foreground">{item.desc}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </motion.div>
+
+                        {/* FAQ Section */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                        >
+                            <h2 className="text-2xl font-bold mb-6">الأسئلة الشائعة</h2>
+                            <div className="space-y-3">
+                                {[
+                                    {
+                                        q: "كيف أحصل على الملف بعد الشراء؟",
+                                        a: "بعد إتمام عملية الدفع بنجاح، سيتم إرسال رابط التحميل إلى بريدك الإلكتروني مباشرة. كما يمكنك تحميل الملف من صفحة حسابك."
+                                    },
+                                    {
+                                        q: "هل يمكنني استرجاع أو استبدال المنتج؟",
+                                        a: "نعم، وفقاً لقانون حماية المستهلك، يمكنك طلب الاسترجاع أو الاستبدال خلال 15 يوماً من تاريخ الشراء في حال وجود عيب في المنتج أو عدم مطابقته للمواصفات."
+                                    },
+                                    {
+                                        q: "ما هي طرق الدفع المتاحة؟",
+                                        a: "نوفر الدفع الآمن عبر البطاقات البنكية (Visa, Mastercard) وأبل باي من خلال بوابة Thawani الآمنة."
+                                    },
+                                    {
+                                        q: "هل يمكنني استخدام الملف لأغراض تجارية؟",
+                                        a: "يرجى التواصل مع فريق الدعم لمعرفة شروط الاستخدام التجاري. في العادة، الملفات مخصصة للاستخدام الشخصي أو التعليمي."
+                                    }
+                                ].map((faq, index) => (
+                                    <div key={index} className="bg-card rounded-xl overflow-hidden shadow-sm">
+                                        <button
+                                            onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
+                                            className="w-full px-6 py-4 flex items-center justify-between text-right hover:bg-accent/50 transition-colors"
+                                        >
+                                            <span className="font-semibold">{faq.q}</span>
+                                            <ChevronRightIcon className={cn(
+                                                "w-5 h-5 transition-transform flex-shrink-0",
+                                                expandedFaq === index ? "rotate-90" : ""
+                                            )} />
+                                        </button>
+                                        {expandedFaq === index && (
+                                            <motion.div
+                                                initial={{ height: 0, opacity: 0 }}
+                                                animate={{ height: "auto", opacity: 1 }}
+                                                exit={{ height: 0, opacity: 0 }}
+                                                className="px-6 pb-4 text-muted-foreground"
+                                            >
+                                                {faq.a}
+                                            </motion.div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </motion.div>
+
+                        {/* Trust Badges */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            className="grid grid-cols-2 md:grid-cols-4 gap-4"
+                        >
+                            {[
+                                { icon: Shield, text: "دفع آمن 100%" },
+                                { icon: Download, text: "تحميل فوري" },
+                                { icon: Users, text: "دعم فني" },
+                                { icon: Award, text: "جودة عالية" }
+                            ].map((badge, index) => (
+                                <div key={index} className="flex flex-col items-center gap-3 p-6 bg-card rounded-xl shadow-sm">
+                                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                                        <badge.icon className="w-6 h-6 text-primary" />
+                                    </div>
+                                    <span className="text-sm font-semibold text-center">{badge.text}</span>
+                                </div>
+                            ))}
+                        </motion.div>
+                    </div>
+                </div>
             </div>
+
+            {/* Floating CTA Button (Mobile Only) */}
+            {showFloatingCTA && (
+                <motion.div
+                    initial={{ y: 100, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: 100, opacity: 0 }}
+                    className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-lg border-t shadow-2xl z-50"
+                >
+                    <div className="container flex items-center gap-3">
+                        <div className="flex-1">
+                            <div className="text-sm text-muted-foreground">المجموع</div>
+                            <div className="text-2xl font-bold text-primary">
+                                {(() => {
+                                    const languages = getAvailableLanguages();
+                                    const hasLanguages = languages.ar || languages.en;
+                                    const total = calculateTotal();
+
+                                    if (hasLanguages && total > 0) {
+                                        return `${total.toFixed(3)} ر.ع`;
+                                    } else if (!hasLanguages && product) {
+                                        return `${product.price.toFixed(3)} ر.ع`;
+                                    }
+                                    return "---";
+                                })()}
+                            </div>
+                        </div>
+                        <Button
+                            size="lg"
+                            onClick={handleBuyNow}
+                            className="h-14 px-8 text-lg font-bold shadow-lg rounded-xl"
+                        >
+                            شراء الآن
+                        </Button>
+                    </div>
+                </motion.div>
+            )}
         </div>
     );
 }

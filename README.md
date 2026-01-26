@@ -51,8 +51,8 @@ R2_SECRET_ACCESS_KEY=your_secret_key
 R2_BUCKET_NAME=your_bucket_name
 R2_PUBLIC_URL=https://your-r2-public-url
 
-# Thawani Payment Gateway (see thawani_gateaway.md)
-NEXT_PUBLIC_THAWANI_ENV=uat
+# Thawani Payment Gateway
+NEXT_PUBLIC_THAWANI_ENV=uat # or 'production'
 THAWANI_SECRET_KEY=your_secret_key
 NEXT_PUBLIC_THAWANI_PUBLISHABLE_KEY=your_publishable_key
 THAWANI_WEBHOOK_SECRET=your_webhook_secret
@@ -105,9 +105,9 @@ lib/
 
 ## Payment Integration
 
-See `thawani_gateaway.md` for detailed Thawani payment gateway integration guide.
+Using Thawani Payment Gateway for secure payments in Oman.
 
-**Important**: The publishable key in payment URLs is safe to expose client-side. The secret key is only used server-side.
+**Important**: The publishable key in payment URLs is safe to expose client-side. The secret key is only used server-side and must remain confidential.
 
 ## Deployment
 

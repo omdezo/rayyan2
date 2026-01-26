@@ -36,6 +36,7 @@ yarn-error.log*
 # vercel
 .vercel
 VERCEL_ENV_VARIABLES.txt
+thawani_gateaway.md
 
 # typescript
 *.tsbuildinfo

@@ -6,6 +6,15 @@ import Order from '@/lib/models/Order';
 // POST /api/thawani/webhook - Handle Thawani webhook events
 export async function POST(req: NextRequest) {
     try {
+        // Validate webhook secret is configured
+        if (!process.env.THAWANI_WEBHOOK_SECRET) {
+            console.error('THAWANI_WEBHOOK_SECRET is not configured');
+            return NextResponse.json(
+                { success: false, error: 'Webhook not configured' },
+                { status: 500 }
+            );
+        }
+
         // Get webhook headers
         const timestamp = req.headers.get('thawani-timestamp');
         const signature = req.headers.get('thawani-signature');
@@ -22,7 +31,7 @@ export async function POST(req: NextRequest) {
         const rawBody = await req.text();
 
         // Verify webhook signature
-        const webhookSecret = process.env.THAWANI_WEBHOOK_SECRET!;
+        const webhookSecret = process.env.THAWANI_WEBHOOK_SECRET;
         const isValid = verifyWebhookSignature(rawBody, timestamp, signature, webhookSecret);
 
         if (!isValid) {
@@ -34,8 +43,27 @@ export async function POST(req: NextRequest) {
         }
 
         // Parse webhook payload
-        const payload: WebhookPayload = JSON.parse(rawBody);
-        console.log('Thawani webhook event:', payload.event_type);
+        let payload: WebhookPayload;
+        try {
+            payload = JSON.parse(rawBody);
+        } catch (parseError) {
+            console.error('Failed to parse webhook payload:', parseError);
+            return NextResponse.json(
+                { success: false, error: 'Invalid JSON payload' },
+                { status: 400 }
+            );
+        }
+
+        // Validate payload structure
+        if (!payload.event_type || !payload.data) {
+            console.error('Invalid webhook payload structure:', payload);
+            return NextResponse.json(
+                { success: false, error: 'Invalid payload structure' },
+                { status: 400 }
+            );
+        }
+
+        console.log('Thawani webhook event:', payload.event_type, 'Data:', payload.data);
 
         // Handle different event types
         await withDB(async () => {
@@ -91,13 +119,26 @@ async function handlePaymentSuccess(payload: WebhookPayload) {
             orderId = payload.data.client_reference_id;
         } else if (payload.event_type === 'payment.succeeded') {
             // For payment.succeeded, we need to find the order by invoice
+            if (!payload.data.checkout_invoice) {
+                console.error('Missing checkout_invoice in payment.succeeded webhook');
+                return;
+            }
             const order = await Order.findOne({ thawaniInvoice: payload.data.checkout_invoice });
             orderId = order?._id.toString();
         }
 
         if (!orderId) {
-            console.error('Could not find order ID in webhook payload');
+            console.error('Could not find order ID in webhook payload:', {
+                event_type: payload.event_type,
+                client_reference_id: payload.data.client_reference_id,
+                checkout_invoice: payload.data.checkout_invoice
+            });
             return;
+        }
+
+        // Validate payment_id exists
+        if (!payload.data.payment_id) {
+            console.error('Missing payment_id in webhook payload');
         }
 
         // Update order status to completed
@@ -106,14 +147,14 @@ async function handlePaymentSuccess(payload: WebhookPayload) {
             {
                 status: 'completed',
                 paymentStatus: 'paid',
-                paymentId: payload.data.payment_id,
+                paymentId: payload.data.payment_id || 'unknown',
                 paidAt: new Date(),
             },
             { new: true }
         );
 
         if (updatedOrder) {
-            console.log('Order marked as completed:', orderId);
+            console.log('Order marked as completed:', orderId, 'Payment ID:', payload.data.payment_id);
         } else {
             console.error('Order not found:', orderId);
         }
@@ -127,11 +168,20 @@ async function handlePaymentSuccess(payload: WebhookPayload) {
  */
 async function handlePaymentFailure(payload: WebhookPayload) {
     try {
+        // Validate required fields
+        if (!payload.data.checkout_invoice) {
+            console.error('Missing checkout_invoice in payment.failed webhook');
+            return;
+        }
+
         // Find order by invoice
         const order = await Order.findOne({ thawaniInvoice: payload.data.checkout_invoice });
 
         if (!order) {
-            console.error('Order not found for failed payment');
+            console.error('Order not found for failed payment:', {
+                checkout_invoice: payload.data.checkout_invoice,
+                payment_id: payload.data.payment_id
+            });
             return;
         }
 
@@ -139,11 +189,11 @@ async function handlePaymentFailure(payload: WebhookPayload) {
         await Order.findByIdAndUpdate(order._id, {
             status: 'failed',
             paymentStatus: 'failed',
-            paymentId: payload.data.payment_id,
+            paymentId: payload.data.payment_id || 'unknown',
             failureReason: payload.data.reason || 'Payment failed',
         });
 
-        console.log('Order marked as failed:', order._id);
+        console.log('Order marked as failed:', order._id, 'Reason:', payload.data.reason || 'Unknown');
     } catch (error) {
         console.error('Error handling payment failure:', error);
     }

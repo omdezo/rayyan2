@@ -83,6 +83,11 @@ export async function createCheckoutSession(
         const data = await response.json();
 
         if (!data.success) {
+            console.error('Thawani API error:', {
+                code: data.code,
+                description: data.description,
+                data: data.data,
+            });
             throw new Error(data.description || 'Failed to create checkout session');
         }
 

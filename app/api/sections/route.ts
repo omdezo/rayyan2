@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
 // POST /api/sections - Create a new section (admin only)
 export async function POST(request: NextRequest) {
     return withDB(async () => {
-        const authError = await requireAdmin();
+        const { error: authError } = await requireAdmin(request);
         if (authError) return authError;
 
         try {
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
                 order: sectionOrder,
             });
 
-            return successResponse(section, 201);
+            return successResponse(section, undefined, 201);
         } catch (error) {
             console.error('Error creating section:', error);
             return errorResponse('Failed to create section', 500);

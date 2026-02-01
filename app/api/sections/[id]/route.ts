@@ -5,11 +5,12 @@ import Section from '@/lib/models/Section';
 // GET /api/sections/[id] - Get a single section by ID
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     return withDB(async () => {
         try {
-            const section = await Section.findById(params.id);
+            const { id } = await context.params;
+            const section = await Section.findById(id);
 
             if (!section) {
                 return errorResponse('Section not found', 404);
@@ -26,18 +27,19 @@ export async function GET(
 // PUT /api/sections/[id] - Update a section (admin only)
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     return withDB(async () => {
-        const authError = await requireAdmin();
+        const { error: authError } = await requireAdmin(request);
         if (authError) return authError;
 
         try {
+            const { id } = await context.params;
             const body = await request.json();
             const { key, nameAr, nameEn, descriptionAr, descriptionEn, icon, isActive, order } = body;
 
             // Check if section exists
-            const section = await Section.findById(params.id);
+            const section = await Section.findById(id);
             if (!section) {
                 return errorResponse('Section not found', 404);
             }
@@ -73,14 +75,15 @@ export async function PUT(
 // DELETE /api/sections/[id] - Delete a section (admin only)
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     return withDB(async () => {
-        const authError = await requireAdmin();
+        const { error: authError } = await requireAdmin(request);
         if (authError) return authError;
 
         try {
-            const section = await Section.findById(params.id);
+            const { id } = await context.params;
+            const section = await Section.findById(id);
 
             if (!section) {
                 return errorResponse('Section not found', 404);
@@ -99,7 +102,7 @@ export async function DELETE(
             }
             */
 
-            await Section.findByIdAndDelete(params.id);
+            await Section.findByIdAndDelete(id);
 
             return successResponse({ message: 'Section deleted successfully' });
         } catch (error) {

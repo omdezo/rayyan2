@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Suspense, useState, useEffect } from "react";
 import { Filter, X, Search, Globe, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 interface Product {
     _id: string;
@@ -31,6 +31,7 @@ interface Pagination {
 
 function ProductsContent() {
     const t = useTranslations('Products');
+    const locale = useLocale();
     const searchParams = useSearchParams();
     const router = useRouter();
     const pathname = usePathname();
@@ -38,6 +39,7 @@ function ProductsContent() {
     const currentSubcategory = searchParams.get("subcategory");
     const [searchQuery, setSearchQuery] = useState("");
     const [products, setProducts] = useState<Product[]>([]);
+    const [categories, setCategories] = useState<Array<{id: string, title: string, icon?: string}>>([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [pagination, setPagination] = useState<Pagination>({
@@ -47,33 +49,33 @@ function ProductsContent() {
         pages: 0,
     });
 
+    // Fetch categories from database
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await fetch('/api/sections?activeOnly=true');
+                const data = await response.json();
+
+                if (data.success) {
+                    const formattedCategories = data.data.map((section: any) => ({
+                        id: section.key,
+                        title: locale === 'ar' ? section.nameAr : section.nameEn,
+                        icon: section.icon || '📦'
+                    }));
+                    setCategories(formattedCategories);
+                }
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+            }
+        };
+
+        fetchCategories();
+    }, [locale]);
+
     // Reset page when search query changes
     useEffect(() => {
         setCurrentPage(1);
     }, [searchQuery]);
-
-    const categories = [
-        {
-            id: "ai-games",
-            title: t('categories.ai-games'),
-            icon: "🤖"
-        },
-        {
-            id: "guidance",
-            title: t('categories.guidance'),
-            icon: "📚"
-        },
-        {
-            id: "general",
-            title: t('categories.general'),
-            icon: "🎨"
-        },
-        {
-            id: "stories",
-            title: t('categories.stories'),
-            icon: "📖"
-        },
-    ];
 
     const countries = [
         { id: "omani", title: t('countries.omani'), flag: "🇴🇲" },

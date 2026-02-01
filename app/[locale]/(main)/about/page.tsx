@@ -115,6 +115,77 @@ export default function AboutPage() {
                 </div>
             </section >
 
+            {/* Refund & Exchange Policy */}
+            < section className="py-20 relative" >
+                <div className="container px-4">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="max-w-5xl mx-auto"
+                    >
+                        <div className="text-center mb-12">
+                            <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">سياسة الاسترجاع والاستبدال</h2>
+                            <p className="text-muted-foreground text-lg">Return & Exchange Policy</p>
+                        </div>
+
+                        <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-[2rem] p-8 md:p-12">
+                            <div className="grid md:grid-cols-2 gap-8">
+                                {/* Arabic Section */}
+                                <div className="space-y-4 text-right">
+                                    <h3 className="font-bold text-xl mb-4 flex items-center justify-end gap-2">
+                                        <span>سياسة الاسترجاع والاستبدال</span>
+                                        <CheckCircle2 className="w-6 h-6 text-primary" />
+                                    </h3>
+                                    <p className="text-muted-foreground leading-relaxed">
+                                        يمنح قانون حماية المستهلك الحق في استبدال أو استرجاع المنتج وذلك حسب السعر المدفوع أو وجود عيوب بالمنتج خلال 15 يوماً.
+                                    </p>
+                                    <ul className="list-disc mr-6 space-y-2 text-muted-foreground">
+                                        <li>يمكنك استبدال أو استرجاع السلعة خلال 15 يوماً من شرائها.</li>
+                                        <li>لا تنطبق هذه السياسة على المنتجات التي يجب فتحها لاستخدامها أو إذا كان غرض الشراء خاص.</li>
+                                        <li>يمكن استبدال أو استرجاع السلعة فقط إذا كانت في مواصفاتها الأصلية غير مفتوحة أو بها عيب أو إذا كانت ليست كما جاء في مواصفات المنتج أو الخدمة.</li>
+                                        <li>يجب تقديم الفاتورة أو ما يثبت الشراء عند طلب الاسترجاع.</li>
+                                    </ul>
+                                </div>
+
+                                {/* English Section */}
+                                <div className="space-y-4 text-left" dir="ltr">
+                                    <h3 className="font-bold text-xl mb-4 flex items-center gap-2">
+                                        <CheckCircle2 className="w-6 h-6 text-primary" />
+                                        <span>Return & Exchange Policy</span>
+                                    </h3>
+                                    <p className="text-muted-foreground leading-relaxed">
+                                        Consumer Protection Law grants you the right to exchange or return and redeem the price of an item within 15 days of receipt.
+                                    </p>
+                                    <ul className="list-disc ml-6 space-y-2 text-muted-foreground">
+                                        <li>You may exchange or return and redeem the price of an item within 15 days of receipt.</li>
+                                        <li>This policy does not apply to the products that should be opened for use or if the purpose is for personal use only.</li>
+                                        <li>An item may be exchanged or returned only if it's in its original standard specifications or not as described or if it has any defect for its purpose of use.</li>
+                                        <li>A valid receipt must be provided.</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            {/* Consumer Protection Authority Contact */}
+                            <div className="mt-8 pt-6 border-t border-border/40 text-center">
+                                <p className="font-semibold mb-2 text-foreground">هيئة حماية المستهلك | Consumer Protection Authority</p>
+                                <div className="flex items-center justify-center gap-4 flex-wrap text-sm text-muted-foreground">
+                                    <span className="flex items-center gap-1">
+                                        <span>☎️</span>
+                                        <span>80079009 / 80077997</span>
+                                    </span>
+                                    <span>•</span>
+                                    <span className="flex items-center gap-1">
+                                        <span>🌐</span>
+                                        <span>www.pacp.gov.om</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                </div>
+            </section >
+
             {/* CTA */}
             < section className="py-32 text-center relative overflow-hidden" >
                 <div className="absolute inset-0 w-full h-full">

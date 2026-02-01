@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 import { R2Image } from "@/components/ui/r2-image";
+import { useTranslations } from "next-intl";
 
 interface LanguageVariant {
     lang: 'ar' | 'en';
@@ -50,6 +51,7 @@ interface OrderItem {
 }
 
 function CheckoutContent() {
+    const t = useTranslations('Checkout');
     const router = useRouter();
     const searchParams = useSearchParams();
     const { data: session, status } = useSession();
@@ -417,20 +419,20 @@ function CheckoutContent() {
                                         </label>
 
                                         {/* Important Notice */}
-                                        <div className="bg-amber-50 dark:bg-amber-950/30 border-2 border-amber-500/50 rounded-xl p-5 space-y-3">
+                                        <div className="bg-gray-900 border-2 border-amber-500 rounded-xl p-5 space-y-3">
                                             <div className="flex items-start gap-3">
                                                 <div className="flex-shrink-0 w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
                                                     ⚠
                                                 </div>
                                                 <div className="flex-1">
-                                                    <h4 className="font-bold text-amber-900 dark:text-amber-200 mb-2 text-base">
+                                                    <h4 className="font-bold text-amber-400 mb-2 text-base">
                                                         تنويه مهم:
                                                     </h4>
-                                                    <div className="text-sm text-amber-800 dark:text-amber-300 leading-relaxed space-y-2">
+                                                    <div className="text-sm text-gray-200 leading-relaxed space-y-2">
                                                         <p>
                                                             هذا الملف مُقدَّم بصيغة عرض PowerPoint، ويُرجى استخدامه عبر جهاز الكمبيوتر أو اللابتوب لضمان أفضل تجربة عرض، حيث إن الهواتف المحمولة لا تدعم تشغيل هذه الصيغة بشكل صحيح.
                                                         </p>
-                                                        <p className="font-semibold">
+                                                        <p className="font-semibold text-amber-300">
                                                             وللاستخدام عبر الهاتف المحمول، يُرجى طلب خدمة نسخة Canva، وستتاح هذه الخدمة بعد إتمام عملية الدفع.
                                                         </p>
                                                     </div>

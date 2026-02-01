@@ -18,7 +18,7 @@ The Section Management system allows administrators to dynamically control websi
 To migrate existing hardcoded categories to the database:
 
 ```bash
-npx tsx scripts/seed-sections.ts
+npx tsx lib/seed-sections.ts
 ```
 
 This will create the following default sections:
@@ -100,7 +100,7 @@ The home page automatically fetches and displays active sections from the databa
 - `app/api/sections/route.ts` - API endpoints for listing/creating sections
 - `app/api/sections/[id]/route.ts` - API endpoints for individual sections
 - `app/[locale]/dashboard/sections/page.tsx` - Admin UI for section management
-- `scripts/seed-sections.ts` - Database seeding script
+- `lib/seed-sections.ts` - Database seeding script
 
 ### Modified Files
 - `lib/types/models.ts` - Added ISection interface

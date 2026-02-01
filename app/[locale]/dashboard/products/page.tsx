@@ -56,6 +56,7 @@ interface ProductFormData {
 
 export default function ProductsPage() {
     const [products, setProducts] = useState<Product[]>([]);
+    const [categories, setCategories] = useState<Array<{value: string, label: string}>>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -68,7 +69,7 @@ export default function ProductsPage() {
     const [formData, setFormData] = useState<ProductFormData>({
         title: "",
         description: "",
-        category: "ai-games",
+        category: "",
         subcategory: "",
         image: "",
         status: "active",
@@ -91,13 +92,6 @@ export default function ProductsPage() {
         }
     });
 
-    const categories = [
-        { value: "ai-games", label: "ألعاب الذكاء الاصطناعي" },
-        { value: "guidance", label: "الإرشاد المهني" },
-        { value: "general", label: "عام" },
-        { value: "stories", label: "قصص" },
-    ];
-
     const countries = [
         { value: "", label: "اختر الدولة (اختياري)" },
         { value: "omani", label: "عماني" },
@@ -110,7 +104,31 @@ export default function ProductsPage() {
 
     useEffect(() => {
         fetchProducts();
+        fetchCategories();
     }, []);
+
+    const fetchCategories = async () => {
+        try {
+            const response = await fetch('/api/sections?activeOnly=true');
+            const data = await response.json();
+
+            if (data.success) {
+                const formattedCategories = data.data.map((section: any) => ({
+                    value: section.key,
+                    label: section.nameAr
+                }));
+                setCategories(formattedCategories);
+
+                // Set default category if available
+                if (formattedCategories.length > 0 && !formData.category) {
+                    setFormData(prev => ({ ...prev, category: formattedCategories[0].value }));
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching categories:', error);
+            toast.error('حدث خطأ أثناء تحميل التصنيفات');
+        }
+    };
 
     const fetchProducts = async () => {
         try {

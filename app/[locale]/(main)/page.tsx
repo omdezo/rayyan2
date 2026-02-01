@@ -28,6 +28,10 @@ export default async function Home() {
     // Format products for ProductCard component
     const featuredProducts = latestProducts.map((product: any) => ({
         id: product._id.toString(),
+        titleAr: product.titleAr || product.title || '',
+        titleEn: product.titleEn || '',
+        descriptionAr: product.descriptionAr || product.description || '',
+        descriptionEn: product.descriptionEn || '',
         title: product.title,
         description: product.description,
         price: product.price,

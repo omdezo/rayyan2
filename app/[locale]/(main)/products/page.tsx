@@ -13,8 +13,12 @@ import { useTranslations, useLocale } from "next-intl";
 
 interface Product {
     _id: string;
-    title: string;
-    description: string;
+    titleAr: string;
+    titleEn: string;
+    descriptionAr: string;
+    descriptionEn: string;
+    title?: string;
+    description?: string;
     price: number;
     category: string;
     subcategory?: string;

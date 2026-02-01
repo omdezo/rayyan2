@@ -18,7 +18,7 @@ const UserSchema = new Schema<IUser>({
     },
     password: {
         type: String,
-        required: [true, 'Password is required'],
+        required: false, // Optional for OAuth users (Google, etc.)
         minlength: [6, 'Password must be at least 6 characters'],
     },
     role: {
@@ -43,14 +43,14 @@ const UserSchema = new Schema<IUser>({
     },
 });
 
-// Hash password before saving
+// Hash password before saving (only if password is provided)
 UserSchema.pre('save', async function () {
-    if (!this.isModified('password')) {
-        return; // Just return implies success
+    if (!this.isModified('password') || !this.password) {
+        return; // Skip hashing if password not modified or empty (OAuth users)
     }
     // Make sure you import bcrypt if you haven't
     const bcrypt = require('bcryptjs'); // or import bcrypt from 'bcryptjs' at the top
-    
+
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
 });

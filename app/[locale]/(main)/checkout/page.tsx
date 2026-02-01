@@ -239,8 +239,17 @@ function CheckoutContent() {
             const data = await response.json();
 
             if (data.success) {
+                // Show success message
+                toast.success('تم إنشاء جلسة الدفع بنجاح');
+
                 // Redirect to Thawani payment page
                 window.location.href = data.data.paymentUrl;
+
+                // Fallback: Reset processing state if redirect doesn't happen within 3 seconds
+                setTimeout(() => {
+                    setIsProcessing(false);
+                    toast.error('فشل التحويل التلقائي. الرجاء المحاولة مرة أخرى');
+                }, 3000);
             } else {
                 toast.error(data.error || 'فشل في إنشاء جلسة الدفع');
                 setIsProcessing(false);
@@ -416,7 +425,7 @@ function CheckoutContent() {
                                         {isProcessing ? (
                                             <>
                                                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                                جاري التحويل إلى صفحة الدفع...
+                                                جاري المعالجة...
                                             </>
                                         ) : (
                                             `المتابعة للدفع - ${totalAmount.toFixed(3)} ر.ع`

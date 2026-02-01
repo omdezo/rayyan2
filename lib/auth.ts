@@ -82,47 +82,46 @@ export const authConfig: NextAuthConfig = {
     ],
     callbacks: {
         async signIn({ user, account, profile }) {
-            // Handle Google OAuth sign in
-            if (account?.provider === 'google') {
+            // Allow Google OAuth sign in (user creation handled in JWT callback)
+            console.log('🔐 Sign-in attempt:', {
+                provider: account?.provider,
+                email: user?.email
+            });
+            return true;
+        },
+        async jwt({ token, user, account }) {
+            // Handle Google OAuth in JWT callback
+            if (account?.provider === 'google' && user?.email) {
                 try {
                     await connectDB();
 
                     // Check if user exists
-                    let existingUser = await User.findOne({ email: user.email?.toLowerCase() });
+                    let existingUser = await User.findOne({ email: user.email.toLowerCase() });
 
                     if (!existingUser) {
-                        // Create new user for Google sign-in
+                        // Create new user
                         existingUser = await User.create({
                             name: user.name || 'Google User',
-                            email: user.email?.toLowerCase(),
-                            password: '', // No password for OAuth users
+                            email: user.email.toLowerCase(),
+                            password: '', // Empty for OAuth
                             role: 'user',
                             status: 'active',
                         });
-                        console.log('✅ Created new Google user:', existingUser.email);
-                    } else {
-                        console.log('✅ Existing user logged in with Google:', existingUser.email);
+                        console.log('✅ Created Google user in JWT:', existingUser.email);
                     }
 
-                    // Store user ID for later use in JWT callback
-                    user.id = existingUser._id.toString();
-                    (user as any).role = existingUser.role;
-
-                    return true;
+                    token.id = existingUser._id.toString();
+                    token.role = existingUser.role;
                 } catch (error) {
-                    console.error('❌ Google sign-in error:', error);
-                    return false;
+                    console.error('❌ JWT Google error:', error);
                 }
-            }
-
-            return true;
-        },
-        async jwt({ token, user, account }) {
-            if (user) {
+            } else if (user) {
+                // Regular credentials login
                 token.id = user.id;
                 token.role = (user as any).role || 'user';
-                console.log('🔑 JWT callback - Setting token:', { id: token.id, role: token.role });
             }
+
+            console.log('🔑 JWT callback - Token set:', { id: token.id, role: token.role });
             return token;
         },
         async session({ session, token }) {

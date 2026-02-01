@@ -78,3 +78,17 @@ export interface ISettings {
         facebook?: string;
     };
 }
+
+export interface ISection {
+    _id: string;
+    key: string;
+    nameAr: string;
+    nameEn: string;
+    descriptionAr?: string;
+    descriptionEn?: string;
+    icon?: string;
+    isActive: boolean;
+    order: number;
+    createdAt: Date;
+    updatedAt: Date;
+}

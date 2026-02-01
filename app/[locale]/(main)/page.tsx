@@ -4,17 +4,10 @@ import { ProductCard } from "@/components/features/product-card";
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { connectDB } from "@/lib/mongodb";
 import Product from "@/lib/models/Product";
-
-// Category mapping for display
-const categoryLabels: Record<string, string> = {
-    'ai-games': 'ألعاب الذكاء الاصطناعي',
-    'guidance': 'الإرشاد والتوجيه',
-    'general': 'عام',
-    'stories': 'قصص وحكايات',
-};
+import Section from "@/lib/models/Section";
 
 export default async function Home() {
     // Fetch latest 3 products from database
@@ -24,9 +17,13 @@ export default async function Home() {
         .limit(3)
         .lean();
 
-    // Get unique categories from products
-    const allProducts = await Product.find({ status: 'active' }).select('category').lean();
-    const uniqueCategories = [...new Set(allProducts.map(p => p.category))];
+    // Fetch active sections from database
+    const activeSections = await Section.find({ isActive: true })
+        .sort({ order: 1 })
+        .lean();
+
+    // Get current locale
+    const locale = await getLocale();
 
     // Format products for ProductCard component
     const featuredProducts = latestProducts.map((product: any) => ({
@@ -40,10 +37,11 @@ export default async function Home() {
         status: product.status,
     }));
 
-    // Format categories for display
-    const categories = uniqueCategories.map((cat) => ({
-        id: cat,
-        title: categoryLabels[cat] || cat,
+    // Format sections for display
+    const categories = activeSections.map((section: any) => ({
+        id: section.key,
+        title: locale === 'ar' ? section.nameAr : section.nameEn,
+        icon: section.icon,
     }));
 
     const t = await getTranslations('Home');
@@ -104,9 +102,14 @@ export default async function Home() {
                                 >
                                     <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                                    <h3 className="text-xl font-bold relative z-10 group-hover:text-primary transition-colors">
-                                        {category.title}
-                                    </h3>
+                                    <div className="relative z-10">
+                                        {category.icon && (
+                                            <div className="text-4xl mb-4">{category.icon}</div>
+                                        )}
+                                        <h3 className="text-xl font-bold group-hover:text-primary transition-colors">
+                                            {category.title}
+                                        </h3>
+                                    </div>
 
                                     <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center self-end group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300 relative z-10">
                                         <ArrowLeft className="w-5 h-5 -rotate-45 group-hover:rotate-0 transition-transform duration-300" />

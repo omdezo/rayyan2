@@ -12,7 +12,8 @@ import {
     LogOut,
     Menu,
     X,
-    Loader2
+    Loader2,
+    FolderTree
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,11 @@ const sidebarItems = [
         title: "المنتجات",
         href: "/ar/dashboard/products",
         icon: Package,
+    },
+    {
+        title: "الأقسام",
+        href: "/ar/dashboard/sections",
+        icon: FolderTree,
     },
     {
         title: "المستخدمين",

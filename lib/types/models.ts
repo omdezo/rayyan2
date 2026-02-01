@@ -15,8 +15,13 @@ export interface IProductMedia {
 
 export interface IProduct {
     _id: string;
-    title: string;
-    description: string;
+    titleAr: string;
+    titleEn: string;
+    descriptionAr: string;
+    descriptionEn: string;
+    // For backward compatibility
+    title?: string;
+    description?: string;
     price: number; // For backward compatibility
     category: string;
     subcategory?: string;

@@ -21,8 +21,13 @@ interface LanguageVariant {
 
 interface Product {
     _id: string;
-    title: string;
-    description: string;
+    titleAr: string;
+    titleEn: string;
+    descriptionAr: string;
+    descriptionEn: string;
+    // For backward compatibility
+    title?: string;
+    description?: string;
     price: number;
     category: string;
     subcategory?: string;
@@ -41,8 +46,10 @@ interface LanguageFormData {
 }
 
 interface ProductFormData {
-    title: string;
-    description: string;
+    titleAr: string;
+    titleEn: string;
+    descriptionAr: string;
+    descriptionEn: string;
     category: string;
     subcategory: string;
     image: string;
@@ -67,8 +74,10 @@ export default function ProductsPage() {
     const [imageUploading, setImageUploading] = useState(false);
 
     const [formData, setFormData] = useState<ProductFormData>({
-        title: "",
-        description: "",
+        titleAr: "",
+        titleEn: "",
+        descriptionAr: "",
+        descriptionEn: "",
         category: "",
         subcategory: "",
         image: "",
@@ -320,8 +329,10 @@ export default function ProductsPage() {
             setEditingProduct(product);
             const languages = product.languages || [];
             setFormData({
-                title: product.title,
-                description: product.description,
+                titleAr: product.titleAr || product.title || "",
+                titleEn: product.titleEn || "",
+                descriptionAr: product.descriptionAr || product.description || "",
+                descriptionEn: product.descriptionEn || "",
                 category: product.category,
                 subcategory: product.subcategory || "",
                 image: product.image,
@@ -350,9 +361,11 @@ export default function ProductsPage() {
             // Creating new product - default Arabic enabled
             setEditingProduct(null);
             setFormData({
-                title: "",
-                description: "",
-                category: "ai-games",
+                titleAr: "",
+                titleEn: "",
+                descriptionAr: "",
+                descriptionEn: "",
+                category: categories.length > 0 ? categories[0].value : "",
                 subcategory: "",
                 image: "",
                 status: "active",
@@ -370,8 +383,23 @@ export default function ProductsPage() {
         e.preventDefault();
 
         // Validation
-        if (!formData.title.trim()) {
-            toast.error('الرجاء إدخال عنوان المنتج');
+        if (!formData.titleAr.trim()) {
+            toast.error('الرجاء إدخال عنوان المنتج بالعربية');
+            return;
+        }
+
+        if (!formData.titleEn.trim()) {
+            toast.error('الرجاء إدخال عنوان المنتج بالإنجليزية');
+            return;
+        }
+
+        if (!formData.descriptionAr.trim()) {
+            toast.error('الرجاء إدخال وصف المنتج بالعربية');
+            return;
+        }
+
+        if (!formData.descriptionEn.trim()) {
+            toast.error('الرجاء إدخال وصف المنتج بالإنجليزية');
             return;
         }
 
@@ -423,8 +451,13 @@ export default function ProductsPage() {
             setSubmitting(true);
 
             const productData = {
-                title: formData.title,
-                description: formData.description,
+                titleAr: formData.titleAr,
+                titleEn: formData.titleEn,
+                descriptionAr: formData.descriptionAr,
+                descriptionEn: formData.descriptionEn,
+                // For backward compatibility
+                title: formData.titleAr,
+                description: formData.descriptionAr,
                 category: formData.category,
                 subcategory: formData.subcategory || undefined,
                 image: formData.image,
@@ -489,8 +522,10 @@ export default function ProductsPage() {
     };
 
     const filteredProducts = products.filter(product =>
-        product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchQuery.toLowerCase())
+        product.titleAr.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.titleEn.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.descriptionAr.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.descriptionEn.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     return (
@@ -655,19 +690,69 @@ export default function ProductsPage() {
                                 <h3>المعلومات الأساسية</h3>
                             </div>
 
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* Arabic Fields */}
+                            <div className="space-y-4 p-4 border border-primary/20 rounded-lg bg-primary/5">
+                                <h4 className="font-semibold text-lg">🇸🇦 النسخة العربية</h4>
+
                                 <div className="space-y-2">
-                                    <Label htmlFor="title" className="text-base">عنوان المنتج *</Label>
+                                    <Label htmlFor="titleAr" className="text-base">عنوان المنتج (عربي) *</Label>
                                     <Input
-                                        id="title"
-                                        value={formData.title}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                                        id="titleAr"
+                                        value={formData.titleAr}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, titleAr: e.target.value }))}
                                         placeholder="مثال: لعبة الذكاء الاصطناعي"
                                         className="h-11"
                                         required
                                     />
                                 </div>
 
+                                <div className="space-y-2">
+                                    <Label htmlFor="descriptionAr" className="text-base">الوصف (عربي) *</Label>
+                                    <Textarea
+                                        id="descriptionAr"
+                                        value={formData.descriptionAr}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, descriptionAr: e.target.value }))}
+                                        placeholder="وصف تفصيلي للمنتج بالعربية..."
+                                        rows={4}
+                                        className="resize-none"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            {/* English Fields */}
+                            <div className="space-y-4 p-4 border border-blue-500/20 rounded-lg bg-blue-500/5">
+                                <h4 className="font-semibold text-lg">🇺🇸 English Version</h4>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="titleEn" className="text-base">Product Title (English) *</Label>
+                                    <Input
+                                        id="titleEn"
+                                        value={formData.titleEn}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, titleEn: e.target.value }))}
+                                        placeholder="Example: AI Intelligence Game"
+                                        className="h-11"
+                                        dir="ltr"
+                                        required
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="descriptionEn" className="text-base">Description (English) *</Label>
+                                    <Textarea
+                                        id="descriptionEn"
+                                        value={formData.descriptionEn}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, descriptionEn: e.target.value }))}
+                                        placeholder="Detailed product description in English..."
+                                        rows={4}
+                                        className="resize-none"
+                                        dir="ltr"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <Label htmlFor="category" className="text-base">التصنيف *</Label>
                                     <select
@@ -682,19 +767,6 @@ export default function ProductsPage() {
                                         ))}
                                     </select>
                                 </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="description" className="text-base">الوصف *</Label>
-                                <Textarea
-                                    id="description"
-                                    value={formData.description}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                                    placeholder="وصف تفصيلي للمنتج..."
-                                    rows={4}
-                                    className="resize-none"
-                                    required
-                                />
                             </div>
 
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

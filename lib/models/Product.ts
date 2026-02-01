@@ -48,14 +48,31 @@ const ProductMediaSchema = new Schema({
 }, { _id: false });
 
 const ProductSchema = new Schema<IProduct>({
+    titleAr: {
+        type: String,
+        required: [true, 'Product Arabic title is required'],
+        trim: true,
+    },
+    titleEn: {
+        type: String,
+        required: [true, 'Product English title is required'],
+        trim: true,
+    },
+    descriptionAr: {
+        type: String,
+        required: [true, 'Product Arabic description is required'],
+    },
+    descriptionEn: {
+        type: String,
+        required: [true, 'Product English description is required'],
+    },
+    // Keep for backward compatibility
     title: {
         type: String,
-        required: [true, 'Product title is required'],
         trim: true,
     },
     description: {
         type: String,
-        required: [true, 'Product description is required'],
     },
     price: {
         type: Number,
@@ -105,7 +122,14 @@ const ProductSchema = new Schema<IProduct>({
 
 // Index for faster queries
 ProductSchema.index({ category: 1, status: 1 });
-ProductSchema.index({ title: 'text', description: 'text' });
+ProductSchema.index({
+    titleAr: 'text',
+    titleEn: 'text',
+    descriptionAr: 'text',
+    descriptionEn: 'text',
+    title: 'text',
+    description: 'text'
+});
 
 const Product: Model<IProduct> = mongoose.models.Product || mongoose.model<IProduct>('Product', ProductSchema);
 

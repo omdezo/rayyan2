@@ -50,21 +50,17 @@ const ProductMediaSchema = new Schema({
 const ProductSchema = new Schema<IProduct>({
     titleAr: {
         type: String,
-        required: [true, 'Product Arabic title is required'],
         trim: true,
     },
     titleEn: {
         type: String,
-        required: [true, 'Product English title is required'],
         trim: true,
     },
     descriptionAr: {
         type: String,
-        required: [true, 'Product Arabic description is required'],
     },
     descriptionEn: {
         type: String,
-        required: [true, 'Product English description is required'],
     },
     // Keep for backward compatibility
     title: {
@@ -101,12 +97,6 @@ const ProductSchema = new Schema<IProduct>({
     languages: {
         type: [LanguageVariantSchema],
         default: [],
-        validate: {
-            validator: function(languages: any[]) {
-                return languages && languages.length > 0;
-            },
-            message: 'At least one language variant is required',
-        },
     },
     status: {
         type: String,

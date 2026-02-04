@@ -586,7 +586,7 @@ export default function ProductsPage() {
                                                     <div className="w-16 h-16 rounded-lg overflow-hidden bg-secondary/30">
                                                         <R2Image
                                                             r2Key={product.image}
-                                                            alt={product.title}
+                                                            alt={product.titleAr || product.title || 'Product'}
                                                             className="w-full h-full object-cover"
                                                             fallback={
                                                                 <div className="w-full h-full flex items-center justify-center text-muted-foreground">
@@ -598,8 +598,8 @@ export default function ProductsPage() {
                                                 </td>
                                                 <td className="p-4">
                                                     <div>
-                                                        <p className="font-medium">{product.title}</p>
-                                                        <p className="text-xs text-muted-foreground line-clamp-1">{product.description}</p>
+                                                        <p className="font-medium">{product.titleAr || product.title}</p>
+                                                        <p className="text-xs text-muted-foreground line-clamp-1">{product.descriptionAr || product.description}</p>
                                                     </div>
                                                 </td>
                                                 <td className="p-4">

@@ -547,10 +547,10 @@ export default function ProductsPage() {
                 <Button
                     onClick={() => router.push('/ar/dashboard/products/new')}
                     size="lg"
-                    className="gap-2 h-12 px-6 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/25 transition-all duration-200 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5"
+                    className="gap-2"
                 >
                     <Plus className="w-5 h-5" />
-                    <span className="font-semibold">إضافة منتج جديد</span>
+                    إضافة منتج جديد
                 </Button>
             </div>
 

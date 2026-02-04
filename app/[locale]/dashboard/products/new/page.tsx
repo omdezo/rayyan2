@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Loader2, Upload, X, FileText, Check, Image as ImageIcon, Video, Globe, DollarSign } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { ArrowRight, Loader2, Upload, X, Check, Save, Languages, FileText, Image as ImageIcon, Tag, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { R2Image } from "@/components/ui/r2-image";
 import { MediaGalleryManager } from "@/components/dashboard/media-gallery-manager";
@@ -43,6 +43,7 @@ export default function NewProductPage() {
     const [categories, setCategories] = useState<Array<{value: string, label: string}>>([]);
     const [submitting, setSubmitting] = useState(false);
     const [imageUploading, setImageUploading] = useState(false);
+    const [currentStep, setCurrentStep] = useState(1);
 
     const [formData, setFormData] = useState<FormData>({
         titleAr: "",
@@ -55,20 +56,8 @@ export default function NewProductPage() {
         status: "active",
         media: [],
         languages: {
-            ar: {
-                enabled: false,
-                price: "",
-                fileUrl: "",
-                fileName: "",
-                uploading: false
-            },
-            en: {
-                enabled: false,
-                price: "",
-                fileUrl: "",
-                fileName: "",
-                uploading: false
-            }
+            ar: { enabled: false, price: "", fileUrl: "", fileName: "", uploading: false },
+            en: { enabled: false, price: "", fileUrl: "", fileName: "", uploading: false }
         }
     });
 
@@ -80,29 +69,21 @@ export default function NewProductPage() {
         try {
             const response = await fetch('/api/sections?activeOnly=true');
             const data = await response.json();
-
             if (data.success) {
-                const formattedCategories = data.data.map((section: any) => ({
-                    value: section.key,
-                    label: section.nameAr
-                }));
-                setCategories(formattedCategories);
-
-                if (formattedCategories.length > 0 && !formData.category) {
-                    setFormData(prev => ({ ...prev, category: formattedCategories[0].value }));
+                const formatted = data.data.map((s: any) => ({ value: s.key, label: s.nameAr }));
+                setCategories(formatted);
+                if (formatted.length > 0 && !formData.category) {
+                    setFormData(prev => ({ ...prev, category: formatted[0].value }));
                 }
             }
         } catch (error) {
-            console.error('Error fetching categories:', error);
             toast.error('حدث خطأ أثناء تحميل التصنيفات');
         }
     };
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (!file) return;
-
-        if (!file.type.startsWith('image/')) {
+        if (!file || !file.type.startsWith('image/')) {
             toast.error('الرجاء اختيار صورة');
             return;
         }
@@ -111,23 +92,19 @@ export default function NewProductPage() {
             setImageUploading(true);
             const formData = new FormData();
             formData.append('file', file);
-
             const response = await fetch('/api/upload-file/presigned', {
                 method: 'POST',
                 body: formData,
             });
-
             const data = await response.json();
-
             if (data.success) {
                 setFormData(prev => ({ ...prev, image: data.data.key }));
-                toast.success('تم رفع الصورة بنجاح');
+                toast.success('تم رفع الصورة');
             } else {
-                toast.error(data.message || 'فشل رفع الصورة');
+                toast.error('فشل رفع الصورة');
             }
         } catch (error) {
-            console.error('Error uploading image:', error);
-            toast.error('حدث خطأ أثناء رفع الصورة');
+            toast.error('حدث خطأ');
         } finally {
             setImageUploading(false);
         }
@@ -140,20 +117,15 @@ export default function NewProductPage() {
         try {
             setFormData(prev => ({
                 ...prev,
-                languages: {
-                    ...prev.languages,
-                    [lang]: { ...prev.languages[lang], uploading: true }
-                }
+                languages: { ...prev.languages, [lang]: { ...prev.languages[lang], uploading: true } }
             }));
 
             const uploadFormData = new FormData();
             uploadFormData.append('file', file);
-
             const response = await fetch('/api/upload-file/presigned', {
                 method: 'POST',
                 body: uploadFormData,
             });
-
             const data = await response.json();
 
             if (data.success) {
@@ -161,34 +133,22 @@ export default function NewProductPage() {
                     ...prev,
                     languages: {
                         ...prev.languages,
-                        [lang]: {
-                            ...prev.languages[lang],
-                            fileUrl: data.data.key,
-                            fileName: file.name,
-                            uploading: false
-                        }
+                        [lang]: { ...prev.languages[lang], fileUrl: data.data.key, fileName: file.name, uploading: false }
                     }
                 }));
-                toast.success('تم رفع الملف بنجاح');
+                toast.success('تم رفع الملف');
             } else {
-                toast.error(data.message || 'فشل رفع الملف');
+                toast.error('فشل رفع الملف');
                 setFormData(prev => ({
                     ...prev,
-                    languages: {
-                        ...prev.languages,
-                        [lang]: { ...prev.languages[lang], uploading: false }
-                    }
+                    languages: { ...prev.languages, [lang]: { ...prev.languages[lang], uploading: false } }
                 }));
             }
         } catch (error) {
-            console.error('Error uploading file:', error);
-            toast.error('حدث خطأ أثناء رفع الملف');
+            toast.error('حدث خطأ');
             setFormData(prev => ({
                 ...prev,
-                languages: {
-                    ...prev.languages,
-                    [lang]: { ...prev.languages[lang], uploading: false }
-                }
+                languages: { ...prev.languages, [lang]: { ...prev.languages[lang], uploading: false } }
             }));
         }
     };
@@ -196,66 +156,34 @@ export default function NewProductPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Validation
-        if (!formData.titleAr.trim()) {
-            toast.error('الرجاء إدخال عنوان المنتج بالعربية');
+        if (!formData.titleAr.trim() || !formData.titleEn.trim()) {
+            toast.error('الرجاء إدخال العنوان بكلا اللغتين');
             return;
         }
-
-        if (!formData.titleEn.trim()) {
-            toast.error('الرجاء إدخال عنوان المنتج بالإنجليزية');
+        if (!formData.descriptionAr.trim() || !formData.descriptionEn.trim()) {
+            toast.error('الرجاء إدخال الوصف بكلا اللغتين');
             return;
         }
-
-        if (!formData.descriptionAr.trim()) {
-            toast.error('الرجاء إدخال وصف المنتج بالعربية');
-            return;
-        }
-
-        if (!formData.descriptionEn.trim()) {
-            toast.error('الرجاء إدخال وصف المنتج بالإنجليزية');
-            return;
-        }
-
         if (!formData.image) {
             toast.error('الرجاء رفع صورة المنتج');
             return;
         }
 
-        // Build languages array
         const languages = [];
         if (formData.languages.ar.enabled) {
-            if (!formData.languages.ar.price || parseFloat(formData.languages.ar.price) <= 0) {
-                toast.error('الرجاء إدخال سعر النسخة العربية');
+            if (!formData.languages.ar.price || !formData.languages.ar.fileUrl) {
+                toast.error('الرجاء إكمال بيانات النسخة العربية');
                 return;
             }
-            if (!formData.languages.ar.fileUrl) {
-                toast.error('الرجاء رفع ملف النسخة العربية');
-                return;
-            }
-            languages.push({
-                lang: 'ar',
-                price: parseFloat(formData.languages.ar.price),
-                fileUrl: formData.languages.ar.fileUrl
-            });
+            languages.push({ lang: 'ar', price: parseFloat(formData.languages.ar.price), fileUrl: formData.languages.ar.fileUrl });
         }
-
         if (formData.languages.en.enabled) {
-            if (!formData.languages.en.price || parseFloat(formData.languages.en.price) <= 0) {
-                toast.error('الرجاء إدخال سعر النسخة الإنجليزية');
+            if (!formData.languages.en.price || !formData.languages.en.fileUrl) {
+                toast.error('الرجاء إكمال بيانات النسخة الإنجليزية');
                 return;
             }
-            if (!formData.languages.en.fileUrl) {
-                toast.error('الرجاء رفع ملف النسخة الإنجليزية');
-                return;
-            }
-            languages.push({
-                lang: 'en',
-                price: parseFloat(formData.languages.en.price),
-                fileUrl: formData.languages.en.fileUrl
-            });
+            languages.push({ lang: 'en', price: parseFloat(formData.languages.en.price), fileUrl: formData.languages.en.fileUrl });
         }
-
         if (languages.length === 0) {
             toast.error('الرجاء تفعيل لغة واحدة على الأقل');
             return;
@@ -263,32 +191,26 @@ export default function NewProductPage() {
 
         try {
             setSubmitting(true);
-
-            const productData = {
-                titleAr: formData.titleAr,
-                titleEn: formData.titleEn,
-                descriptionAr: formData.descriptionAr,
-                descriptionEn: formData.descriptionEn,
-                title: formData.titleAr,
-                description: formData.descriptionAr,
-                category: formData.category,
-                subcategory: formData.subcategory || undefined,
-                image: formData.image,
-                media: formData.media,
-                languages,
-                status: formData.status,
-            };
-
             const response = await fetch('/api/products', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(productData),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    titleAr: formData.titleAr,
+                    titleEn: formData.titleEn,
+                    descriptionAr: formData.descriptionAr,
+                    descriptionEn: formData.descriptionEn,
+                    title: formData.titleAr,
+                    description: formData.descriptionAr,
+                    category: formData.category,
+                    subcategory: formData.subcategory || undefined,
+                    image: formData.image,
+                    media: formData.media,
+                    languages,
+                    status: formData.status,
+                }),
             });
 
             const data = await response.json();
-
             if (data.success) {
                 toast.success('تم إنشاء المنتج بنجاح');
                 router.push('/ar/dashboard/products');
@@ -296,118 +218,254 @@ export default function NewProductPage() {
                 toast.error(data.message || 'حدث خطأ');
             }
         } catch (error) {
-            console.error('Error creating product:', error);
-            toast.error('حدث خطأ أثناء إنشاء المنتج');
+            toast.error('حدث خطأ أثناء الحفظ');
         } finally {
             setSubmitting(false);
         }
     };
 
+    const steps = [
+        { id: 1, name: 'المعلومات الأساسية', icon: FileText },
+        { id: 2, name: 'الصورة والتصنيف', icon: ImageIcon },
+        { id: 3, name: 'الأسعار والملفات', icon: Tag },
+    ];
+
     return (
-        <div className="space-y-6">
-            {/* Header */}
-            <div className="flex items-center gap-4">
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => router.push('/ar/dashboard/products')}
-                    className="shrink-0"
-                >
-                    <ArrowLeft className="w-5 h-5" />
-                </Button>
-                <div>
-                    <h1 className="text-3xl font-bold">إضافة منتج جديد</h1>
-                    <p className="text-muted-foreground mt-1">أدخل تفاصيل المنتج الجديد</p>
+        <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20">
+            <div className="max-w-5xl mx-auto p-6 space-y-6">
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={() => router.push('/ar/dashboard/products')}
+                            className="p-2 hover:bg-secondary rounded-lg transition-colors"
+                        >
+                            <ArrowRight className="w-5 h-5" />
+                        </button>
+                        <div>
+                            <h1 className="text-2xl font-bold">منتج جديد</h1>
+                            <p className="text-sm text-muted-foreground">أضف منتج رقمي جديد للمتجر</p>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Main Content - 2 columns */}
-                    <div className="lg:col-span-2 space-y-6">
-                        {/* Basic Info */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <FileText className="w-5 h-5" />
-                                    المعلومات الأساسية
-                                </CardTitle>
-                                <CardDescription>أدخل العنوان والوصف للمنتج</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-6">
-                                {/* Arabic Title */}
-                                <div className="space-y-2">
-                                    <Label htmlFor="titleAr">العنوان بالعربية *</Label>
-                                    <Input
-                                        id="titleAr"
-                                        value={formData.titleAr}
-                                        onChange={(e) => setFormData({ ...formData, titleAr: e.target.value })}
-                                        placeholder="أدخل عنوان المنتج بالعربية"
-                                        required
-                                        className="text-lg"
-                                    />
+                {/* Progress Steps */}
+                <div className="flex items-center justify-center gap-2">
+                    {steps.map((step, idx) => {
+                        const Icon = step.icon;
+                        const isActive = currentStep === step.id;
+                        const isCompleted = currentStep > step.id;
+                        return (
+                            <div key={step.id} className="flex items-center">
+                                <button
+                                    onClick={() => setCurrentStep(step.id)}
+                                    className={cn(
+                                        "flex items-center gap-2 px-4 py-2 rounded-full transition-all",
+                                        isActive && "bg-primary text-primary-foreground shadow-lg",
+                                        isCompleted && "bg-green-500/10 text-green-600",
+                                        !isActive && !isCompleted && "bg-secondary text-muted-foreground hover:bg-secondary/80"
+                                    )}
+                                >
+                                    <Icon className="w-4 h-4" />
+                                    <span className="text-sm font-medium hidden sm:inline">{step.name}</span>
+                                </button>
+                                {idx < steps.length - 1 && (
+                                    <div className={cn("w-8 h-0.5 mx-1", isCompleted ? "bg-green-500" : "bg-border")} />
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+
+                <form onSubmit={handleSubmit}>
+                    <Card className="p-8 border-0 shadow-xl">
+                        {/* Step 1: Basic Info */}
+                        {currentStep === 1 && (
+                            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                                <div>
+                                    <h2 className="text-xl font-semibold mb-1">المعلومات الأساسية</h2>
+                                    <p className="text-sm text-muted-foreground">أدخل عنوان ووصف المنتج باللغتين</p>
                                 </div>
 
-                                {/* English Title */}
-                                <div className="space-y-2">
-                                    <Label htmlFor="titleEn">العنوان بالإنجليزية *</Label>
-                                    <Input
-                                        id="titleEn"
-                                        value={formData.titleEn}
-                                        onChange={(e) => setFormData({ ...formData, titleEn: e.target.value })}
-                                        placeholder="Enter product title in English"
-                                        required
-                                        className="text-lg"
-                                    />
+                                <div className="grid md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <Label>العنوان بالعربية *</Label>
+                                        <Input
+                                            value={formData.titleAr}
+                                            onChange={(e) => setFormData({ ...formData, titleAr: e.target.value })}
+                                            placeholder="مثال: قصة الأرنب الذكي"
+                                            className="h-11"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>English Title *</Label>
+                                        <Input
+                                            value={formData.titleEn}
+                                            onChange={(e) => setFormData({ ...formData, titleEn: e.target.value })}
+                                            placeholder="Example: The Smart Rabbit Story"
+                                            className="h-11"
+                                        />
+                                    </div>
                                 </div>
 
-                                {/* Arabic Description */}
                                 <div className="space-y-2">
-                                    <Label htmlFor="descriptionAr">الوصف بالعربية *</Label>
+                                    <Label>الوصف بالعربية *</Label>
                                     <Textarea
-                                        id="descriptionAr"
                                         value={formData.descriptionAr}
                                         onChange={(e) => setFormData({ ...formData, descriptionAr: e.target.value })}
-                                        placeholder="أدخل وصف المنتج بالعربية"
-                                        required
+                                        placeholder="اكتب وصف تفصيلي للمنتج..."
                                         rows={4}
+                                        className="resize-none"
                                     />
                                 </div>
 
-                                {/* English Description */}
                                 <div className="space-y-2">
-                                    <Label htmlFor="descriptionEn">الوصف بالإنجليزية *</Label>
+                                    <Label>English Description *</Label>
                                     <Textarea
-                                        id="descriptionEn"
                                         value={formData.descriptionEn}
                                         onChange={(e) => setFormData({ ...formData, descriptionEn: e.target.value })}
-                                        placeholder="Enter product description in English"
-                                        required
+                                        placeholder="Write a detailed description..."
                                         rows={4}
+                                        className="resize-none"
                                     />
                                 </div>
-                            </CardContent>
-                        </Card>
 
-                        {/* Language Versions & Pricing */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Globe className="w-5 h-5" />
-                                    النسخ اللغوية والأسعار
-                                </CardTitle>
-                                <CardDescription>حدد اللغات المتاحة وأسعارها</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-6">
+                                <div className="flex justify-end">
+                                    <Button type="button" onClick={() => setCurrentStep(2)} size="lg">
+                                        التالي
+                                        <ArrowRight className="w-4 h-4 mr-2 rotate-180" />
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Step 2: Image & Category */}
+                        {currentStep === 2 && (
+                            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                                <div>
+                                    <h2 className="text-xl font-semibold mb-1">الصورة والتصنيف</h2>
+                                    <p className="text-sm text-muted-foreground">اختر صورة المنتج وتصنيفه</p>
+                                </div>
+
+                                <div className="grid md:grid-cols-2 gap-6">
+                                    {/* Image Upload */}
+                                    <div className="space-y-3">
+                                        <Label>صورة المنتج *</Label>
+                                        <div className="relative aspect-square rounded-xl border-2 border-dashed border-border overflow-hidden bg-secondary/30 hover:border-primary/50 transition-colors group">
+                                            {formData.image ? (
+                                                <>
+                                                    <R2Image r2Key={formData.image} alt="Product" className="w-full h-full object-cover" />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setFormData({ ...formData, image: "" })}
+                                                        className="absolute top-2 left-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    >
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer">
+                                                    <Upload className="w-12 h-12 text-muted-foreground mb-2" />
+                                                    <p className="text-sm text-muted-foreground">انقر لرفع الصورة</p>
+                                                    <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                                                </label>
+                                            )}
+                                            {imageUploading && (
+                                                <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
+                                                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Category */}
+                                    <div className="space-y-4">
+                                        <div className="space-y-2">
+                                            <Label>التصنيف *</Label>
+                                            <select
+                                                value={formData.category}
+                                                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                                className="w-full h-11 px-3 rounded-lg border border-border bg-background"
+                                            >
+                                                {categories.map((cat) => (
+                                                    <option key={cat.value} value={cat.value}>{cat.label}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label>التصنيف الفرعي</Label>
+                                            <Input
+                                                value={formData.subcategory}
+                                                onChange={(e) => setFormData({ ...formData, subcategory: e.target.value })}
+                                                placeholder="اختياري"
+                                                className="h-11"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label>الحالة</Label>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFormData({ ...formData, status: 'active' })}
+                                                    className={cn(
+                                                        "flex-1 py-2.5 rounded-lg border-2 font-medium transition-all",
+                                                        formData.status === 'active'
+                                                            ? "border-green-500 bg-green-500/10 text-green-600"
+                                                            : "border-border hover:border-green-500/30"
+                                                    )}
+                                                >
+                                                    <Eye className="w-4 h-4 inline ml-1" />
+                                                    نشط
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFormData({ ...formData, status: 'inactive' })}
+                                                    className={cn(
+                                                        "flex-1 py-2.5 rounded-lg border-2 font-medium transition-all",
+                                                        formData.status === 'inactive'
+                                                            ? "border-gray-500 bg-gray-500/10 text-gray-600"
+                                                            : "border-border hover:border-gray-500/30"
+                                                    )}
+                                                >
+                                                    <EyeOff className="w-4 h-4 inline ml-1" />
+                                                    معطل
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-between">
+                                    <Button type="button" variant="outline" onClick={() => setCurrentStep(1)}>
+                                        السابق
+                                    </Button>
+                                    <Button type="button" onClick={() => setCurrentStep(3)} size="lg">
+                                        التالي
+                                        <ArrowRight className="w-4 h-4 mr-2 rotate-180" />
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Step 3: Prices & Files */}
+                        {currentStep === 3 && (
+                            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                                <div>
+                                    <h2 className="text-xl font-semibold mb-1">الأسعار والملفات</h2>
+                                    <p className="text-sm text-muted-foreground">حدد الأسعار وارفع الملفات لكل لغة</p>
+                                </div>
+
                                 {/* Arabic Version */}
-                                <div className="space-y-4 p-4 border border-border rounded-lg">
-                                    <div className="flex items-center justify-between">
+                                <div className={cn(
+                                    "p-5 rounded-xl border-2 transition-all",
+                                    formData.languages.ar.enabled ? "border-primary bg-primary/5" : "border-border bg-secondary/30"
+                                )}>
+                                    <div className="flex items-center justify-between mb-4">
                                         <div className="flex items-center gap-3">
-                                            <div className={cn(
-                                                "w-10 h-10 rounded-full flex items-center justify-center font-bold",
-                                                formData.languages.ar.enabled ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
-                                            )}>
-                                                AR
+                                            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                                                <span className="font-bold text-primary">AR</span>
                                             </div>
                                             <div>
                                                 <h3 className="font-semibold">النسخة العربية</h3>
@@ -420,58 +478,40 @@ export default function NewProductPage() {
                                                 checked={formData.languages.ar.enabled}
                                                 onChange={(e) => setFormData({
                                                     ...formData,
-                                                    languages: {
-                                                        ...formData.languages,
-                                                        ar: { ...formData.languages.ar, enabled: e.target.checked }
-                                                    }
+                                                    languages: { ...formData.languages, ar: { ...formData.languages.ar, enabled: e.target.checked } }
                                                 })}
                                                 className="sr-only peer"
                                             />
-                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                            <div className="w-11 h-6 bg-gray-200 peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                                         </label>
                                     </div>
 
                                     {formData.languages.ar.enabled && (
-                                        <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                                        <div className="grid md:grid-cols-2 gap-4 pt-4 border-t">
                                             <div className="space-y-2">
-                                                <Label htmlFor="priceAr">السعر (ر.ع) *</Label>
-                                                <div className="relative">
-                                                    <DollarSign className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                                    <Input
-                                                        id="priceAr"
-                                                        type="number"
-                                                        step="0.001"
-                                                        min="0"
-                                                        value={formData.languages.ar.price}
-                                                        onChange={(e) => setFormData({
-                                                            ...formData,
-                                                            languages: {
-                                                                ...formData.languages,
-                                                                ar: { ...formData.languages.ar, price: e.target.value }
-                                                            }
-                                                        })}
-                                                        placeholder="0.000"
-                                                        required={formData.languages.ar.enabled}
-                                                        className="pr-10"
-                                                    />
-                                                </div>
+                                                <Label>السعر (ر.ع)</Label>
+                                                <Input
+                                                    type="number"
+                                                    step="0.001"
+                                                    value={formData.languages.ar.price}
+                                                    onChange={(e) => setFormData({
+                                                        ...formData,
+                                                        languages: { ...formData.languages, ar: { ...formData.languages.ar, price: e.target.value } }
+                                                    })}
+                                                    placeholder="0.000"
+                                                    className="h-11"
+                                                />
                                             </div>
                                             <div className="space-y-2">
-                                                <Label htmlFor="fileAr">الملف *</Label>
+                                                <Label>الملف</Label>
                                                 <div className="relative">
                                                     <Input
-                                                        id="fileAr"
                                                         type="file"
                                                         onChange={(e) => handleFileUpload(e, 'ar')}
-                                                        required={formData.languages.ar.enabled && !formData.languages.ar.fileUrl}
-                                                        className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+                                                        className="h-11"
                                                     />
-                                                    {formData.languages.ar.uploading && (
-                                                        <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin" />
-                                                    )}
-                                                    {formData.languages.ar.fileUrl && (
-                                                        <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-600" />
-                                                    )}
+                                                    {formData.languages.ar.uploading && <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin" />}
+                                                    {formData.languages.ar.fileUrl && <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-600" />}
                                                 </div>
                                                 {formData.languages.ar.fileName && (
                                                     <p className="text-xs text-muted-foreground truncate">{formData.languages.ar.fileName}</p>
@@ -482,14 +522,14 @@ export default function NewProductPage() {
                                 </div>
 
                                 {/* English Version */}
-                                <div className="space-y-4 p-4 border border-border rounded-lg">
-                                    <div className="flex items-center justify-between">
+                                <div className={cn(
+                                    "p-5 rounded-xl border-2 transition-all",
+                                    formData.languages.en.enabled ? "border-primary bg-primary/5" : "border-border bg-secondary/30"
+                                )}>
+                                    <div className="flex items-center justify-between mb-4">
                                         <div className="flex items-center gap-3">
-                                            <div className={cn(
-                                                "w-10 h-10 rounded-full flex items-center justify-center font-bold",
-                                                formData.languages.en.enabled ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
-                                            )}>
-                                                EN
+                                            <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                                                <span className="font-bold text-blue-600">EN</span>
                                             </div>
                                             <div>
                                                 <h3 className="font-semibold">النسخة الإنجليزية</h3>
@@ -502,58 +542,40 @@ export default function NewProductPage() {
                                                 checked={formData.languages.en.enabled}
                                                 onChange={(e) => setFormData({
                                                     ...formData,
-                                                    languages: {
-                                                        ...formData.languages,
-                                                        en: { ...formData.languages.en, enabled: e.target.checked }
-                                                    }
+                                                    languages: { ...formData.languages, en: { ...formData.languages.en, enabled: e.target.checked } }
                                                 })}
                                                 className="sr-only peer"
                                             />
-                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                            <div className="w-11 h-6 bg-gray-200 peer-focus:ring-4 peer-focus:ring-blue-500/20 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
                                         </label>
                                     </div>
 
                                     {formData.languages.en.enabled && (
-                                        <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                                        <div className="grid md:grid-cols-2 gap-4 pt-4 border-t">
                                             <div className="space-y-2">
-                                                <Label htmlFor="priceEn">السعر (ر.ع) *</Label>
-                                                <div className="relative">
-                                                    <DollarSign className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                                    <Input
-                                                        id="priceEn"
-                                                        type="number"
-                                                        step="0.001"
-                                                        min="0"
-                                                        value={formData.languages.en.price}
-                                                        onChange={(e) => setFormData({
-                                                            ...formData,
-                                                            languages: {
-                                                                ...formData.languages,
-                                                                en: { ...formData.languages.en, price: e.target.value }
-                                                            }
-                                                        })}
-                                                        placeholder="0.000"
-                                                        required={formData.languages.en.enabled}
-                                                        className="pr-10"
-                                                    />
-                                                </div>
+                                                <Label>Price (OMR)</Label>
+                                                <Input
+                                                    type="number"
+                                                    step="0.001"
+                                                    value={formData.languages.en.price}
+                                                    onChange={(e) => setFormData({
+                                                        ...formData,
+                                                        languages: { ...formData.languages, en: { ...formData.languages.en, price: e.target.value } }
+                                                    })}
+                                                    placeholder="0.000"
+                                                    className="h-11"
+                                                />
                                             </div>
                                             <div className="space-y-2">
-                                                <Label htmlFor="fileEn">الملف *</Label>
+                                                <Label>File</Label>
                                                 <div className="relative">
                                                     <Input
-                                                        id="fileEn"
                                                         type="file"
                                                         onChange={(e) => handleFileUpload(e, 'en')}
-                                                        required={formData.languages.en.enabled && !formData.languages.en.fileUrl}
-                                                        className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+                                                        className="h-11"
                                                     />
-                                                    {formData.languages.en.uploading && (
-                                                        <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin" />
-                                                    )}
-                                                    {formData.languages.en.fileUrl && (
-                                                        <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-600" />
-                                                    )}
+                                                    {formData.languages.en.uploading && <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin" />}
+                                                    {formData.languages.en.fileUrl && <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-600" />}
                                                 </div>
                                                 {formData.languages.en.fileName && (
                                                     <p className="text-xs text-muted-foreground truncate">{formData.languages.en.fileName}</p>
@@ -562,173 +584,39 @@ export default function NewProductPage() {
                                         </div>
                                     )}
                                 </div>
-                            </CardContent>
-                        </Card>
 
-                        {/* Media Gallery */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <ImageIcon className="w-5 h-5" />
-                                    معرض الوسائط
-                                </CardTitle>
-                                <CardDescription>أضف صور وفيديوهات إضافية للمنتج</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <MediaGalleryManager
-                                    media={formData.media}
-                                    onChange={(media) => setFormData({ ...formData, media })}
-                                />
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    {/* Sidebar - 1 column */}
-                    <div className="space-y-6">
-                        {/* Product Image */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>صورة المنتج *</CardTitle>
-                                <CardDescription>الصورة الرئيسية للمنتج</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="aspect-square rounded-lg border-2 border-dashed border-border overflow-hidden bg-secondary/20">
-                                    {formData.image ? (
-                                        <R2Image
-                                            r2Key={formData.image}
-                                            alt="Product"
-                                            className="w-full h-full object-cover"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground">
-                                            <ImageIcon className="w-12 h-12 mb-2" />
-                                            <p className="text-sm">لا توجد صورة</p>
-                                        </div>
-                                    )}
-                                </div>
-                                <div>
-                                    <Input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleImageUpload}
-                                        disabled={imageUploading}
-                                        className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
-                                    />
-                                    {imageUploading && (
-                                        <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                            جاري الرفع...
-                                        </div>
-                                    )}
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* Category */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>التصنيف</CardTitle>
-                                <CardDescription>حدد تصنيف المنتج</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="category">التصنيف الرئيسي *</Label>
-                                    <select
-                                        id="category"
-                                        value={formData.category}
-                                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                        className="w-full h-10 px-3 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                                        required
-                                    >
-                                        {categories.map((cat) => (
-                                            <option key={cat.value} value={cat.value}>
-                                                {cat.label}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="subcategory">التصنيف الفرعي</Label>
-                                    <Input
-                                        id="subcategory"
-                                        value={formData.subcategory}
-                                        onChange={(e) => setFormData({ ...formData, subcategory: e.target.value })}
-                                        placeholder="اختياري"
+                                {/* Media Gallery */}
+                                <div className="p-5 rounded-xl border bg-secondary/30">
+                                    <h3 className="font-semibold mb-3">معرض الوسائط (اختياري)</h3>
+                                    <MediaGalleryManager
+                                        media={formData.media}
+                                        onChange={(media) => setFormData({ ...formData, media })}
                                     />
                                 </div>
-                            </CardContent>
-                        </Card>
 
-                        {/* Status */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>حالة المنتج</CardTitle>
-                                <CardDescription>حدد حالة نشر المنتج</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <button
-                                        type="button"
-                                        onClick={() => setFormData({ ...formData, status: 'active' })}
-                                        className={cn(
-                                            "p-4 rounded-lg border-2 text-center transition-all",
-                                            formData.status === 'active'
-                                                ? "border-green-500 bg-green-500/10 text-green-700 font-semibold"
-                                                : "border-border hover:border-green-500/50"
+                                <div className="flex justify-between pt-4">
+                                    <Button type="button" variant="outline" onClick={() => setCurrentStep(2)}>
+                                        السابق
+                                    </Button>
+                                    <Button type="submit" disabled={submitting} size="lg" className="gap-2">
+                                        {submitting ? (
+                                            <>
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                جاري الحفظ...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Save className="w-4 h-4" />
+                                                حفظ المنتج
+                                            </>
                                         )}
-                                    >
-                                        <div className="text-2xl mb-1">✓</div>
-                                        <div className="text-sm">نشط</div>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setFormData({ ...formData, status: 'inactive' })}
-                                        className={cn(
-                                            "p-4 rounded-lg border-2 text-center transition-all",
-                                            formData.status === 'inactive'
-                                                ? "border-gray-500 bg-gray-500/10 text-gray-700 font-semibold"
-                                                : "border-border hover:border-gray-500/50"
-                                        )}
-                                    >
-                                        <div className="text-2xl mb-1">○</div>
-                                        <div className="text-sm">غير نشط</div>
-                                    </button>
+                                    </Button>
                                 </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* Actions */}
-                        <div className="sticky top-6 space-y-3">
-                            <Button
-                                type="submit"
-                                disabled={submitting}
-                                className="w-full h-12 text-lg"
-                            >
-                                {submitting ? (
-                                    <>
-                                        <Loader2 className="w-5 h-5 ml-2 animate-spin" />
-                                        جاري الحفظ...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Check className="w-5 h-5 ml-2" />
-                                        حفظ المنتج
-                                    </>
-                                )}
-                            </Button>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => router.push('/ar/dashboard/products')}
-                                className="w-full"
-                            >
-                                إلغاء
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            </form>
+                            </div>
+                        )}
+                    </Card>
+                </form>
+            </div>
         </div>
     );
 }

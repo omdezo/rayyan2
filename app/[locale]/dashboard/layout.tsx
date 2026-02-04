@@ -13,7 +13,8 @@ import {
     Menu,
     X,
     Loader2,
-    FolderTree
+    FolderTree,
+    Tag
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,11 @@ const sidebarItems = [
         title: "الأقسام",
         href: "/ar/dashboard/sections",
         icon: FolderTree,
+    },
+    {
+        title: "رموز الخصم",
+        href: "/ar/dashboard/discount-codes",
+        icon: Tag,
     },
     {
         title: "المستخدمين",

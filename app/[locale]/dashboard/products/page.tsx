@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, Edit, Trash2, Loader2, Upload, X, FileText, Check, Package, Video, Image as ImageIcon } from "lucide-react";
@@ -62,6 +63,7 @@ interface ProductFormData {
 }
 
 export default function ProductsPage() {
+    const router = useRouter();
     const [products, setProducts] = useState<Product[]>([]);
     const [categories, setCategories] = useState<Array<{value: string, label: string}>>([]);
     const [loading, setLoading] = useState(true);
@@ -542,7 +544,7 @@ export default function ProductsPage() {
                     <h1 className="text-3xl font-bold">المنتجات</h1>
                     <p className="text-muted-foreground mt-2">إدارة جميع المنتجات والملفات الرقمية</p>
                 </div>
-                <Button onClick={() => handleOpenDialog()} className="gap-2">
+                <Button onClick={() => router.push('/ar/dashboard/products/new')} className="gap-2">
                     <Plus className="w-4 h-4" />
                     إضافة منتج جديد
                 </Button>

@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils";
 
 interface DiscountCode {
     _id: string;
@@ -29,8 +30,10 @@ interface DiscountCode {
 interface FormData {
     code: string;
     discountPercent: string;
+    customDiscount: string;
     isActive: boolean;
     usageLimit: string;
+    validityPeriod: string; // "2weeks" | "1month" | "6months" | "1year" | "forever" | "custom"
     validFrom: string;
     validUntil: string;
     minPurchaseAmount: string;
@@ -49,8 +52,10 @@ export default function DiscountCodesPage() {
     const [formData, setFormData] = useState<FormData>({
         code: "",
         discountPercent: "",
+        customDiscount: "",
         isActive: true,
         usageLimit: "",
+        validityPeriod: "1month",
         validFrom: "",
         validUntil: "",
         minPurchaseAmount: "",
@@ -83,11 +88,19 @@ export default function DiscountCodesPage() {
     const handleOpenDialog = (code?: DiscountCode) => {
         if (code) {
             setEditingCode(code);
+            // Determine validity period based on dates
+            let validityPeriod = "custom";
+            if (!code.validFrom && !code.validUntil) {
+                validityPeriod = "forever";
+            }
+
             setFormData({
                 code: code.code,
-                discountPercent: code.discountPercent.toString(),
+                discountPercent: [10, 25, 50, 75].includes(code.discountPercent) ? code.discountPercent.toString() : "custom",
+                customDiscount: ![10, 25, 50, 75].includes(code.discountPercent) ? code.discountPercent.toString() : "",
                 isActive: code.isActive,
                 usageLimit: code.usageLimit?.toString() || "",
+                validityPeriod,
                 validFrom: code.validFrom ? new Date(code.validFrom).toISOString().split('T')[0] : "",
                 validUntil: code.validUntil ? new Date(code.validUntil).toISOString().split('T')[0] : "",
                 minPurchaseAmount: code.minPurchaseAmount?.toString() || "0",
@@ -98,8 +111,10 @@ export default function DiscountCodesPage() {
             setFormData({
                 code: "",
                 discountPercent: "",
+                customDiscount: "",
                 isActive: true,
                 usageLimit: "",
+                validityPeriod: "1month",
                 validFrom: "",
                 validUntil: "",
                 minPurchaseAmount: "",
@@ -122,7 +137,12 @@ export default function DiscountCodesPage() {
             return;
         }
 
-        if (!formData.discountPercent || parseFloat(formData.discountPercent) < 1 || parseFloat(formData.discountPercent) > 100) {
+        // Get discount percent
+        const discountPercent = formData.discountPercent === "custom"
+            ? parseFloat(formData.customDiscount)
+            : parseFloat(formData.discountPercent);
+
+        if (!discountPercent || discountPercent < 1 || discountPercent > 100) {
             toast.error('نسبة الخصم يجب أن تكون بين 1 و 100');
             return;
         }
@@ -130,13 +150,42 @@ export default function DiscountCodesPage() {
         try {
             setSubmitting(true);
 
+            // Calculate validity dates based on period
+            let validFrom = null;
+            let validUntil = null;
+
+            if (formData.validityPeriod === "custom") {
+                validFrom = formData.validFrom || null;
+                validUntil = formData.validUntil || null;
+            } else if (formData.validityPeriod !== "forever") {
+                const now = new Date();
+                validFrom = now.toISOString();
+
+                const until = new Date();
+                switch (formData.validityPeriod) {
+                    case "2weeks":
+                        until.setDate(until.getDate() + 14);
+                        break;
+                    case "1month":
+                        until.setMonth(until.getMonth() + 1);
+                        break;
+                    case "6months":
+                        until.setMonth(until.getMonth() + 6);
+                        break;
+                    case "1year":
+                        until.setFullYear(until.getFullYear() + 1);
+                        break;
+                }
+                validUntil = until.toISOString();
+            }
+
             const codeData = {
                 code: formData.code.trim().toUpperCase(),
-                discountPercent: parseFloat(formData.discountPercent),
+                discountPercent,
                 isActive: formData.isActive,
                 usageLimit: formData.usageLimit ? parseInt(formData.usageLimit) : null,
-                validFrom: formData.validFrom || null,
-                validUntil: formData.validUntil || null,
+                validFrom,
+                validUntil,
                 minPurchaseAmount: formData.minPurchaseAmount ? parseFloat(formData.minPurchaseAmount) : 0,
                 description: formData.description,
             };
@@ -334,32 +383,68 @@ export default function DiscountCodesPage() {
                         </DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="code">رمز الخصم *</Label>
-                                <Input
-                                    id="code"
-                                    value={formData.code}
-                                    onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                                    placeholder="OFF25"
-                                    required
-                                    className="font-mono"
-                                />
-                            </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="code">رمز الخصم *</Label>
+                            <Input
+                                id="code"
+                                value={formData.code}
+                                onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
+                                placeholder="OFF25"
+                                required
+                                className="font-mono"
+                            />
+                        </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="discountPercent">نسبة الخصم (%) *</Label>
-                                <Input
-                                    id="discountPercent"
-                                    type="number"
-                                    min="1"
-                                    max="100"
-                                    step="1"
-                                    value={formData.discountPercent}
-                                    onChange={(e) => setFormData({ ...formData, discountPercent: e.target.value })}
-                                    placeholder="25"
-                                    required
-                                />
+                        <div className="space-y-3">
+                            <Label>نسبة الخصم (%) *</Label>
+                            <div className="grid grid-cols-4 gap-2">
+                                {[
+                                    { value: "10", label: "10%" },
+                                    { value: "25", label: "25%" },
+                                    { value: "50", label: "50%" },
+                                    { value: "75", label: "75%" },
+                                ].map((option) => (
+                                    <button
+                                        key={option.value}
+                                        type="button"
+                                        onClick={() => setFormData({ ...formData, discountPercent: option.value, customDiscount: "" })}
+                                        className={cn(
+                                            "h-12 rounded-lg border-2 font-semibold transition-all",
+                                            formData.discountPercent === option.value
+                                                ? "border-primary bg-primary text-primary-foreground shadow-md"
+                                                : "border-border hover:border-primary/50 hover:bg-secondary"
+                                        )}
+                                    >
+                                        {option.label}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setFormData({ ...formData, discountPercent: "custom" })}
+                                    className={cn(
+                                        "px-4 h-10 rounded-lg border-2 font-medium transition-all",
+                                        formData.discountPercent === "custom"
+                                            ? "border-primary bg-primary text-primary-foreground"
+                                            : "border-border hover:border-primary/50 hover:bg-secondary"
+                                    )}
+                                >
+                                    مخصص
+                                </button>
+                                {formData.discountPercent === "custom" && (
+                                    <Input
+                                        type="number"
+                                        min="1"
+                                        max="100"
+                                        step="1"
+                                        value={formData.customDiscount}
+                                        onChange={(e) => setFormData({ ...formData, customDiscount: e.target.value })}
+                                        placeholder="أدخل النسبة"
+                                        required
+                                        className="flex-1"
+                                    />
+                                )}
                             </div>
                         </div>
 
@@ -391,26 +476,45 @@ export default function DiscountCodesPage() {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="validFrom">صالح من</Label>
-                                <Input
-                                    id="validFrom"
-                                    type="date"
-                                    value={formData.validFrom}
-                                    onChange={(e) => setFormData({ ...formData, validFrom: e.target.value })}
-                                />
-                            </div>
+                        <div className="space-y-3">
+                            <Label htmlFor="validityPeriod">فترة الصلاحية</Label>
+                            <select
+                                id="validityPeriod"
+                                value={formData.validityPeriod}
+                                onChange={(e) => setFormData({ ...formData, validityPeriod: e.target.value })}
+                                className="w-full h-10 px-3 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                            >
+                                <option value="2weeks">أسبوعين</option>
+                                <option value="1month">شهر واحد</option>
+                                <option value="6months">6 أشهر</option>
+                                <option value="1year">سنة واحدة</option>
+                                <option value="forever">دائم (بدون انتهاء)</option>
+                                <option value="custom">مخصص</option>
+                            </select>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="validUntil">صالح حتى</Label>
-                                <Input
-                                    id="validUntil"
-                                    type="date"
-                                    value={formData.validUntil}
-                                    onChange={(e) => setFormData({ ...formData, validUntil: e.target.value })}
-                                />
-                            </div>
+                            {formData.validityPeriod === "custom" && (
+                                <div className="grid grid-cols-2 gap-4 pt-2">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="validFrom">صالح من</Label>
+                                        <Input
+                                            id="validFrom"
+                                            type="date"
+                                            value={formData.validFrom}
+                                            onChange={(e) => setFormData({ ...formData, validFrom: e.target.value })}
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="validUntil">صالح حتى</Label>
+                                        <Input
+                                            id="validUntil"
+                                            type="date"
+                                            value={formData.validUntil}
+                                            onChange={(e) => setFormData({ ...formData, validUntil: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <div className="space-y-2">
@@ -424,10 +528,15 @@ export default function DiscountCodesPage() {
                             />
                         </div>
 
-                        <div className="flex items-center justify-between p-4 bg-secondary/20 rounded-lg">
-                            <Label htmlFor="isActive" className="cursor-pointer">
-                                تفعيل الرمز
-                            </Label>
+                        <div className="flex items-center justify-between p-4 bg-secondary/30 rounded-xl border border-border">
+                            <div className="space-y-1">
+                                <Label htmlFor="isActive" className="cursor-pointer font-semibold">
+                                    تفعيل الرمز
+                                </Label>
+                                <p className="text-xs text-muted-foreground">
+                                    {formData.isActive ? 'الرمز نشط ويمكن استخدامه' : 'الرمز معطل ولا يمكن استخدامه'}
+                                </p>
+                            </div>
                             <Switch
                                 id="isActive"
                                 checked={formData.isActive}

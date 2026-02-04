@@ -35,11 +35,15 @@ export async function PUT(
         if (authError) return authError;
 
         const body = await req.json();
-        const { title, description, category, subcategory, image, media, languages, status } = body;
+        const { titleAr, titleEn, descriptionAr, descriptionEn, category, subcategory, image, media, languages, status } = body;
 
-        // Validation
-        if (!title || !description || !category || !image) {
-            return errorResponse('Missing required fields: title, description, category, image', 400);
+        // Validation for bilingual fields
+        if (!titleAr || !titleEn || !descriptionAr || !descriptionEn) {
+            return errorResponse('Missing required bilingual fields', 400);
+        }
+
+        if (!category || !image) {
+            return errorResponse('Missing required fields: category, image', 400);
         }
 
         // Validate languages array
@@ -76,8 +80,12 @@ export async function PUT(
             const product = await Product.findByIdAndUpdate(
                 id,
                 {
-                    title,
-                    description,
+                    titleAr,
+                    titleEn,
+                    descriptionAr,
+                    descriptionEn,
+                    title: titleAr, // For backward compatibility
+                    description: descriptionAr, // For backward compatibility
                     price: minPrice, // For backward compatibility
                     category,
                     subcategory,
@@ -87,7 +95,7 @@ export async function PUT(
                     status,
                     updatedAt: new Date(),
                 },
-                { new: true, runValidators: true }
+                { new: true, runValidators: false }
             );
 
             if (!product) {

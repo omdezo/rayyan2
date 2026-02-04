@@ -15,10 +15,10 @@ export interface IProductMedia {
 
 export interface IProduct {
     _id: string;
-    titleAr: string;
-    titleEn: string;
-    descriptionAr: string;
-    descriptionEn: string;
+    titleAr?: string;
+    titleEn?: string;
+    descriptionAr?: string;
+    descriptionEn?: string;
     // For backward compatibility
     title?: string;
     description?: string;
@@ -27,7 +27,7 @@ export interface IProduct {
     subcategory?: string;
     image: string;                // Primary/cover image (keep for backward compatibility)
     media?: IProductMedia[];      // NEW: Media gallery (images and videos)
-    languages: ILanguageVariant[];
+    languages?: ILanguageVariant[];
     status: 'active' | 'inactive';
     createdAt: Date;
     updatedAt: Date;

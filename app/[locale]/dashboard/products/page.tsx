@@ -521,12 +521,19 @@ export default function ProductsPage() {
         }
     };
 
-    const filteredProducts = products.filter(product =>
-        product.titleAr?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.titleEn?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.descriptionAr?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.descriptionEn?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredProducts = products.filter(product => {
+        if (!searchQuery) return true; // Show all products when no search query
+
+        const query = searchQuery.toLowerCase();
+        return (
+            product.titleAr?.toLowerCase().includes(query) ||
+            product.titleEn?.toLowerCase().includes(query) ||
+            product.descriptionAr?.toLowerCase().includes(query) ||
+            product.descriptionEn?.toLowerCase().includes(query) ||
+            product.title?.toLowerCase().includes(query) ||
+            product.description?.toLowerCase().includes(query)
+        );
+    });
 
     return (
         <div className="space-y-8">

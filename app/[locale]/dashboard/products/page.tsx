@@ -522,10 +522,10 @@ export default function ProductsPage() {
     };
 
     const filteredProducts = products.filter(product =>
-        product.titleAr.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.titleEn.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.descriptionAr.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.descriptionEn.toLowerCase().includes(searchQuery.toLowerCase())
+        product.titleAr?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.titleEn?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.descriptionAr?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.descriptionEn?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     return (

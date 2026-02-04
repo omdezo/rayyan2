@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
 
         const session = await getSession(req);
         const body = await req.json();
-        const { customerInfo, items, total, fromCart, productId, languages } = body;
+        const { customerInfo, items, subtotal, discountCode, discountPercent, discountAmount, total, fromCart, productId, languages } = body;
 
         // Validation
         if (!customerInfo || !items || !total) {
@@ -91,6 +91,10 @@ export async function POST(req: NextRequest) {
             const orderData: any = {
                 customerInfo,
                 items,
+                subtotal: subtotal || total,
+                discountCode: discountCode || undefined,
+                discountPercent: discountPercent || undefined,
+                discountAmount: discountAmount || 0,
                 total,
                 paymentMethod: 'card', // Thawani card payment
                 status: 'pending',

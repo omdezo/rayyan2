@@ -46,6 +46,26 @@ const OrderSchema = new Schema<IOrder>({
             default: '',
         },
     }],
+    subtotal: {
+        type: Number,
+        required: [true, 'Order subtotal is required'],
+        min: [0, 'Subtotal cannot be negative'],
+    },
+    discountCode: {
+        type: String,
+        uppercase: true,
+        trim: true,
+    },
+    discountPercent: {
+        type: Number,
+        min: [0, 'Discount percent cannot be negative'],
+        max: [100, 'Discount percent cannot exceed 100'],
+    },
+    discountAmount: {
+        type: Number,
+        min: [0, 'Discount amount cannot be negative'],
+        default: 0,
+    },
     total: {
         type: Number,
         required: [true, 'Order total is required'],

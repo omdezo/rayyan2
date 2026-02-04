@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState, Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/routing";
-import { Loader2, CreditCard, Package } from "lucide-react";
+import { Loader2, CreditCard, Package, Tag, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
@@ -69,6 +69,13 @@ function CheckoutContent() {
         phone: "",
     });
     const [agreedToPolicy, setAgreedToPolicy] = useState(false);
+    const [discountCode, setDiscountCode] = useState("");
+    const [appliedDiscount, setAppliedDiscount] = useState<{
+        code: string;
+        discountPercent: number;
+        discountAmount: number;
+    } | null>(null);
+    const [isValidatingDiscount, setIsValidatingDiscount] = useState(false);
 
     // Require authentication
     useEffect(() => {
@@ -136,6 +143,62 @@ function CheckoutContent() {
             setCartItems([]);
             setLoading(false);
         }
+    };
+
+    const handleApplyDiscount = async () => {
+        if (!discountCode.trim()) {
+            toast.error('الرجاء إدخال رمز الخصم');
+            return;
+        }
+
+        const subtotal = fromCart
+            ? cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+            : (() => {
+                if (!product || !languagesParam) return 0;
+                const selectedLangs = languagesParam.split(',') as ('ar' | 'en')[];
+                return selectedLangs.reduce((sum, lang) => {
+                    const langVariant = product.languages.find(l => l.lang === lang);
+                    return sum + (langVariant?.price || 0);
+                }, 0);
+            })();
+
+        setIsValidatingDiscount(true);
+        try {
+            const response = await fetch('/api/discount-codes/validate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    code: discountCode.trim().toUpperCase(),
+                    purchaseAmount: subtotal,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setAppliedDiscount({
+                    code: data.data.code,
+                    discountPercent: data.data.discountPercent,
+                    discountAmount: data.data.discountAmount,
+                });
+                toast.success(`تم تطبيق خصم ${data.data.discountPercent}%`);
+            } else {
+                toast.error(data.message || 'رمز الخصم غير صالح');
+            }
+        } catch (error) {
+            console.error('Error validating discount code:', error);
+            toast.error('حدث خطأ أثناء التحقق من رمز الخصم');
+        } finally {
+            setIsValidatingDiscount(false);
+        }
+    };
+
+    const handleRemoveDiscount = () => {
+        setAppliedDiscount(null);
+        setDiscountCode("");
+        toast.success('تم إزالة رمز الخصم');
     };
 
     const handlePayment = async (e: React.FormEvent) => {
@@ -231,7 +294,11 @@ function CheckoutContent() {
                         phone: formData.phone,
                     },
                     items: orderItems,
-                    total: total,
+                    subtotal: total,
+                    discountCode: appliedDiscount?.code,
+                    discountPercent: appliedDiscount?.discountPercent,
+                    discountAmount: appliedDiscount?.discountAmount,
+                    total: appliedDiscount ? total - appliedDiscount.discountAmount : total,
                     fromCart,
                     productId,
                     languages: languagesParam,
@@ -263,8 +330,8 @@ function CheckoutContent() {
         }
     };
 
-    // Calculate total
-    const totalAmount = fromCart
+    // Calculate subtotal and total
+    const subtotal = fromCart
         ? cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
         : (() => {
             if (!product || !languagesParam) return 0;
@@ -274,6 +341,10 @@ function CheckoutContent() {
                 return sum + (langVariant?.price || 0);
             }, 0);
         })();
+
+    const totalAmount = appliedDiscount
+        ? subtotal - appliedDiscount.discountAmount
+        : subtotal;
 
     if (loading) {
         return (
@@ -552,6 +623,68 @@ function CheckoutContent() {
 
                                 <div className="border-t border-border/50 my-4" />
 
+                                {/* Discount Code Section */}
+                                <div className="space-y-3">
+                                    {!appliedDiscount ? (
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium flex items-center gap-2">
+                                                <Tag className="w-4 h-4" />
+                                                رمز الخصم
+                                            </label>
+                                            <div className="flex gap-2">
+                                                <Input
+                                                    value={discountCode}
+                                                    onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
+                                                    placeholder="أدخل رمز الخصم"
+                                                    className="font-mono"
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            e.preventDefault();
+                                                            handleApplyDiscount();
+                                                        }
+                                                    }}
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    onClick={handleApplyDiscount}
+                                                    disabled={isValidatingDiscount || !discountCode.trim()}
+                                                    className="shrink-0"
+                                                >
+                                                    {isValidatingDiscount ? (
+                                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                                    ) : (
+                                                        'تطبيق'
+                                                    )}
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <Tag className="w-4 h-4 text-green-600" />
+                                                    <div>
+                                                        <p className="font-mono font-bold text-sm text-green-600">{appliedDiscount.code}</p>
+                                                        <p className="text-xs text-muted-foreground">خصم {appliedDiscount.discountPercent}%</p>
+                                                    </div>
+                                                </div>
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={handleRemoveDiscount}
+                                                    className="h-8 w-8 p-0 text-muted-foreground hover:text-red-600"
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="border-t border-border/50 my-4" />
+
                                 <div className="space-y-3 text-sm">
                                     <div className="flex justify-between text-muted-foreground">
                                         <span>عدد المنتجات</span>
@@ -559,8 +692,14 @@ function CheckoutContent() {
                                     </div>
                                     <div className="flex justify-between text-muted-foreground">
                                         <span>المجموع الفرعي</span>
-                                        <span>{totalAmount.toFixed(3)} ر.ع</span>
+                                        <span>{subtotal.toFixed(3)} ر.ع</span>
                                     </div>
+                                    {appliedDiscount && (
+                                        <div className="flex justify-between text-green-600 font-medium">
+                                            <span>الخصم ({appliedDiscount.discountPercent}%)</span>
+                                            <span>- {appliedDiscount.discountAmount.toFixed(3)} ر.ع</span>
+                                        </div>
+                                    )}
                                     <div className="flex justify-between text-muted-foreground">
                                         <span>الضريبة</span>
                                         <span>0.000 ر.ع</span>

@@ -58,6 +58,10 @@ export interface IOrder {
         language?: 'ar' | 'en';
         fileUrl?: string;
     }>;
+    subtotal: number;
+    discountCode?: string;
+    discountPercent?: number;
+    discountAmount?: number;
     total: number;
     status: 'pending' | 'completed' | 'failed';
     paymentMethod: 'card' | 'apple' | 'paypal';
@@ -96,4 +100,20 @@ export interface ISection {
     order: number;
     createdAt: Date;
     updatedAt: Date;
+}
+
+export interface IDiscountCode {
+    _id: string;
+    code: string;
+    discountPercent: number;
+    isActive: boolean;
+    usageLimit: number | null;
+    usedCount: number;
+    validFrom: Date | null;
+    validUntil: Date | null;
+    minPurchaseAmount: number;
+    description?: string;
+    createdAt: Date;
+    updatedAt: Date;
+    isValid?: (purchaseAmount?: number) => { valid: boolean; reason?: string };
 }

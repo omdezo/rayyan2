@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyWebhookSignature, WebhookPayload } from '@/lib/thawani';
 import { withDB } from '@/lib/api-utils';
 import Order from '@/lib/models/Order';
+import DiscountCode from '@/lib/models/DiscountCode';
 
 // POST /api/thawani/webhook - Handle Thawani webhook events
 export async function POST(req: NextRequest) {
@@ -155,6 +156,19 @@ async function handlePaymentSuccess(payload: WebhookPayload) {
 
         if (updatedOrder) {
             console.log('Order marked as completed:', orderId, 'Payment ID:', payload.data.payment_id);
+
+            // Increment discount code usage count if discount was applied
+            if (updatedOrder.discountCode) {
+                try {
+                    await DiscountCode.findOneAndUpdate(
+                        { code: updatedOrder.discountCode },
+                        { $inc: { usedCount: 1 } }
+                    );
+                    console.log('Incremented discount code usage:', updatedOrder.discountCode);
+                } catch (discountError) {
+                    console.error('Error incrementing discount code usage:', discountError);
+                }
+            }
         } else {
             console.error('Order not found:', orderId);
         }

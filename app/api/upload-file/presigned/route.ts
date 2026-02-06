@@ -12,7 +12,14 @@ export async function POST(req: NextRequest) {
             return authError;
         }
 
-        const body = await req.json();
+        let body;
+        try {
+            body = await req.json();
+        } catch (jsonError) {
+            console.error('❌ JSON parsing error:', jsonError);
+            return errorResponse('Invalid JSON in request body', 400);
+        }
+
         const { fileName, fileType, fileSize } = body;
 
         if (!fileName || !fileType || !fileSize) {

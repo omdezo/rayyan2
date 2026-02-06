@@ -92,7 +92,7 @@ export default function NewProductPage() {
             setImageUploading(true);
             const formData = new FormData();
             formData.append('file', file);
-            const response = await fetch('/api/upload-file/presigned', {
+            const response = await fetch('/api/upload', {
                 method: 'POST',
                 body: formData,
             });
@@ -122,7 +122,7 @@ export default function NewProductPage() {
 
             const uploadFormData = new FormData();
             uploadFormData.append('file', file);
-            const response = await fetch('/api/upload-file/presigned', {
+            const response = await fetch('/api/upload-file', {
                 method: 'POST',
                 body: uploadFormData,
             });

@@ -120,32 +120,94 @@ export default function NewProductPage() {
                 languages: { ...prev.languages, [lang]: { ...prev.languages[lang], uploading: true } }
             }));
 
-            const uploadFormData = new FormData();
-            uploadFormData.append('file', file);
-            const response = await fetch('/api/upload-file', {
-                method: 'POST',
-                body: uploadFormData,
-            });
-            const data = await response.json();
+            // Use presigned URL for files > 10MB to avoid Cloudflare's 100MB function payload limit
+            const LARGE_FILE_THRESHOLD = 10 * 1024 * 1024; // 10MB
+            const isLargeFile = file.size > LARGE_FILE_THRESHOLD;
 
-            if (data.success) {
+            if (isLargeFile) {
+                console.log(`Using presigned URL upload for large file (${(file.size / 1024 / 1024).toFixed(2)}MB)`);
+
+                // Step 1: Get presigned URL
+                const presignedResponse = await fetch('/api/upload-file/presigned', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fileName: file.name,
+                        fileType: file.type,
+                        fileSize: file.size,
+                    }),
+                });
+
+                const presignedData = await presignedResponse.json();
+
+                if (!presignedData.success) {
+                    throw new Error(presignedData.error || 'Failed to generate upload URL');
+                }
+
+                const { uploadUrl, key } = presignedData.data;
+
+                // Step 2: Upload directly to R2 using presigned PUT URL
+                console.log('Uploading directly to R2...');
+                const uploadResponse = await fetch(uploadUrl, {
+                    method: 'PUT',
+                    body: file,
+                    headers: {
+                        'Content-Type': file.type,
+                    },
+                });
+
+                if (!uploadResponse.ok) {
+                    const errorText = await uploadResponse.text().catch(() => 'Unknown error');
+                    throw new Error(`R2 upload failed: ${uploadResponse.status} - ${errorText}`);
+                }
+
+                console.log(`✅ File uploaded successfully to R2, key: ${key}`);
+
+                // Update form with the key
                 setFormData(prev => ({
                     ...prev,
                     languages: {
                         ...prev.languages,
-                        [lang]: { ...prev.languages[lang], fileUrl: data.data.key, fileName: file.name, uploading: false }
+                        [lang]: {
+                            ...prev.languages[lang],
+                            fileUrl: key,
+                            fileName: file.name,
+                            uploading: false
+                        }
                     }
                 }));
-                toast.success('تم رفع الملف');
+                toast.success(`تم رفع الملف بنجاح (${(file.size / 1024 / 1024).toFixed(2)}MB)`);
             } else {
-                toast.error('فشل رفع الملف');
-                setFormData(prev => ({
-                    ...prev,
-                    languages: { ...prev.languages, [lang]: { ...prev.languages[lang], uploading: false } }
-                }));
+                // Use direct upload for small files
+                console.log(`Using direct upload for small file (${(file.size / 1024 / 1024).toFixed(2)}MB)`);
+                const uploadFormData = new FormData();
+                uploadFormData.append('file', file);
+                const response = await fetch('/api/upload-file', {
+                    method: 'POST',
+                    body: uploadFormData,
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    setFormData(prev => ({
+                        ...prev,
+                        languages: {
+                            ...prev.languages,
+                            [lang]: { ...prev.languages[lang], fileUrl: data.data.key, fileName: file.name, uploading: false }
+                        }
+                    }));
+                    toast.success('تم رفع الملف');
+                } else {
+                    toast.error('فشل رفع الملف');
+                    setFormData(prev => ({
+                        ...prev,
+                        languages: { ...prev.languages, [lang]: { ...prev.languages[lang], uploading: false } }
+                    }));
+                }
             }
         } catch (error) {
-            toast.error('حدث خطأ');
+            console.error('File upload error:', error);
+            toast.error('حدث خطأ أثناء رفع الملف');
             setFormData(prev => ({
                 ...prev,
                 languages: { ...prev.languages, [lang]: { ...prev.languages[lang], uploading: false } }

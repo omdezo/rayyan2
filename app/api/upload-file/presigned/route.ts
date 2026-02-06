@@ -2,9 +2,17 @@ import { NextRequest } from 'next/server';
 import { successResponse, errorResponse, requireAdmin } from '@/lib/api-utils';
 import { getPresignedUploadUrl } from '@/lib/r2';
 
+// Increase max duration for presigned URL generation
+export const maxDuration = 60; // 1 minute
+
 // POST /api/upload-file/presigned - Generate presigned URL for direct client upload (admin only)
 export async function POST(req: NextRequest) {
     console.log('🔑 Presigned URL API called');
+    console.log('📋 Request headers:', {
+        contentType: req.headers.get('content-type'),
+        contentLength: req.headers.get('content-length'),
+    });
+
     try {
         const { error: authError } = await requireAdmin(req);
         if (authError) {
@@ -14,7 +22,9 @@ export async function POST(req: NextRequest) {
 
         let body;
         try {
-            body = await req.json();
+            const rawBody = await req.text();
+            console.log('📝 Raw request body (first 200 chars):', rawBody.substring(0, 200));
+            body = JSON.parse(rawBody);
         } catch (jsonError) {
             console.error('❌ JSON parsing error:', jsonError);
             return errorResponse('Invalid JSON in request body', 400);
@@ -57,4 +67,9 @@ export async function POST(req: NextRequest) {
         console.error('❌ Presigned URL generation error:', error);
         return errorResponse('Failed to generate presigned URL', 500);
     }
+}
+
+// Handle unsupported methods
+export async function GET() {
+    return errorResponse('Method not allowed. Use POST to generate presigned URLs.', 405);
 }

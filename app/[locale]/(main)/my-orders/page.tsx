@@ -138,14 +138,11 @@ export default function MyOrdersPage() {
             toast.dismiss(loadingToast);
 
             if (data.success) {
-                // Open signed URL in new tab for download
-                const link = document.createElement('a');
-                link.href = data.data.url;
-                link.target = '_blank';
-                link.download = productTitle;
-                link.click();
-
+                // Show success message
                 toast.success(`جاري تحميل: ${productTitle}${language ? ` (${language === 'ar' ? 'النسخة العربية' : 'English Version'})` : ''}`);
+
+                // Open the signed URL in a new tab - browser will handle the download
+                window.open(data.data.url, '_blank', 'noopener,noreferrer');
             } else {
                 toast.error(data.error || 'فشل في تحميل الملف');
             }

@@ -110,18 +110,42 @@ export const authConfig: NextAuthConfig = {
                         console.log('✅ Created Google user in JWT:', existingUser.email);
                     }
 
+                    // ⚠️ CRITICAL: Ensure _id exists before converting to string
+                    if (!existingUser._id) {
+                        console.error('❌ CRITICAL: existingUser._id is missing!', existingUser);
+                        throw new Error('User ID is missing');
+                    }
+
                     token.id = existingUser._id.toString();
                     token.role = existingUser.role;
+
+                    console.log('✅ JWT Google - Token set:', {
+                        id: token.id,
+                        role: token.role,
+                        email: existingUser.email
+                    });
                 } catch (error) {
                     console.error('❌ JWT Google error:', error);
+                    // Don't set token.id if there's an error - this will prevent login
                 }
             } else if (user) {
                 // Regular credentials login
                 token.id = user.id;
                 token.role = (user as any).role || 'user';
+                console.log('✅ JWT Credentials - Token set:', { id: token.id, role: token.role });
             }
 
-            console.log('🔑 JWT callback - Token set:', { id: token.id, role: token.role });
+            // ⚠️ CRITICAL: Final validation - ensure token.id is set
+            if (!token.id) {
+                console.error('❌ CRITICAL: token.id is missing after JWT callback!', {
+                    provider: account?.provider,
+                    email: user?.email,
+                    token
+                });
+            } else {
+                console.log('🔑 JWT callback - Final token:', { id: token.id, role: token.role });
+            }
+
             return token;
         },
         async session({ session, token }) {
@@ -130,8 +154,14 @@ export const authConfig: NextAuthConfig = {
                 (session.user as any).role = token.role;
                 console.log('📋 Session callback - Setting session:', {
                     email: session.user.email,
+                    id: token.id, // ⚠️ CRITICAL: Log the ID to debug Google OAuth
                     role: token.role
                 });
+
+                // ⚠️ CRITICAL: Validate that ID exists (especially for Google OAuth)
+                if (!token.id) {
+                    console.error('❌ CRITICAL: token.id is missing in session callback!', { email: session.user.email });
+                }
             }
             return session;
         },

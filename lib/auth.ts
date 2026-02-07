@@ -118,12 +118,6 @@ export const authConfig: NextAuthConfig = {
 
                     token.id = existingUser._id.toString();
                     token.role = existingUser.role;
-
-                    console.log('✅ JWT Google - Token set:', {
-                        id: token.id,
-                        role: token.role,
-                        email: existingUser.email
-                    });
                 } catch (error) {
                     console.error('❌ JWT Google error:', error);
                     // Don't set token.id if there's an error - this will prevent login
@@ -132,18 +126,14 @@ export const authConfig: NextAuthConfig = {
                 // Regular credentials login
                 token.id = user.id;
                 token.role = (user as any).role || 'user';
-                console.log('✅ JWT Credentials - Token set:', { id: token.id, role: token.role });
             }
 
             // ⚠️ CRITICAL: Final validation - ensure token.id is set
             if (!token.id) {
                 console.error('❌ CRITICAL: token.id is missing after JWT callback!', {
                     provider: account?.provider,
-                    email: user?.email,
-                    token
+                    email: user?.email
                 });
-            } else {
-                console.log('🔑 JWT callback - Final token:', { id: token.id, role: token.role });
             }
 
             return token;
@@ -152,11 +142,6 @@ export const authConfig: NextAuthConfig = {
             if (session.user) {
                 (session.user as any).id = token.id;
                 (session.user as any).role = token.role;
-                console.log('📋 Session callback - Setting session:', {
-                    email: session.user.email,
-                    id: token.id, // ⚠️ CRITICAL: Log the ID to debug Google OAuth
-                    role: token.role
-                });
 
                 // ⚠️ CRITICAL: Validate that ID exists (especially for Google OAuth)
                 if (!token.id) {

@@ -29,8 +29,6 @@ export async function GET(req: NextRequest) {
         const page = parseInt(searchParams.get('page') || '1');
         const limit = parseInt(searchParams.get('limit') || '10');
 
-        console.log(`🔍 [my-orders] Fetching orders for userId: ${userId}, email: ${session.user.email}`);
-
         return await withDB(async () => {
             // ⚠️ CRITICAL: Explicitly filter by userId to ensure users ONLY see their own orders
             const filter = { userId: userId };
@@ -43,8 +41,6 @@ export async function GET(req: NextRequest) {
                 .lean();
 
             const total = await Order.countDocuments(filter);
-
-            console.log(`✅ [my-orders] Found ${orders.length} orders (total: ${total}) for userId: ${userId}`);
 
             // ⚠️ SECURITY: Ensure all returned orders belong to the current user
             const invalidOrders = orders.filter((order: any) => order.userId !== userId);

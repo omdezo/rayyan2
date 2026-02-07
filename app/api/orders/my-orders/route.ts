@@ -4,6 +4,56 @@ import Order from '@/lib/models/Order';
 import User from '@/lib/models/User';
 import { auth } from '@/lib/auth';
 
+// Helper function to fetch orders
+async function fetchOrders(userId: string, userEmail: string, req: NextRequest) {
+    const { searchParams } = new URL(req.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+
+    // ⚠️ CRITICAL: Query by BOTH userId AND customerInfo.email for backwards compatibility
+    // This ensures we fetch:
+    // 1. Orders with userId (new orders)
+    // 2. Old orders without userId but matching email
+    const filter = {
+        $or: [
+            { userId: userId }, // New orders with userId
+            { 'customerInfo.email': userEmail.toLowerCase() } // Old orders without userId
+        ]
+    };
+
+    // Fetch orders with pagination
+    const orders = await Order.find(filter)
+        .sort({ date: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean();
+
+    const total = await Order.countDocuments(filter);
+
+    // 🔧 Auto-update old orders: Add userId to orders that don't have it
+    const ordersWithoutUserId = orders.filter((order: any) => !order.userId);
+    if (ordersWithoutUserId.length > 0) {
+        console.log(`🔧 [my-orders] Auto-updating ${ordersWithoutUserId.length} old orders with userId for: ${userEmail}`);
+        await Order.updateMany(
+            {
+                _id: { $in: ordersWithoutUserId.map((o: any) => o._id) },
+                userId: { $exists: false }
+            },
+            { $set: { userId: userId } }
+        );
+    }
+
+    return successResponse({
+        orders,
+        pagination: {
+            total,
+            page,
+            limit,
+            pages: Math.ceil(total / limit),
+        },
+    });
+}
+
 // GET /api/orders/my-orders - Get current user's orders with pagination
 export async function GET(req: NextRequest) {
     try {
@@ -15,80 +65,35 @@ export async function GET(req: NextRequest) {
         }
 
         let userId = (session.user as any).id;
+        const userEmail = session.user?.email;
 
         // 🔧 FIX: If userId is missing (old Google OAuth users), try to fetch from DB
         if (!userId || userId === 'undefined' || userId === 'null') {
-            const email = session.user?.email;
-
-            if (!email) {
+            if (!userEmail) {
                 console.error('❌ [my-orders] No userId and no email in session');
-                return errorResponse('Invalid user session. Please try logging out and logging back in.', 400);
+                return errorResponse('Invalid user session. Please log out and log back in.', 401);
             }
 
             // Try to fetch userId from database using email
-            try {
-                await require('@/lib/mongodb').default(); // Connect to DB
-                const user = await User.findOne({ email: email.toLowerCase() });
+            return await withDB(async () => {
+                const user = await User.findOne({ email: userEmail.toLowerCase() });
 
-                if (user && user._id) {
-                    userId = user._id.toString();
-                    console.log('🔧 [my-orders] Auto-repaired userId for:', email);
-                } else {
-                    console.error('❌ [my-orders] User not found in DB for email:', email);
-                    return errorResponse('User account not found. Please try logging out and logging back in.', 400);
+                if (!user || !user._id) {
+                    console.error('❌ [my-orders] User not found for email:', userEmail);
+                    return errorResponse('User account not found. Please log out and log back in.', 401);
                 }
-            } catch (error) {
-                console.error('❌ [my-orders] Error fetching user:', error);
-                return errorResponse('Error retrieving user information.', 500);
-            }
+
+                userId = user._id.toString();
+                console.log('🔧 [my-orders] Auto-repaired userId for:', userEmail);
+
+                // Continue to fetch orders with repaired userId
+                return await fetchOrders(userId, userEmail, req);
+            });
         }
 
-        const { searchParams } = new URL(req.url);
-        const page = parseInt(searchParams.get('page') || '1');
-        const limit = parseInt(searchParams.get('limit') || '10');
-
+        // Fetch orders using helper function
         return await withDB(async () => {
-            // ⚠️ CRITICAL: Explicitly filter by userId to ensure users ONLY see their own orders
-            const filter = { userId: userId };
-
-            // Fetch orders with pagination
-            const orders = await Order.find(filter)
-                .sort({ date: -1 })
-                .skip((page - 1) * limit)
-                .limit(limit)
-                .lean();
-
-            const total = await Order.countDocuments(filter);
-
-            // ⚠️ SECURITY: Ensure all returned orders belong to the current user
-            const invalidOrders = orders.filter((order: any) => order.userId !== userId);
-            if (invalidOrders.length > 0) {
-                console.error('❌ [my-orders] SECURITY BREACH: Found orders not belonging to user!', {
-                    userId,
-                    invalidOrderCount: invalidOrders.length
-                });
-                // Return only valid orders
-                const validOrders = orders.filter((order: any) => order.userId === userId);
-                return successResponse({
-                    orders: validOrders,
-                    pagination: {
-                        total: validOrders.length,
-                        page,
-                        limit,
-                        pages: Math.ceil(validOrders.length / limit),
-                    },
-                });
-            }
-
-            return successResponse({
-                orders,
-                pagination: {
-                    total,
-                    page,
-                    limit,
-                    pages: Math.ceil(total / limit),
-                },
-            });
+            return await fetchOrders(userId, userEmail!, req);
         });
     } catch (error) {
         console.error('❌ [my-orders] Error:', error);

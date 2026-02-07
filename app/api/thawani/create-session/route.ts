@@ -131,10 +131,18 @@ export async function POST(req: NextRequest) {
 
             const order = await Order.create(orderData);
 
-            // Prepare Thawani products
+            // Prepare Thawani products with discount applied proportionally
             const thawaniProducts: ThawaniProduct[] = items.map((item: any) => {
-                const unitAmount = omrToBaisa(item.price);
+                let itemPrice = item.price;
                 const quantity = item.quantity || 1;
+
+                // Apply discount proportionally if discount exists
+                if (discountPercent && discountPercent > 0) {
+                    // Reduce price by discount percentage
+                    itemPrice = itemPrice * (1 - discountPercent / 100);
+                }
+
+                const unitAmount = omrToBaisa(itemPrice);
 
                 return {
                     name: item.title.substring(0, 40), // Thawani max 40 chars

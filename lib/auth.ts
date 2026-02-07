@@ -90,7 +90,7 @@ export const authConfig: NextAuthConfig = {
             return true;
         },
         async jwt({ token, user, account }) {
-            // Handle Google OAuth in JWT callback
+            // Handle Google OAuth in JWT callback (runs on first sign-in)
             if (account?.provider === 'google' && user?.email) {
                 try {
                     await connectDB();
@@ -107,7 +107,7 @@ export const authConfig: NextAuthConfig = {
                             role: 'user',
                             status: 'active',
                         });
-                        console.log('✅ Created Google user in JWT:', existingUser.email);
+                        console.log('✅ Created Google user:', existingUser.email);
                     }
 
                     // ⚠️ CRITICAL: Ensure _id exists before converting to string
@@ -118,21 +118,41 @@ export const authConfig: NextAuthConfig = {
 
                     token.id = existingUser._id.toString();
                     token.role = existingUser.role;
+                    token.email = existingUser.email;
                 } catch (error) {
                     console.error('❌ JWT Google error:', error);
-                    // Don't set token.id if there's an error - this will prevent login
                 }
             } else if (user) {
-                // Regular credentials login
+                // Regular credentials login (runs on first sign-in)
                 token.id = user.id;
                 token.role = (user as any).role || 'user';
+                token.email = user.email;
+            }
+
+            // 🔧 FIX FOR EXISTING USERS: If token.id is missing but we have an email,
+            // fetch the user from DB and set the token.id (auto-repair old sessions)
+            if (!token.id && token.email) {
+                try {
+                    await connectDB();
+                    const existingUser = await User.findOne({ email: (token.email as string).toLowerCase() });
+
+                    if (existingUser && existingUser._id) {
+                        token.id = existingUser._id.toString();
+                        token.role = existingUser.role;
+                        console.log('🔧 Auto-repaired session for:', token.email);
+                    } else {
+                        console.error('❌ Could not find user for token repair:', token.email);
+                    }
+                } catch (error) {
+                    console.error('❌ Error repairing token:', error);
+                }
             }
 
             // ⚠️ CRITICAL: Final validation - ensure token.id is set
             if (!token.id) {
                 console.error('❌ CRITICAL: token.id is missing after JWT callback!', {
                     provider: account?.provider,
-                    email: user?.email
+                    email: token.email
                 });
             }
 

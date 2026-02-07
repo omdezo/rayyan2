@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { successResponse, errorResponse, withDB, handleError } from '@/lib/api-utils';
 import Order from '@/lib/models/Order';
+import User from '@/lib/models/User';
 import { auth } from '@/lib/auth';
 
 // GET /api/orders/my-orders - Get current user's orders with pagination
@@ -13,16 +14,33 @@ export async function GET(req: NextRequest) {
             return errorResponse('Unauthorized', 401);
         }
 
-        const userId = (session.user as any).id;
+        let userId = (session.user as any).id;
 
-        // ⚠️ CRITICAL: Validate userId exists (especially for Google OAuth users)
+        // 🔧 FIX: If userId is missing (old Google OAuth users), try to fetch from DB
         if (!userId || userId === 'undefined' || userId === 'null') {
-            console.error('❌ [my-orders] Invalid userId from session:', {
-                userId,
-                email: session.user.email,
-                user: session.user
-            });
-            return errorResponse('Invalid user session. Please try logging out and logging back in.', 400);
+            const email = session.user?.email;
+
+            if (!email) {
+                console.error('❌ [my-orders] No userId and no email in session');
+                return errorResponse('Invalid user session. Please try logging out and logging back in.', 400);
+            }
+
+            // Try to fetch userId from database using email
+            try {
+                await require('@/lib/mongodb').default(); // Connect to DB
+                const user = await User.findOne({ email: email.toLowerCase() });
+
+                if (user && user._id) {
+                    userId = user._id.toString();
+                    console.log('🔧 [my-orders] Auto-repaired userId for:', email);
+                } else {
+                    console.error('❌ [my-orders] User not found in DB for email:', email);
+                    return errorResponse('User account not found. Please try logging out and logging back in.', 400);
+                }
+            } catch (error) {
+                console.error('❌ [my-orders] Error fetching user:', error);
+                return errorResponse('Error retrieving user information.', 500);
+            }
         }
 
         const { searchParams } = new URL(req.url);

@@ -62,7 +62,16 @@ export default function MyOrdersPage() {
                 setOrders(data.data.orders);
                 setPagination(data.data.pagination);
             } else {
-                toast.error('فشل في تحميل الطلبات');
+                // Show more helpful error message
+                const errorMsg = data.error || 'فشل في تحميل الطلبات';
+                toast.error(errorMsg);
+
+                // If unauthorized, suggest logout/login
+                if (response.status === 401) {
+                    setTimeout(() => {
+                        toast.info('يرجى تسجيل الخروج ثم إعادة تسجيل الدخول لتحديث الجلسة');
+                    }, 1000);
+                }
             }
         } catch (error) {
             console.error('Error fetching orders:', error);

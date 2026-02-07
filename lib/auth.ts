@@ -90,9 +90,19 @@ export const authConfig: NextAuthConfig = {
             return true;
         },
         async jwt({ token, user, account }) {
+            console.log('🔑 JWT callback triggered:', {
+                hasAccount: !!account,
+                provider: account?.provider,
+                hasUser: !!user,
+                userEmail: user?.email,
+                tokenEmail: token.email,
+                tokenId: token.id
+            });
+
             // Handle Google OAuth in JWT callback (runs on first sign-in)
             if (account?.provider === 'google' && user?.email) {
                 try {
+                    console.log('🔐 Google OAuth - Creating/finding user for:', user.email);
                     await connectDB();
 
                     // Check if user exists
@@ -100,6 +110,7 @@ export const authConfig: NextAuthConfig = {
 
                     if (!existingUser) {
                         // Create new user
+                        console.log('🆕 Creating new Google user:', user.email);
                         existingUser = await User.create({
                             name: user.name || 'Google User',
                             email: user.email.toLowerCase(),
@@ -108,6 +119,8 @@ export const authConfig: NextAuthConfig = {
                             status: 'active',
                         });
                         console.log('✅ Created Google user:', existingUser.email);
+                    } else {
+                        console.log('✅ Found existing Google user:', existingUser.email);
                     }
 
                     // ⚠️ CRITICAL: Ensure _id exists before converting to string
@@ -119,14 +132,18 @@ export const authConfig: NextAuthConfig = {
                     token.id = existingUser._id.toString();
                     token.role = existingUser.role;
                     token.email = existingUser.email;
+
+                    console.log('✅ Google OAuth token set:', { id: token.id, role: token.role, email: token.email });
                 } catch (error) {
                     console.error('❌ JWT Google error:', error);
                 }
             } else if (user) {
                 // Regular credentials login (runs on first sign-in)
+                console.log('🔐 Credentials login for:', user.email);
                 token.id = user.id;
                 token.role = (user as any).role || 'user';
                 token.email = user.email;
+                console.log('✅ Credentials token set:', { id: token.id, role: token.role });
             }
 
             // 🔧 FIX FOR EXISTING USERS: If token.id is missing but we have an email,
@@ -159,14 +176,33 @@ export const authConfig: NextAuthConfig = {
             return token;
         },
         async session({ session, token }) {
+            console.log('📋 Session callback:', {
+                hasSession: !!session,
+                hasUser: !!session?.user,
+                tokenId: token.id,
+                tokenEmail: token.email,
+                tokenRole: token.role
+            });
+
             if (session.user) {
                 (session.user as any).id = token.id;
                 (session.user as any).role = token.role;
 
+                console.log('✅ Session user updated:', {
+                    email: session.user.email,
+                    id: (session.user as any).id,
+                    role: (session.user as any).role
+                });
+
                 // ⚠️ CRITICAL: Validate that ID exists (especially for Google OAuth)
                 if (!token.id) {
-                    console.error('❌ CRITICAL: token.id is missing in session callback!', { email: session.user.email });
+                    console.error('❌ CRITICAL: token.id is missing in session callback!', {
+                        email: session.user.email,
+                        tokenEmail: token.email
+                    });
                 }
+            } else {
+                console.error('❌ CRITICAL: session.user is missing in session callback!');
             }
             return session;
         },

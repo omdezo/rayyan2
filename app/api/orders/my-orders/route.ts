@@ -60,8 +60,27 @@ export async function GET(req: NextRequest) {
         // Get the session
         const session = await auth();
 
-        if (!session?.user) {
-            return errorResponse('Unauthorized', 401);
+        console.log('🔍 [my-orders] Session check:', {
+            hasSession: !!session,
+            hasUser: !!session?.user,
+            email: session?.user?.email,
+            userId: (session?.user as any)?.id,
+        });
+
+        if (!session) {
+            console.error('❌ [my-orders] No session found at all');
+            return errorResponse('الجلسة منتهية. يرجى تسجيل الخروج ثم إعادة تسجيل الدخول.', 401);
+        }
+
+        if (!session.user) {
+            console.error('❌ [my-orders] Session exists but no user object');
+            return errorResponse('جلسة غير صالحة. يرجى تسجيل الخروج ثم إعادة تسجيل الدخول.', 401);
+        }
+
+        // Additional check: ensure email exists in session
+        if (!session.user.email) {
+            console.error('❌ [my-orders] Session and user exist but no email');
+            return errorResponse('جلسة غير صالحة. يرجى تسجيل الخروج ثم إعادة تسجيل الدخول.', 401);
         }
 
         let userId = (session.user as any).id;

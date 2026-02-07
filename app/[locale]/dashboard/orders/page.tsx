@@ -35,6 +35,7 @@ export default function OrdersPage() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
+    const [statusFilter, setStatusFilter] = useState<string>("all"); // all, completed, pending, failed
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [isDetailOpen, setIsDetailOpen] = useState(false);
 
@@ -65,11 +66,17 @@ export default function OrdersPage() {
         }
     };
 
-    const filteredOrders = Array.isArray(orders) ? orders.filter(order =>
-        order._id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.customerInfo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.customerInfo.email.toLowerCase().includes(searchQuery.toLowerCase())
-    ) : [];
+    const filteredOrders = Array.isArray(orders) ? orders.filter(order => {
+        // Search filter
+        const matchesSearch = order._id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            order.customerInfo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            order.customerInfo.email.toLowerCase().includes(searchQuery.toLowerCase());
+
+        // Status filter
+        const matchesStatus = statusFilter === "all" || order.status === statusFilter;
+
+        return matchesSearch && matchesStatus;
+    }) : [];
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
@@ -115,16 +122,43 @@ export default function OrdersPage() {
             </div>
 
             <Card className="border-border/50 shadow-sm">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                    <CardTitle className="text-xl font-bold">سجل الطلبات ({filteredOrders.length})</CardTitle>
-                    <div className="relative w-full md:w-64">
-                        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <Input
-                            placeholder="بحث برقم الطلب أو العميل..."
-                            className="pr-10"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
+                <CardHeader className="space-y-4 pb-4">
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                        <CardTitle className="text-xl font-bold">سجل الطلبات ({filteredOrders.length})</CardTitle>
+                        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                            {/* Status Filter */}
+                            <div className="flex items-center gap-2">
+                                <Filter className="w-4 h-4 text-muted-foreground" />
+                                <select
+                                    value={statusFilter}
+                                    onChange={(e) => setStatusFilter(e.target.value)}
+                                    className="px-3 py-2 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                                >
+                                    <option value="all">جميع الحالات</option>
+                                    <option value="completed">مكتمل</option>
+                                    <option value="pending">قيد الانتظار</option>
+                                    <option value="failed">فشل</option>
+                                </select>
+                            </div>
+                            {/* Search */}
+                            <div className="relative w-full sm:w-64">
+                                <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                <Input
+                                    placeholder="بحث برقم الطلب أو العميل..."
+                                    className="pr-10"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                                {searchQuery && (
+                                    <button
+                                        onClick={() => setSearchQuery("")}
+                                        className="absolute left-3 top-1/2 -translate-y-1/2"
+                                    >
+                                        <X className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                                    </button>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 </CardHeader>
                 <CardContent>

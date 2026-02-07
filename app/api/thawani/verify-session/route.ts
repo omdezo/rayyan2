@@ -54,6 +54,25 @@ export async function GET(req: NextRequest) {
                         { new: true }
                     );
 
+                    // 🧹 Cleanup: Auto-cancel other pending orders for the same user
+                    // This prevents clutter from abandoned checkouts
+                    if (updatedOrder && updatedOrder.userId) {
+                        await Order.updateMany(
+                            {
+                                _id: { $ne: updatedOrder._id }, // Not this order
+                                userId: updatedOrder.userId, // Same user
+                                status: 'pending', // Still pending
+                                paymentStatus: { $ne: 'paid' }, // Not paid
+                            },
+                            {
+                                status: 'failed',
+                                paymentStatus: 'failed',
+                                failureReason: 'Superseded by completed order',
+                            }
+                        );
+                        console.log('✅ Auto-cancelled old pending orders for user:', updatedOrder.userId);
+                    }
+
                     return successResponse({
                         order: updatedOrder,
                         verified: true,

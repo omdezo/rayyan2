@@ -19,7 +19,13 @@ const UserSchema = new Schema<IUser>({
     password: {
         type: String,
         required: false, // Optional for OAuth users (Google, etc.)
-        minlength: [6, 'Password must be at least 6 characters'],
+        validate: {
+            validator: function(v: string) {
+                // Allow empty password for OAuth users, but if provided, must be 6+ characters
+                return !v || v.length === 0 || v.length >= 6;
+            },
+            message: 'Password must be at least 6 characters'
+        }
     },
     role: {
         type: String,

@@ -59,6 +59,29 @@ export async function POST(req: NextRequest) {
         }
 
         return await withDB(async () => {
+            // 🛡️ Idempotency Check: Prevent duplicate orders from double-clicks
+            // Check if user has a very recent pending order with same items/total
+            if (session?.user) {
+                const userId = (session.user as any).id;
+                const fiveSecondsAgo = new Date(Date.now() - 5000);
+
+                const recentOrder = await Order.findOne({
+                    userId,
+                    status: 'pending',
+                    total,
+                    date: { $gte: fiveSecondsAgo },
+                }).lean();
+
+                if (recentOrder) {
+                    console.log('⚠️  Duplicate order prevented (same user, amount, within 5s):', {
+                        userId,
+                        total,
+                        existingOrderId: recentOrder._id
+                    });
+                    return errorResponse('طلب مماثل قيد المعالجة بالفعل. يرجى الانتظار.', 429);
+                }
+            }
+
             // Pre-validate products before creating order
             try {
                 items.forEach((item: any) => {

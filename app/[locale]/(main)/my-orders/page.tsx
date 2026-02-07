@@ -59,8 +59,16 @@ export default function MyOrdersPage() {
             const data = await response.json();
 
             if (data.success) {
-                setOrders(data.data.orders);
-                setPagination(data.data.pagination);
+                // Filter out failed orders - users should only see completed and pending orders
+                const activeOrders = data.data.orders.filter(
+                    (order: Order) => order.status === 'completed' || order.status === 'pending'
+                );
+                setOrders(activeOrders);
+                // Update pagination to reflect filtered count
+                setPagination({
+                    ...data.data.pagination,
+                    total: activeOrders.length,
+                });
             } else {
                 // Show more helpful error message
                 const errorMsg = data.error || 'فشل في تحميل الطلبات';

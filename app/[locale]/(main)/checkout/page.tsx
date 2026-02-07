@@ -204,6 +204,12 @@ function CheckoutContent() {
     const handlePayment = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        // ⚠️ CRITICAL: Prevent double-click/double-submission
+        if (isProcessing) {
+            console.log('⚠️  Payment already processing, ignoring duplicate click');
+            return;
+        }
+
         // Validation
         if (!formData.name || !formData.email || !formData.phone) {
             toast.error('الرجاء ملء جميع الحقول');
@@ -225,6 +231,7 @@ function CheckoutContent() {
             return;
         }
 
+        // Set processing IMMEDIATELY to prevent double-clicks
         setIsProcessing(true);
 
         try {

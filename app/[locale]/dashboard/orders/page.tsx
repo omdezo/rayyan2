@@ -31,6 +31,13 @@ interface Order {
     date: string;
 }
 
+interface Pagination {
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
+}
+
 export default function OrdersPage() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
@@ -38,21 +45,29 @@ export default function OrdersPage() {
     const [statusFilter, setStatusFilter] = useState<string>("all"); // all, completed, pending, failed
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [isDetailOpen, setIsDetailOpen] = useState(false);
+    const [pagination, setPagination] = useState<Pagination>({
+        total: 0,
+        page: 1,
+        limit: 20,
+        pages: 0,
+    });
 
     useEffect(() => {
-        fetchOrders();
-    }, []);
+        fetchOrders(1);
+    }, [statusFilter]); // Refetch when status filter changes
 
-    const fetchOrders = async () => {
+    const fetchOrders = async (page: number) => {
         try {
             setLoading(true);
-            const response = await fetch('/api/orders');
+            const statusParam = statusFilter !== "all" ? `&status=${statusFilter}` : "";
+            const response = await fetch(`/api/orders?page=${page}&limit=20${statusParam}`);
             const data = await response.json();
 
             if (data.success) {
                 // The API returns { orders: [...], pagination: {...} }
                 const ordersData = Array.isArray(data.data?.orders) ? data.data.orders : [];
                 setOrders(ordersData);
+                setPagination(data.data.pagination);
             } else {
                 toast.error('فشل في تحميل الطلبات');
                 setOrders([]);
@@ -66,16 +81,19 @@ export default function OrdersPage() {
         }
     };
 
+    const handlePageChange = (newPage: number) => {
+        if (newPage >= 1 && newPage <= pagination.pages) {
+            fetchOrders(newPage);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
+    // Client-side search filter (for current page only)
     const filteredOrders = Array.isArray(orders) ? orders.filter(order => {
-        // Search filter
-        const matchesSearch = order._id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        if (!searchQuery) return true;
+        return order._id.toLowerCase().includes(searchQuery.toLowerCase()) ||
             order.customerInfo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             order.customerInfo.email.toLowerCase().includes(searchQuery.toLowerCase());
-
-        // Status filter
-        const matchesStatus = statusFilter === "all" || order.status === statusFilter;
-
-        return matchesSearch && matchesStatus;
     }) : [];
 
     const formatDate = (dateString: string) => {
@@ -235,6 +253,60 @@ export default function OrdersPage() {
                                     )}
                                 </tbody>
                             </table>
+                        </div>
+                    )}
+
+                    {/* Pagination Controls */}
+                    {!loading && pagination.pages > 1 && (
+                        <div className="flex items-center justify-between px-4 py-4 border-t border-border">
+                            <div className="text-sm text-muted-foreground">
+                                عرض {((pagination.page - 1) * pagination.limit) + 1} - {Math.min(pagination.page * pagination.limit, pagination.total)} من أصل {pagination.total} طلب
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handlePageChange(pagination.page - 1)}
+                                    disabled={pagination.page === 1}
+                                >
+                                    السابق
+                                </Button>
+
+                                <div className="flex items-center gap-1">
+                                    {Array.from({ length: Math.min(pagination.pages, 7) }, (_, i) => {
+                                        let pageNum;
+                                        if (pagination.pages <= 7) {
+                                            pageNum = i + 1;
+                                        } else if (pagination.page <= 4) {
+                                            pageNum = i + 1;
+                                        } else if (pagination.page >= pagination.pages - 3) {
+                                            pageNum = pagination.pages - 6 + i;
+                                        } else {
+                                            pageNum = pagination.page - 3 + i;
+                                        }
+                                        return (
+                                            <Button
+                                                key={pageNum}
+                                                variant={pageNum === pagination.page ? "default" : "outline"}
+                                                size="sm"
+                                                onClick={() => handlePageChange(pageNum)}
+                                                className="w-10 h-10"
+                                            >
+                                                {pageNum}
+                                            </Button>
+                                        );
+                                    })}
+                                </div>
+
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handlePageChange(pagination.page + 1)}
+                                    disabled={pagination.page === pagination.pages}
+                                >
+                                    التالي
+                                </Button>
+                            </div>
                         </div>
                     )}
                 </CardContent>

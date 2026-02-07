@@ -12,6 +12,8 @@ export async function GET(req: NextRequest) {
         const status = searchParams.get('status');
         const role = searchParams.get('role');
         const search = searchParams.get('search');
+        const page = parseInt(searchParams.get('page') || '1');
+        const limit = parseInt(searchParams.get('limit') || '20');
 
         return await withDB(async () => {
             // Build filter query
@@ -25,13 +27,25 @@ export async function GET(req: NextRequest) {
                 ];
             }
 
-            // Fetch users excluding password
+            // Fetch users with pagination, excluding password
             const users = await User.find(filter)
                 .select('-password')
                 .sort({ joinDate: -1 })
+                .skip((page - 1) * limit)
+                .limit(limit)
                 .lean();
 
-            return successResponse(users);
+            const total = await User.countDocuments(filter);
+
+            return successResponse({
+                users,
+                pagination: {
+                    total,
+                    page,
+                    limit,
+                    pages: Math.ceil(total / limit),
+                },
+            });
         });
     } catch (error) {
         return handleError(error);

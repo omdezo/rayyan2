@@ -27,6 +27,13 @@ interface UserFormData {
     status: string;
 }
 
+interface Pagination {
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
+}
+
 export default function UsersPage() {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
@@ -36,6 +43,12 @@ export default function UsersPage() {
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [deletingUser, setDeletingUser] = useState<User | null>(null);
     const [submitting, setSubmitting] = useState(false);
+    const [pagination, setPagination] = useState<Pagination>({
+        total: 0,
+        page: 1,
+        limit: 20,
+        pages: 0,
+    });
 
     const [formData, setFormData] = useState<UserFormData>({
         name: "",
@@ -46,17 +59,18 @@ export default function UsersPage() {
     });
 
     useEffect(() => {
-        fetchUsers();
+        fetchUsers(1);
     }, []);
 
-    const fetchUsers = async () => {
+    const fetchUsers = async (page: number) => {
         try {
             setLoading(true);
-            const response = await fetch('/api/users');
+            const response = await fetch(`/api/users?page=${page}&limit=20`);
             const data = await response.json();
 
             if (data.success) {
-                setUsers(data.data);
+                setUsers(data.data.users);
+                setPagination(data.data.pagination);
             } else {
                 toast.error('فشل في تحميل المستخدمين');
             }
@@ -65,6 +79,13 @@ export default function UsersPage() {
             toast.error('حدث خطأ أثناء تحميل المستخدمين');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handlePageChange = (newPage: number) => {
+        if (newPage >= 1 && newPage <= pagination.pages) {
+            fetchUsers(newPage);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
 
@@ -127,7 +148,7 @@ export default function UsersPage() {
                 toast.success(editingUser ? 'تم تحديث المستخدم بنجاح' : 'تم إضافة المستخدم بنجاح');
                 setIsDialogOpen(false);
                 resetForm();
-                fetchUsers();
+                fetchUsers(pagination.page);
             } else {
                 toast.error(data.error || 'حدث خطأ');
             }
@@ -154,7 +175,7 @@ export default function UsersPage() {
                 toast.success('تم حذف المستخدم بنجاح');
                 setIsDeleteDialogOpen(false);
                 setDeletingUser(null);
-                fetchUsers();
+                fetchUsers(pagination.page);
             } else {
                 toast.error(data.error || 'فشل في حذف المستخدم');
             }
@@ -184,7 +205,7 @@ export default function UsersPage() {
 
             if (data.success) {
                 toast.success(newStatus === 'active' ? 'تم تفعيل المستخدم' : 'تم حظر المستخدم');
-                fetchUsers();
+                fetchUsers(pagination.page);
             } else {
                 toast.error(data.error || 'فشل في تغيير حالة المستخدم');
             }
@@ -364,6 +385,60 @@ export default function UsersPage() {
                                     )}
                                 </tbody>
                             </table>
+                        </div>
+                    )}
+
+                    {/* Pagination Controls */}
+                    {!loading && pagination.pages > 1 && (
+                        <div className="flex items-center justify-between px-4 py-4 border-t border-border">
+                            <div className="text-sm text-muted-foreground">
+                                عرض {((pagination.page - 1) * pagination.limit) + 1} - {Math.min(pagination.page * pagination.limit, pagination.total)} من أصل {pagination.total} مستخدم
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handlePageChange(pagination.page - 1)}
+                                    disabled={pagination.page === 1}
+                                >
+                                    السابق
+                                </Button>
+
+                                <div className="flex items-center gap-1">
+                                    {Array.from({ length: Math.min(pagination.pages, 7) }, (_, i) => {
+                                        let pageNum;
+                                        if (pagination.pages <= 7) {
+                                            pageNum = i + 1;
+                                        } else if (pagination.page <= 4) {
+                                            pageNum = i + 1;
+                                        } else if (pagination.page >= pagination.pages - 3) {
+                                            pageNum = pagination.pages - 6 + i;
+                                        } else {
+                                            pageNum = pagination.page - 3 + i;
+                                        }
+                                        return (
+                                            <Button
+                                                key={pageNum}
+                                                variant={pageNum === pagination.page ? "default" : "outline"}
+                                                size="sm"
+                                                onClick={() => handlePageChange(pageNum)}
+                                                className="w-10 h-10"
+                                            >
+                                                {pageNum}
+                                            </Button>
+                                        );
+                                    })}
+                                </div>
+
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handlePageChange(pagination.page + 1)}
+                                    disabled={pagination.page === pagination.pages}
+                                >
+                                    التالي
+                                </Button>
+                            </div>
                         </div>
                     )}
                 </CardContent>

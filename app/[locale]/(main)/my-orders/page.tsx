@@ -115,7 +115,7 @@ export default function MyOrdersPage() {
         return labels[status] || status;
     };
 
-    const handleDownload = async (fileKey: string, productTitle: string, language?: string) => {
+    const handleDownload = async (fileKey: string, fileName: string, productTitle: string, language?: string) => {
         if (!fileKey) {
             toast.error('رابط التحميل غير متوفر');
             return;
@@ -124,13 +124,16 @@ export default function MyOrdersPage() {
         const loadingToast = toast.loading('جاري تجهيز التحميل...');
 
         try {
-            // Request signed URL from API
+            // Request signed URL from API with custom filename
             const response = await fetch('/api/download', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ fileKey }),
+                body: JSON.stringify({
+                    fileKey,
+                    fileName: fileName || productTitle
+                }),
             });
 
             const data = await response.json();
@@ -285,7 +288,7 @@ export default function MyOrdersPage() {
                                                 {order.status === 'completed' && item.fileUrl && (
                                                     <Button
                                                         size="sm"
-                                                        onClick={() => handleDownload(item.fileUrl!, item.fileName || item.title, item.language)}
+                                                        onClick={() => handleDownload(item.fileUrl!, item.fileName || item.title, item.title, item.language)}
                                                         className="gap-2 bg-green-600 hover:bg-green-700 w-full sm:w-auto h-10 sm:h-9 text-sm font-medium"
                                                     >
                                                         <Download className="w-4 h-4" />

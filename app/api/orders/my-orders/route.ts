@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { successResponse, errorResponse, withDB, handleError } from '@/lib/api-utils';
 import Order from '@/lib/models/Order';
 import User from '@/lib/models/User';
+import Product from '@/lib/models/Product';
 import { auth } from '@/lib/auth';
 
 // Helper function to fetch orders
@@ -41,6 +42,28 @@ async function fetchOrders(userId: string, userEmail: string, req: NextRequest) 
             },
             { $set: { userId: userId } }
         );
+    }
+
+    // 🔄 Enrich order items with current product fileName
+    // This ensures downloads always use the latest fileName, not stale data from orders
+    for (const order of orders) {
+        for (const item of (order as any).items) {
+            if (item.productId && item.language) {
+                try {
+                    const product = await Product.findById(item.productId).lean();
+                    if (product && product.languages) {
+                        const langVariant = product.languages.find((l: any) => l.lang === item.language);
+                        if (langVariant && langVariant.fileName) {
+                            // Update with current product fileName
+                            item.fileName = langVariant.fileName;
+                        }
+                    }
+                } catch (err) {
+                    // Silently fail if product not found - use existing fileName
+                    console.warn(`Could not fetch product ${item.productId} for fileName update`);
+                }
+            }
+        }
     }
 
     return successResponse({

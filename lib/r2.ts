@@ -55,12 +55,25 @@ export const uploadToR2 = async (
 };
 
 // Generate a pre-signed URL for secure download (expires in 1 hour)
-export const getSignedDownloadUrl = async (key: string, expiresIn: number = 3600): Promise<string> => {
+export const getSignedDownloadUrl = async (
+    key: string,
+    expiresIn: number = 3600,
+    customFileName?: string
+): Promise<string> => {
     try {
-        const command = new GetObjectCommand({
+        const commandParams: any = {
             Bucket: process.env.R2_BUCKET_NAME!,
             Key: key,
-        });
+        };
+
+        // Set custom filename for download if provided
+        if (customFileName) {
+            // Encode filename for Content-Disposition header to support unicode characters
+            const encodedFileName = encodeURIComponent(customFileName);
+            commandParams.ResponseContentDisposition = `attachment; filename*=UTF-8''${encodedFileName}`;
+        }
+
+        const command = new GetObjectCommand(commandParams);
 
         const signedUrl = await getSignedUrl(r2Client, command, { expiresIn });
         return signedUrl;

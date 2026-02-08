@@ -48,22 +48,23 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { fileKey } = body;
+        const { fileKey, fileName } = body;
 
         if (!fileKey) {
             return errorResponse('File key is required', 400);
         }
 
-        console.log('📥 Generating signed URL for:', fileKey);
+        console.log('📥 Generating signed URL for:', fileKey, 'with filename:', fileName);
 
-        // Generate signed URL (expires in 1 hour)
-        const signedUrl = await getSignedDownloadUrl(fileKey, 3600);
+        // Generate signed URL with custom filename for Content-Disposition header (expires in 1 hour)
+        const signedUrl = await getSignedDownloadUrl(fileKey, 3600, fileName);
 
         console.log('✅ Signed URL generated successfully');
 
         return successResponse({
             url: signedUrl,
             expiresIn: 3600,
+            fileName: fileName,
         }, 'Download URL generated successfully');
     } catch (error) {
         console.error('❌ Download URL error:', error);

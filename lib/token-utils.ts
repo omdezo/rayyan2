@@ -18,7 +18,7 @@ export function getTokenExpiration(): Date {
 /**
  * Check if token is expired
  */
-export function isTokenExpired(expiresAt: Date | null): boolean {
+export function isTokenExpired(expiresAt: Date | null | undefined): boolean {
     if (!expiresAt) return true;
     return new Date() > expiresAt;
 }

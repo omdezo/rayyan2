@@ -536,6 +536,13 @@ export default function ProductsPage() {
         try {
             const newStatus = !product.isNewArrival;
 
+            // Optimistically update UI immediately
+            setProducts(prevProducts =>
+                prevProducts.map(p =>
+                    p._id === product._id ? { ...p, isNewArrival: newStatus } : p
+                )
+            );
+
             const response = await fetch(`/api/products/${product._id}`, {
                 method: 'PUT',
                 headers: {
@@ -551,11 +558,22 @@ export default function ProductsPage() {
 
             if (data.success) {
                 toast.success(newStatus ? 'تم تفعيل "وصل جديداً"' : 'تم إلغاء "وصل جديداً"');
-                fetchProducts(); // Refresh the list
             } else {
+                // Revert on error
+                setProducts(prevProducts =>
+                    prevProducts.map(p =>
+                        p._id === product._id ? { ...p, isNewArrival: !newStatus } : p
+                    )
+                );
                 toast.error(data.error || 'حدث خطأ');
             }
         } catch (error) {
+            // Revert on error
+            setProducts(prevProducts =>
+                prevProducts.map(p =>
+                    p._id === product._id ? { ...p, isNewArrival: !product.isNewArrival } : p
+                )
+            );
             console.error('Error toggling new arrival:', error);
             toast.error('حدث خطأ أثناء التحديث');
         }

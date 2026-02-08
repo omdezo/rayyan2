@@ -237,14 +237,24 @@ export default function NewProductPage() {
                 toast.error('الرجاء إكمال بيانات النسخة العربية');
                 return;
             }
-            languages.push({ lang: 'ar', price: parseFloat(formData.languages.ar.price), fileUrl: formData.languages.ar.fileUrl });
+            languages.push({
+                lang: 'ar',
+                price: parseFloat(formData.languages.ar.price),
+                fileUrl: formData.languages.ar.fileUrl,
+                fileName: formData.languages.ar.fileName || formData.languages.ar.fileUrl.split('/').pop()
+            });
         }
         if (formData.languages.en.enabled) {
             if (!formData.languages.en.price || !formData.languages.en.fileUrl) {
                 toast.error('الرجاء إكمال بيانات النسخة الإنجليزية');
                 return;
             }
-            languages.push({ lang: 'en', price: parseFloat(formData.languages.en.price), fileUrl: formData.languages.en.fileUrl });
+            languages.push({
+                lang: 'en',
+                price: parseFloat(formData.languages.en.price),
+                fileUrl: formData.languages.en.fileUrl,
+                fileName: formData.languages.en.fileName || formData.languages.en.fileUrl.split('/').pop()
+            });
         }
         if (languages.length === 0) {
             toast.error('الرجاء تفعيل لغة واحدة على الأقل');
@@ -575,8 +585,25 @@ export default function NewProductPage() {
                                                     {formData.languages.ar.uploading && <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin" />}
                                                     {formData.languages.ar.fileUrl && <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-600" />}
                                                 </div>
-                                                {formData.languages.ar.fileName && (
-                                                    <p className="text-xs text-muted-foreground truncate">{formData.languages.ar.fileName}</p>
+                                                {formData.languages.ar.fileUrl && (
+                                                    <div className="space-y-1">
+                                                        <Label className="text-xs">اسم الملف المخصص (اختياري)</Label>
+                                                        <Input
+                                                            value={formData.languages.ar.fileName}
+                                                            onChange={(e) => setFormData({
+                                                                ...formData,
+                                                                languages: {
+                                                                    ...formData.languages,
+                                                                    ar: { ...formData.languages.ar, fileName: e.target.value }
+                                                                }
+                                                            })}
+                                                            placeholder="مثال: قصة-الأرنب.pdf"
+                                                            className="h-9 text-xs"
+                                                        />
+                                                        <p className="text-xs text-muted-foreground">
+                                                            هذا هو الاسم الذي سيراه العميل عند التحميل
+                                                        </p>
+                                                    </div>
                                                 )}
                                             </div>
                                         </div>
@@ -639,8 +666,25 @@ export default function NewProductPage() {
                                                     {formData.languages.en.uploading && <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin" />}
                                                     {formData.languages.en.fileUrl && <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-600" />}
                                                 </div>
-                                                {formData.languages.en.fileName && (
-                                                    <p className="text-xs text-muted-foreground truncate">{formData.languages.en.fileName}</p>
+                                                {formData.languages.en.fileUrl && (
+                                                    <div className="space-y-1">
+                                                        <Label className="text-xs">Custom Filename (optional)</Label>
+                                                        <Input
+                                                            value={formData.languages.en.fileName}
+                                                            onChange={(e) => setFormData({
+                                                                ...formData,
+                                                                languages: {
+                                                                    ...formData.languages,
+                                                                    en: { ...formData.languages.en, fileName: e.target.value }
+                                                                }
+                                                            })}
+                                                            placeholder="Example: rabbit-story.pdf"
+                                                            className="h-9 text-xs"
+                                                        />
+                                                        <p className="text-xs text-muted-foreground">
+                                                            This is the name customers will see when downloading
+                                                        </p>
+                                                    </div>
                                                 )}
                                             </div>
                                         </div>

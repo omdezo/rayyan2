@@ -16,6 +16,7 @@ interface Order {
         price: number;
         language?: 'ar' | 'en';
         fileUrl?: string;
+        fileName?: string;
     }>;
     total: number;
     status: string;
@@ -284,7 +285,7 @@ export default function MyOrdersPage() {
                                                 {order.status === 'completed' && item.fileUrl && (
                                                     <Button
                                                         size="sm"
-                                                        onClick={() => handleDownload(item.fileUrl!, item.title, item.language)}
+                                                        onClick={() => handleDownload(item.fileUrl!, item.fileName || item.title, item.language)}
                                                         className="gap-2 bg-green-600 hover:bg-green-700 w-full sm:w-auto h-10 sm:h-9 text-sm font-medium"
                                                     >
                                                         <Download className="w-4 h-4" />

@@ -45,6 +45,10 @@ const OrderSchema = new Schema<IOrder>({
             type: String,
             default: '',
         },
+        fileName: {
+            type: String,
+            default: '',
+        },
     }],
     subtotal: {
         type: Number,

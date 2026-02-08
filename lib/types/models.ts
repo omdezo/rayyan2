@@ -2,6 +2,7 @@ export interface ILanguageVariant {
     lang: 'ar' | 'en';
     price: number;
     fileUrl?: string;
+    fileName?: string;
 }
 
 export interface IProductMedia {

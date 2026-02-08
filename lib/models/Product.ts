@@ -16,6 +16,10 @@ const LanguageVariantSchema = new Schema({
         type: String,
         default: '',
     },
+    fileName: {
+        type: String,
+        default: '',
+    },
 }, { _id: false });
 
 const ProductMediaSchema = new Schema({

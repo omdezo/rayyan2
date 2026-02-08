@@ -17,6 +17,7 @@ interface LanguageVariant {
     lang: 'ar' | 'en';
     price: number;
     fileUrl: string;
+    fileName?: string;
 }
 
 interface Product {
@@ -40,6 +41,7 @@ interface CartItem {
     quantity: number;
     language?: 'ar' | 'en';
     fileUrl?: string;
+    fileName?: string;
 }
 
 interface OrderItem {
@@ -48,6 +50,7 @@ interface OrderItem {
     price: number;
     language?: 'ar' | 'en';
     fileUrl?: string;
+    fileName?: string;
 }
 
 function CheckoutContent() {
@@ -247,6 +250,7 @@ function CheckoutContent() {
                     price: item.price,
                     language: item.language,
                     fileUrl: item.fileUrl || '',
+                    fileName: item.fileName || item.title,
                 }));
                 total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             } else {
@@ -266,6 +270,7 @@ function CheckoutContent() {
                                 price: langVariant.price,
                                 language: lang,
                                 fileUrl: langVariant.fileUrl,
+                                fileName: langVariant.fileName || product!.title,
                             });
                             total += langVariant.price;
                         }

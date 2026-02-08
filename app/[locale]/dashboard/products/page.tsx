@@ -424,7 +424,8 @@ export default function ProductsPage() {
             languages.push({
                 lang: 'ar',
                 price: parseFloat(formData.languages.ar.price),
-                fileUrl: formData.languages.ar.fileUrl
+                fileUrl: formData.languages.ar.fileUrl,
+                fileName: formData.languages.ar.fileName || formData.languages.ar.fileUrl.split('/').pop()
             });
         }
 
@@ -440,7 +441,8 @@ export default function ProductsPage() {
             languages.push({
                 lang: 'en',
                 price: parseFloat(formData.languages.en.price),
-                fileUrl: formData.languages.en.fileUrl
+                fileUrl: formData.languages.en.fileUrl,
+                fileName: formData.languages.en.fileName || formData.languages.en.fileUrl.split('/').pop()
             });
         }
 
@@ -972,6 +974,27 @@ export default function ProductsPage() {
                                             <p className="text-xs text-muted-foreground">
                                                 PDF, PPT, PPTX (حد أقصى 1GB)
                                             </p>
+
+                                            {formData.languages.ar.fileUrl && (
+                                                <div className="space-y-1 mt-3 p-3 bg-secondary/30 rounded-md">
+                                                    <Label className="text-xs font-semibold">اسم الملف المخصص</Label>
+                                                    <Input
+                                                        value={formData.languages.ar.fileName}
+                                                        onChange={(e) => setFormData(prev => ({
+                                                            ...prev,
+                                                            languages: {
+                                                                ...prev.languages,
+                                                                ar: { ...prev.languages.ar, fileName: e.target.value }
+                                                            }
+                                                        }))}
+                                                        placeholder="مثال: قصة-الأرنب.pdf"
+                                                        className="h-9 text-sm"
+                                                    />
+                                                    <p className="text-xs text-muted-foreground">
+                                                        هذا هو الاسم الذي سيراه العميل عند التحميل
+                                                    </p>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 )}
@@ -1055,6 +1078,27 @@ export default function ProductsPage() {
                                             <p className="text-xs text-muted-foreground">
                                                 PDF, PPT, PPTX (max 1GB)
                                             </p>
+
+                                            {formData.languages.en.fileUrl && (
+                                                <div className="space-y-1 mt-3 p-3 bg-secondary/30 rounded-md">
+                                                    <Label className="text-xs font-semibold">Custom Filename</Label>
+                                                    <Input
+                                                        value={formData.languages.en.fileName}
+                                                        onChange={(e) => setFormData(prev => ({
+                                                            ...prev,
+                                                            languages: {
+                                                                ...prev.languages,
+                                                                en: { ...prev.languages.en, fileName: e.target.value }
+                                                            }
+                                                        }))}
+                                                        placeholder="Example: rabbit-story.pdf"
+                                                        className="h-9 text-sm"
+                                                    />
+                                                    <p className="text-xs text-muted-foreground">
+                                                        This is the name customers will see when downloading
+                                                    </p>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 )}

@@ -75,10 +75,19 @@ export default function LoginPage() {
 
             if (result?.error) {
                 console.log('❌ Login failed:', result.error);
-                setError("البريد الإلكتروني أو كلمة المرور غير صحيحة");
-                toast.error("فشل تسجيل الدخول", {
-                    description: "البريد الإلكتروني أو كلمة المرور غير صحيحة",
-                });
+
+                // Check if error is about email verification
+                if (result.error.includes('تأكيد بريدك الإلكتروني') || result.error.includes('verify')) {
+                    setError("يرجى تأكيد بريدك الإلكتروني قبل تسجيل الدخول. تحقق من بريدك الإلكتروني.");
+                    toast.error("البريد الإلكتروني غير مؤكد", {
+                        description: "يرجى التحقق من بريدك الإلكتروني وتأكيد الحساب",
+                    });
+                } else {
+                    setError("البريد الإلكتروني أو كلمة المرور غير صحيحة");
+                    toast.error("فشل تسجيل الدخول", {
+                        description: "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+                    });
+                }
                 setIsLoading(false);
             } else if (result?.ok) {
                 console.log('✅ Login successful!');

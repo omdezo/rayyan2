@@ -64,6 +64,12 @@ export const authConfig: NextAuthConfig = {
                         return null;
                     }
 
+                    // Check if email is verified
+                    if (!user.emailVerified) {
+                        console.log('❌ Email not verified for:', user.email);
+                        throw new Error('يرجى تأكيد بريدك الإلكتروني قبل تسجيل الدخول');
+                    }
+
                     console.log('✅ Login successful for:', user.email);
 
                     // Return user object

@@ -141,8 +141,18 @@ export default function MyOrdersPage() {
                 // Show success message
                 toast.success(`جاري تحميل: ${productTitle}${language ? ` (${language === 'ar' ? 'النسخة العربية' : 'English Version'})` : ''}`);
 
-                // Open the signed URL in a new tab - browser will handle the download
-                window.open(data.data.url, '_blank', 'noopener,noreferrer');
+                // Mobile-friendly download approach - create and click a link element
+                // This works better than window.open on mobile browsers
+                const link = document.createElement('a');
+                link.href = data.data.url;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                link.download = productTitle; // Suggest filename
+
+                // Append to body, click, and remove
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
             } else {
                 toast.error(data.error || 'فشل في تحميل الملف');
             }
@@ -163,26 +173,26 @@ export default function MyOrdersPage() {
     }
 
     return (
-        <div className="min-h-screen py-6 sm:py-12 px-3 sm:px-4">
+        <div className="min-h-screen py-4 sm:py-12 px-4 sm:px-4">
             <div className="container max-w-6xl mx-auto">
                 {/* Header */}
-                <div className="mb-6 sm:mb-8">
-                    <h1 className="text-2xl sm:text-3xl font-bold mb-2">طلباتي السابقة</h1>
-                    <p className="text-sm sm:text-base text-muted-foreground">
+                <div className="mb-4 sm:mb-8">
+                    <h1 className="text-xl sm:text-3xl font-bold mb-1 sm:mb-2">طلباتي السابقة</h1>
+                    <p className="text-xs sm:text-base text-muted-foreground">
                         عرض جميع مشترياتك وتحميل المنتجات الرقمية
                     </p>
                 </div>
 
                 {/* Terms Message */}
                 {orders.length > 0 && (
-                    <Card className="border-red-500/50 bg-white dark:bg-gray-900 mb-6 shadow-lg">
-                        <CardContent className="p-4 sm:p-6">
-                            <div className="flex gap-3 sm:gap-4">
+                    <Card className="border-red-500/50 bg-white dark:bg-gray-900 mb-4 sm:mb-6 shadow-lg">
+                        <CardContent className="p-3 sm:p-6">
+                            <div className="flex gap-2 sm:gap-4">
                                 <div className="flex-shrink-0 mt-0.5">
-                                    <ShieldAlert className="w-6 h-6 sm:w-7 sm:h-7 text-red-600" />
+                                    <ShieldAlert className="w-5 h-5 sm:w-7 sm:h-7 text-red-600" />
                                 </div>
-                                <div className="space-y-2 text-sm sm:text-base leading-relaxed">
-                                    <p className="font-bold text-lg text-red-600 dark:text-red-500">
+                                <div className="space-y-1 sm:space-y-2 text-xs sm:text-base leading-relaxed">
+                                    <p className="font-bold text-sm sm:text-lg text-red-600 dark:text-red-500">
                                         شروط الاستخدام:
                                     </p>
                                     <p className="text-red-700 dark:text-red-400 font-medium">
@@ -200,34 +210,43 @@ export default function MyOrdersPage() {
                 {/* Orders List */}
                 {orders.length === 0 ? (
                     <Card className="border-border/50">
-                        <CardContent className="flex flex-col items-center justify-center py-16">
-                            <ShoppingBag className="w-16 h-16 text-muted-foreground mb-4" />
-                            <h3 className="text-xl font-bold mb-2">لا توجد طلبات</h3>
-                            <p className="text-muted-foreground mb-6 text-center">
+                        <CardContent className="flex flex-col items-center justify-center py-12 sm:py-16 px-4">
+                            <ShoppingBag className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mb-3 sm:mb-4" />
+                            <h3 className="text-lg sm:text-xl font-bold mb-1 sm:mb-2">لا توجد طلبات</h3>
+                            <p className="text-muted-foreground mb-4 sm:mb-6 text-center text-sm sm:text-base">
                                 لم تقم بشراء أي منتجات بعد
                             </p>
-                            <Button onClick={() => router.push('/products' as any)}>
+                            <Button onClick={() => router.push('/products' as any)} className="h-10 sm:h-9">
                                 تصفح المنتجات
                             </Button>
                         </CardContent>
                     </Card>
                 ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-3 sm:space-y-4">
                         {orders.map((order) => (
                             <Card key={order._id} className="border-border/50 shadow-sm">
-                                <CardHeader className="pb-3">
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <CardTitle className="text-lg">
-                                                طلب #{order._id.slice(-8).toUpperCase()}
-                                            </CardTitle>
-                                            <p className="text-sm text-muted-foreground mt-1">
-                                                {formatDate(order.date)}
-                                            </p>
+                                <CardHeader className="pb-2 sm:pb-3 p-3 sm:p-6">
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+                                        <div className="flex items-start justify-between sm:block">
+                                            <div>
+                                                <CardTitle className="text-base sm:text-lg">
+                                                    طلب #{order._id.slice(-8).toUpperCase()}
+                                                </CardTitle>
+                                                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
+                                                    {formatDate(order.date)}
+                                                </p>
+                                            </div>
+                                            <span className={`sm:hidden inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                                order.status === 'completed' ? 'bg-emerald-500/10 text-emerald-500' :
+                                                order.status === 'pending' ? 'bg-amber-500/10 text-amber-500' :
+                                                'bg-rose-500/10 text-rose-500'
+                                            }`}>
+                                                {getStatusLabel(order.status)}
+                                            </span>
                                         </div>
-                                        <div className="text-left">
-                                            <p className="font-bold text-lg">{order.total.toFixed(3)} ر.ع</p>
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                        <div className="flex items-center justify-between sm:text-left">
+                                            <p className="font-bold text-base sm:text-lg">{order.total.toFixed(3)} ر.ع</p>
+                                            <span className={`hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mr-3 ${
                                                 order.status === 'completed' ? 'bg-emerald-500/10 text-emerald-500' :
                                                 order.status === 'pending' ? 'bg-amber-500/10 text-amber-500' :
                                                 'bg-rose-500/10 text-rose-500'
@@ -237,27 +256,27 @@ export default function MyOrdersPage() {
                                         </div>
                                     </div>
                                 </CardHeader>
-                                <CardContent>
-                                    <div className="space-y-3">
+                                <CardContent className="p-3 sm:p-6">
+                                    <div className="space-y-2 sm:space-y-3">
                                         {order.items.map((item, index) => (
                                             <div
                                                 key={index}
-                                                className="flex items-center justify-between p-4 rounded-lg bg-secondary/20"
+                                                className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 rounded-lg bg-secondary/20 gap-3"
                                             >
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-12 h-12 rounded-lg bg-secondary/50 flex items-center justify-center">
-                                                        <Package className="w-6 h-6 text-muted-foreground" />
+                                                <div className="flex items-start sm:items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                                                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-secondary/50 flex items-center justify-center flex-shrink-0">
+                                                        <Package className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground" />
                                                     </div>
-                                                    <div>
-                                                        <p className="font-medium">{item.title}</p>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="font-medium text-sm sm:text-base leading-snug">{item.title}</p>
                                                         {item.language && (
                                                             <div className="mt-1">
-                                                                <span className="inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium transition-colors border-transparent bg-secondary text-secondary-foreground">
+                                                                <span className="inline-flex items-center rounded-md border px-1.5 sm:px-2 py-0.5 text-xs font-medium transition-colors border-transparent bg-secondary text-secondary-foreground">
                                                                     {item.language === 'ar' ? 'AR - النسخة العربية' : 'EN - English Version'}
                                                                 </span>
                                                             </div>
                                                         )}
-                                                        <p className="text-sm text-muted-foreground mt-1">
+                                                        <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                                                             {item.price.toFixed(3)} ر.ع
                                                         </p>
                                                     </div>
@@ -266,7 +285,7 @@ export default function MyOrdersPage() {
                                                     <Button
                                                         size="sm"
                                                         onClick={() => handleDownload(item.fileUrl!, item.title, item.language)}
-                                                        className="gap-2 bg-green-600 hover:bg-green-700"
+                                                        className="gap-2 bg-green-600 hover:bg-green-700 w-full sm:w-auto h-10 sm:h-9 text-sm font-medium"
                                                     >
                                                         <Download className="w-4 h-4" />
                                                         تحميل
@@ -277,12 +296,12 @@ export default function MyOrdersPage() {
                                     </div>
 
                                     {/* Canva Request Button */}
-                                    <div className="mt-4 pt-4 border-t">
+                                    <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t">
                                         <Button
                                             variant="outline"
                                             size="sm"
                                             onClick={() => window.open("https://wa.me/96895534007", "_blank")}
-                                            className="w-full sm:w-auto"
+                                            className="w-full sm:w-auto h-10 sm:h-9 text-sm"
                                         >
                                             طلب نسخة من كانفا
                                         </Button>
@@ -293,15 +312,15 @@ export default function MyOrdersPage() {
 
                         {/* Pagination */}
                         {pagination.pages > 1 && (
-                            <div className="flex items-center justify-center gap-1 sm:gap-2 mt-6 sm:mt-8">
+                            <div className="flex items-center justify-center gap-1 sm:gap-2 mt-4 sm:mt-8">
                                 <Button
                                     variant="outline"
                                     size="sm"
                                     onClick={() => handlePageChange(pagination.page - 1)}
                                     disabled={pagination.page === 1}
-                                    className="h-9 px-2 sm:px-4"
+                                    className="h-10 sm:h-9 px-3 sm:px-4"
                                 >
-                                    <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
+                                    <ChevronRight className="w-4 h-4" />
                                     <span className="hidden sm:inline mr-1">السابق</span>
                                 </Button>
 
@@ -323,7 +342,7 @@ export default function MyOrdersPage() {
                                                 variant={pageNum === pagination.page ? "default" : "outline"}
                                                 size="sm"
                                                 onClick={() => handlePageChange(pageNum)}
-                                                className="w-8 h-9 sm:w-10 text-xs sm:text-sm p-0"
+                                                className="w-10 h-10 sm:w-10 sm:h-9 text-sm p-0 min-w-[40px]"
                                             >
                                                 {pageNum}
                                             </Button>
@@ -336,10 +355,10 @@ export default function MyOrdersPage() {
                                     size="sm"
                                     onClick={() => handlePageChange(pagination.page + 1)}
                                     disabled={pagination.page === pagination.pages}
-                                    className="h-9 px-2 sm:px-4"
+                                    className="h-10 sm:h-9 px-3 sm:px-4"
                                 >
                                     <span className="hidden sm:inline ml-1">التالي</span>
-                                    <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" />
+                                    <ChevronLeft className="w-4 h-4" />
                                 </Button>
                             </div>
                         )}

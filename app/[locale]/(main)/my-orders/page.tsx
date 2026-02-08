@@ -120,10 +120,6 @@ export default function MyOrdersPage() {
             return;
         }
 
-        // Safari fix: Open window BEFORE async operation to avoid popup blocker
-        // This must happen synchronously with the user's click
-        const newWindow = window.open('about:blank', '_blank', 'noopener,noreferrer');
-
         const loadingToast = toast.loading('جاري تجهيز التحميل...');
 
         try {
@@ -145,25 +141,22 @@ export default function MyOrdersPage() {
                 // Show success message
                 toast.success(`جاري تحميل: ${productTitle}${language ? ` (${language === 'ar' ? 'النسخة العربية' : 'English Version'})` : ''}`);
 
-                // Update the pre-opened window with the download URL
-                if (newWindow) {
-                    newWindow.location.href = data.data.url;
-                } else {
-                    // Fallback: if popup was blocked, try direct navigation
-                    window.location.href = data.data.url;
-                }
+                // Safari-compatible download: use hidden iframe to trigger download without navigation
+                // This works on all browsers including Safari/iOS without opening new tabs
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.src = data.data.url;
+
+                document.body.appendChild(iframe);
+
+                // Remove iframe after download starts (cleanup)
+                setTimeout(() => {
+                    document.body.removeChild(iframe);
+                }, 5000);
             } else {
-                // Close the blank window if API failed
-                if (newWindow) {
-                    newWindow.close();
-                }
                 toast.error(data.error || 'فشل في تحميل الملف');
             }
         } catch (error) {
-            // Close the blank window on error
-            if (newWindow) {
-                newWindow.close();
-            }
             // Dismiss loading toast on error
             toast.dismiss(loadingToast);
             console.error('Download error:', error);

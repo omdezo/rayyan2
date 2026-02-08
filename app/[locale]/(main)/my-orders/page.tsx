@@ -120,6 +120,10 @@ export default function MyOrdersPage() {
             return;
         }
 
+        // Safari fix: Open window BEFORE async operation to avoid popup blocker
+        // This must happen synchronously with the user's click
+        const newWindow = window.open('about:blank', '_blank', 'noopener,noreferrer');
+
         const loadingToast = toast.loading('جاري تجهيز التحميل...');
 
         try {
@@ -141,22 +145,25 @@ export default function MyOrdersPage() {
                 // Show success message
                 toast.success(`جاري تحميل: ${productTitle}${language ? ` (${language === 'ar' ? 'النسخة العربية' : 'English Version'})` : ''}`);
 
-                // Mobile-friendly download approach - create and click a link element
-                // This works better than window.open on mobile browsers
-                const link = document.createElement('a');
-                link.href = data.data.url;
-                link.target = '_blank';
-                link.rel = 'noopener noreferrer';
-                link.download = productTitle; // Suggest filename
-
-                // Append to body, click, and remove
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                // Update the pre-opened window with the download URL
+                if (newWindow) {
+                    newWindow.location.href = data.data.url;
+                } else {
+                    // Fallback: if popup was blocked, try direct navigation
+                    window.location.href = data.data.url;
+                }
             } else {
+                // Close the blank window if API failed
+                if (newWindow) {
+                    newWindow.close();
+                }
                 toast.error(data.error || 'فشل في تحميل الملف');
             }
         } catch (error) {
+            // Close the blank window on error
+            if (newWindow) {
+                newWindow.close();
+            }
             // Dismiss loading toast on error
             toast.dismiss(loadingToast);
             console.error('Download error:', error);

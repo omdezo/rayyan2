@@ -28,7 +28,7 @@ export function isTokenExpired(expiresAt: Date | null): boolean {
  * @param lastSentAt The last time an email was sent
  * @returns Object with allowed status and optional wait time in seconds
  */
-export function canSendEmail(lastSentAt: Date | null): { allowed: boolean; waitTime?: number } {
+export function canSendEmail(lastSentAt: Date | null | undefined): { allowed: boolean; waitTime?: number } {
     if (!lastSentAt) return { allowed: true };
 
     const oneMinute = 60 * 1000;

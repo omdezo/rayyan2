@@ -1,6 +1,11 @@
 import { NextRequest } from 'next/server';
 import { successResponse, errorResponse, withDB, handleError } from '@/lib/api-utils';
 import User from '@/lib/models/User';
+import { generateToken, getTokenExpiration } from '@/lib/token-utils';
+import { getVerificationEmailTemplate } from '@/lib/email-templates';
+import { Resend } from 'resend';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // POST /api/auth/register - Register new user
 export async function POST(req: NextRequest) {
@@ -65,7 +70,37 @@ export async function POST(req: NextRequest) {
                 password,
                 role: 'user', // Hardcoded - cannot be changed via registration
                 status: 'active',
+                emailVerified: false, // NEW: Require email verification
             });
+
+            // Generate verification token and send email
+            try {
+                const token = generateToken();
+                const expires = getTokenExpiration();
+
+                user.emailVerificationToken = token;
+                user.emailVerificationExpires = expires;
+                user.lastVerificationEmailSent = new Date();
+                await user.save();
+
+                // Create verification link
+                const verificationLink = `${process.env.NEXT_PUBLIC_APP_URL}/ar/auth/verify-email?token=${token}`;
+
+                // Send verification email
+                const emailTemplate = getVerificationEmailTemplate(verificationLink, user.name);
+
+                await resend.emails.send({
+                    from: 'ريان للتصاميم <noreply@rayiandesign.com>',
+                    to: user.email,
+                    subject: emailTemplate.subject,
+                    html: emailTemplate.html,
+                });
+
+                console.log('✅ Verification email sent to:', user.email);
+            } catch (emailError) {
+                console.error('Failed to send verification email:', emailError);
+                // Don't fail registration if email fails
+            }
 
             // Return success without password
             return successResponse(
@@ -73,8 +108,9 @@ export async function POST(req: NextRequest) {
                     id: user._id,
                     name: user.name,
                     email: user.email,
+                    emailVerified: false,
                 },
-                'Account created successfully. Please login.',
+                'تم إنشاء الحساب! يرجى تأكيد بريدك الإلكتروني',
                 201
             );
         });

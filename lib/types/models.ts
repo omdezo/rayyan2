@@ -43,6 +43,18 @@ export interface IUser {
     role: 'user' | 'admin';
     status: 'active' | 'inactive' | 'banned';
     joinDate: Date;
+    // Email verification
+    emailVerified: boolean;
+    emailVerificationToken?: string | null;
+    emailVerificationExpires?: Date | null;
+    // Password reset
+    passwordResetToken?: string | null;
+    passwordResetExpires?: Date | null;
+    // Session management
+    sessionVersion: number;
+    // Rate limiting
+    lastVerificationEmailSent?: Date | null;
+    lastPasswordResetEmailSent?: Date | null;
 }
 
 export interface IOrder {

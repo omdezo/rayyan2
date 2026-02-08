@@ -47,6 +47,42 @@ const UserSchema = new Schema<IUser>({
         type: Date,
         default: Date.now,
     },
+    // Email verification fields
+    emailVerified: {
+        type: Boolean,
+        default: false,
+    },
+    emailVerificationToken: {
+        type: String,
+        default: null,
+    },
+    emailVerificationExpires: {
+        type: Date,
+        default: null,
+    },
+    // Password reset fields
+    passwordResetToken: {
+        type: String,
+        default: null,
+    },
+    passwordResetExpires: {
+        type: Date,
+        default: null,
+    },
+    // Session invalidation
+    sessionVersion: {
+        type: Number,
+        default: 1,
+    },
+    // Rate limiting
+    lastVerificationEmailSent: {
+        type: Date,
+        default: null,
+    },
+    lastPasswordResetEmailSent: {
+        type: Date,
+        default: null,
+    },
 });
 
 // Hash password before saving (only if password is provided)

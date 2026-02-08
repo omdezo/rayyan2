@@ -117,6 +117,7 @@ export const authConfig: NextAuthConfig = {
                             password: '', // Empty for OAuth
                             role: 'user',
                             status: 'active',
+                            emailVerified: true, // Auto-verify OAuth users
                         });
                         console.log('✅ Created Google user:', existingUser.email);
                     } else {
@@ -173,6 +174,21 @@ export const authConfig: NextAuthConfig = {
                 });
             }
 
+            // Fetch email verification status and session version
+            if (token.id || token.email) {
+                try {
+                    await connectDB();
+                    const dbUser = await User.findById(token.id || await User.findOne({ email: (token.email as string).toLowerCase() }).then(u => u?._id));
+
+                    if (dbUser) {
+                        token.emailVerified = dbUser.emailVerified;
+                        token.sessionVersion = dbUser.sessionVersion;
+                    }
+                } catch (error) {
+                    console.error('❌ Error fetching verification status:', error);
+                }
+            }
+
             return token;
         },
         async session({ session, token }) {
@@ -187,11 +203,14 @@ export const authConfig: NextAuthConfig = {
             if (session.user) {
                 (session.user as any).id = token.id;
                 (session.user as any).role = token.role;
+                (session.user as any).emailVerified = token.emailVerified;
+                (session.user as any).sessionVersion = token.sessionVersion;
 
                 console.log('✅ Session user updated:', {
                     email: session.user.email,
                     id: (session.user as any).id,
-                    role: (session.user as any).role
+                    role: (session.user as any).role,
+                    emailVerified: (session.user as any).emailVerified
                 });
 
                 // ⚠️ CRITICAL: Validate that ID exists (especially for Google OAuth)

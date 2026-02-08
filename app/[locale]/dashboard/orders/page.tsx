@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Eye, Download, Filter, Loader2, X } from "lucide-react";
+import { Search, Eye, Download, Filter, Loader2, X, Mail } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
@@ -51,6 +51,7 @@ export default function OrdersPage() {
         limit: 20,
         pages: 0,
     });
+    const [sendingEmail, setSendingEmail] = useState<string | null>(null);
 
     useEffect(() => {
         fetchOrders(1);
@@ -85,6 +86,40 @@ export default function OrdersPage() {
         if (newPage >= 1 && newPage <= pagination.pages) {
             fetchOrders(newPage);
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
+    const handleSendEmail = async (order: Order) => {
+        if (order.status !== 'completed') {
+            toast.error('يمكن إرسال البريد للطلبات المكتملة فقط');
+            return;
+        }
+
+        try {
+            setSendingEmail(order._id);
+
+            const response = await fetch('/api/send-order-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    orderId: order._id,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                toast.success(`تم إرسال البريد إلى ${order.customerInfo.email}`);
+            } else {
+                toast.error(data.error || 'فشل في إرسال البريد');
+            }
+        } catch (error) {
+            console.error('Error sending email:', error);
+            toast.error('حدث خطأ أثناء إرسال البريد');
+        } finally {
+            setSendingEmail(null);
         }
     };
 
@@ -238,6 +273,22 @@ export default function OrdersPage() {
                                                 </td>
                                                 <td className="p-4">
                                                     <div className="flex items-center justify-end gap-2">
+                                                        {order.status === 'completed' && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8 text-muted-foreground hover:text-green-600"
+                                                                onClick={() => handleSendEmail(order)}
+                                                                disabled={sendingEmail === order._id}
+                                                                title="إرسال المنتجات بالبريد"
+                                                            >
+                                                                {sendingEmail === order._id ? (
+                                                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                                                ) : (
+                                                                    <Mail className="w-4 h-4" />
+                                                                )}
+                                                            </Button>
+                                                        )}
                                                         <Button
                                                             variant="ghost"
                                                             size="icon"

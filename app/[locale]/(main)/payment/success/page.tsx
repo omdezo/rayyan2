@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { Loader2, CheckCircle, Package, Download } from "lucide-react";
+import { Loader2, CheckCircle, Package, Download, Mail } from "lucide-react";
+import { toast } from "sonner";
 import Link from "next/link";
 
 interface OrderItem {
@@ -38,6 +39,8 @@ function SuccessContent() {
     const [order, setOrder] = useState<Order | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [pollCount, setPollCount] = useState(0);
+    const [sendingEmail, setSendingEmail] = useState(false);
+    const [emailSent, setEmailSent] = useState(false);
 
     useEffect(() => {
         if (orderId) {
@@ -97,6 +100,39 @@ function SuccessContent() {
             setError('حدث خطأ أثناء التحقق من الدفع');
         } finally {
             if (showLoader) setLoading(false);
+        }
+    };
+
+    const handleSendEmail = async () => {
+        if (!order) return;
+
+        setSendingEmail(true);
+        const loadingToast = toast.loading('جاري إرسال البريد الإلكتروني...');
+
+        try {
+            const response = await fetch('/api/send-order-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ orderId: order._id }),
+            });
+
+            const data = await response.json();
+            toast.dismiss(loadingToast);
+
+            if (data.success) {
+                toast.success('✅ تم إرسال المنتجات إلى بريدك الإلكتروني بنجاح!');
+                setEmailSent(true);
+            } else {
+                toast.error(data.error || 'فشل في إرسال البريد الإلكتروني');
+            }
+        } catch (error) {
+            toast.dismiss(loadingToast);
+            console.error('Send email error:', error);
+            toast.error('حدث خطأ أثناء إرسال البريد الإلكتروني');
+        } finally {
+            setSendingEmail(false);
         }
     };
 
@@ -236,17 +272,46 @@ function SuccessContent() {
                         )}
 
                         {/* Action Buttons */}
-                        <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                            <Link href="/ar/my-orders" className="flex-1">
-                                <Button className="w-full bg-[#8B7355] hover:bg-[#8B7355]/90">
-                                    عرض طلباتي
+                        <div className="flex flex-col gap-4 pt-4">
+                            {/* Send Email Button - Prominent */}
+                            {isPaid && (
+                                <Button
+                                    size="lg"
+                                    onClick={handleSendEmail}
+                                    disabled={sendingEmail}
+                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/30"
+                                >
+                                    {sendingEmail ? (
+                                        <>
+                                            <Loader2 className="w-5 h-5 animate-spin ml-2" />
+                                            جاري الإرسال...
+                                        </>
+                                    ) : emailSent ? (
+                                        <>
+                                            <Mail className="w-5 h-5 ml-2" />
+                                            تم الإرسال إلى بريدك ✓
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Mail className="w-5 h-5 ml-2" />
+                                            إرسال المنتجات على الإيميل
+                                        </>
+                                    )}
                                 </Button>
-                            </Link>
-                            <Link href="/ar/products" className="flex-1">
-                                <Button variant="outline" className="w-full">
-                                    العودة للمتجر
-                                </Button>
-                            </Link>
+                            )}
+
+                            <div className="flex flex-col sm:flex-row gap-4">
+                                <Link href="/ar/my-orders" className="flex-1">
+                                    <Button className="w-full bg-[#8B7355] hover:bg-[#8B7355]/90">
+                                        عرض طلباتي
+                                    </Button>
+                                </Link>
+                                <Link href="/ar/products" className="flex-1">
+                                    <Button variant="outline" className="w-full">
+                                        العودة للمتجر
+                                    </Button>
+                                </Link>
+                            </div>
                         </div>
 
                         {!isPaid && (

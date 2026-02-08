@@ -263,34 +263,63 @@ export default function MyOrdersPage() {
                         {orders.map((order) => (
                             <Card key={order._id} className="border-border/50 shadow-sm">
                                 <CardHeader className="pb-2 sm:pb-3 p-3 sm:p-6">
-                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
-                                        <div className="flex items-start justify-between sm:block">
-                                            <div>
-                                                <CardTitle className="text-base sm:text-lg">
-                                                    طلب #{order._id.slice(-8).toUpperCase()}
-                                                </CardTitle>
-                                                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
-                                                    {formatDate(order.date)}
-                                                </p>
+                                    <div className="flex flex-col gap-3">
+                                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+                                            <div className="flex items-start justify-between sm:block">
+                                                <div>
+                                                    <CardTitle className="text-base sm:text-lg">
+                                                        طلب #{order._id.slice(-8).toUpperCase()}
+                                                    </CardTitle>
+                                                    <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
+                                                        {formatDate(order.date)}
+                                                    </p>
+                                                </div>
+                                                <span className={`sm:hidden inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                                    order.status === 'completed' ? 'bg-emerald-500/10 text-emerald-500' :
+                                                    order.status === 'pending' ? 'bg-amber-500/10 text-amber-500' :
+                                                    'bg-rose-500/10 text-rose-500'
+                                                }`}>
+                                                    {getStatusLabel(order.status)}
+                                                </span>
                                             </div>
-                                            <span className={`sm:hidden inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                                                order.status === 'completed' ? 'bg-emerald-500/10 text-emerald-500' :
-                                                order.status === 'pending' ? 'bg-amber-500/10 text-amber-500' :
-                                                'bg-rose-500/10 text-rose-500'
-                                            }`}>
-                                                {getStatusLabel(order.status)}
-                                            </span>
+                                            <div className="flex items-center justify-between sm:text-left">
+                                                <p className="font-bold text-base sm:text-lg">{order.total.toFixed(3)} ر.ع</p>
+                                                <span className={`hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mr-3 ${
+                                                    order.status === 'completed' ? 'bg-emerald-500/10 text-emerald-500' :
+                                                    order.status === 'pending' ? 'bg-amber-500/10 text-amber-500' :
+                                                    'bg-rose-500/10 text-rose-500'
+                                                }`}>
+                                                    {getStatusLabel(order.status)}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <div className="flex items-center justify-between sm:text-left">
-                                            <p className="font-bold text-base sm:text-lg">{order.total.toFixed(3)} ر.ع</p>
-                                            <span className={`hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mr-3 ${
-                                                order.status === 'completed' ? 'bg-emerald-500/10 text-emerald-500' :
-                                                order.status === 'pending' ? 'bg-amber-500/10 text-amber-500' :
-                                                'bg-rose-500/10 text-rose-500'
-                                            }`}>
-                                                {getStatusLabel(order.status)}
-                                            </span>
-                                        </div>
+
+                                        {/* Send Email Button - Prominent at top */}
+                                        {order.status === 'completed' && (
+                                            <Button
+                                                size="sm"
+                                                onClick={() => handleSendEmail(order._id)}
+                                                disabled={sendingEmail === order._id}
+                                                className="w-full h-10 text-sm font-bold gap-2 bg-blue-600 hover:bg-blue-700 shadow-md"
+                                            >
+                                                {sendingEmail === order._id ? (
+                                                    <>
+                                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                                        جاري الإرسال...
+                                                    </>
+                                                ) : emailSent.has(order._id) ? (
+                                                    <>
+                                                        <Mail className="w-4 h-4" />
+                                                        تم الإرسال إلى بريدك ✓
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Mail className="w-4 h-4" />
+                                                        إرسال المنتجات على الإيميل
+                                                    </>
+                                                )}
+                                            </Button>
+                                        )}
                                     </div>
                                 </CardHeader>
                                 <CardContent className="p-3 sm:p-6">
@@ -332,36 +361,8 @@ export default function MyOrdersPage() {
                                         ))}
                                     </div>
 
-                                    {/* Action Buttons */}
-                                    <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t space-y-2 sm:space-y-0 sm:flex sm:items-center sm:gap-3">
-                                        {/* Send Email Button - Only for completed orders */}
-                                        {order.status === 'completed' && (
-                                            <Button
-                                                size="sm"
-                                                onClick={() => handleSendEmail(order._id)}
-                                                disabled={sendingEmail === order._id}
-                                                className="w-full sm:w-auto h-10 sm:h-9 text-sm font-medium gap-2 bg-blue-600 hover:bg-blue-700"
-                                            >
-                                                {sendingEmail === order._id ? (
-                                                    <>
-                                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                                        جاري الإرسال...
-                                                    </>
-                                                ) : emailSent.has(order._id) ? (
-                                                    <>
-                                                        <Mail className="w-4 h-4" />
-                                                        تم الإرسال ✓
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Mail className="w-4 h-4" />
-                                                        إرسال على الإيميل
-                                                    </>
-                                                )}
-                                            </Button>
-                                        )}
-
-                                        {/* Canva Request Button */}
+                                    {/* Canva Request Button */}
+                                    <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t">
                                         <Button
                                             variant="outline"
                                             size="sm"

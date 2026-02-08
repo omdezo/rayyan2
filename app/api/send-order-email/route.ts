@@ -134,7 +134,7 @@ export async function POST(req: NextRequest) {
 
             // Send email using Resend
             const { data, error } = await resend.emails.send({
-                from: 'ريان للتصاميم <onboarding@resend.dev>', // Change this to your verified domain
+                from: 'ريان للتصاميم <noreply@send.rayiandesign.com>',
                 to: customerEmail,
                 subject: `🎉 طلبك جاهز! رقم الطلب #${order._id.toString().slice(-8).toUpperCase()}`,
                 html: emailHtml,

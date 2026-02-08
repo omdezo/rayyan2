@@ -532,6 +532,35 @@ export default function ProductsPage() {
         }
     };
 
+    const handleToggleNewArrival = async (product: Product) => {
+        try {
+            const newStatus = !product.isNewArrival;
+
+            const response = await fetch(`/api/products/${product._id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ...product,
+                    isNewArrival: newStatus,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                toast.success(newStatus ? 'تم تفعيل "وصل جديداً"' : 'تم إلغاء "وصل جديداً"');
+                fetchProducts(); // Refresh the list
+            } else {
+                toast.error(data.error || 'حدث خطأ');
+            }
+        } catch (error) {
+            console.error('Error toggling new arrival:', error);
+            toast.error('حدث خطأ أثناء التحديث');
+        }
+    };
+
     const filteredProducts = products.filter(product => {
         if (!searchQuery) return true; // Show all products when no search query
 
@@ -591,13 +620,14 @@ export default function ProductsPage() {
                                         <th className="p-4">التصنيف</th>
                                         <th className="p-4">اللغات المتاحة</th>
                                         <th className="p-4">الحالة</th>
+                                        <th className="p-4">وصل جديداً</th>
                                         <th className="p-4 text-left">إجراءات</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-border">
                                     {filteredProducts.length === 0 ? (
                                         <tr>
-                                            <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                                            <td colSpan={7} className="p-8 text-center text-muted-foreground">
                                                 لا توجد منتجات
                                             </td>
                                         </tr>
@@ -657,6 +687,19 @@ export default function ProductsPage() {
                                                     }`}>
                                                         {product.status === 'active' ? 'نشط' : 'غير نشط'}
                                                     </span>
+                                                </td>
+                                                <td className="p-4">
+                                                    <button
+                                                        onClick={() => handleToggleNewArrival(product)}
+                                                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                                                            product.isNewArrival
+                                                                ? 'bg-yellow-500/20 text-yellow-600 border-2 border-yellow-500/50 hover:bg-yellow-500/30'
+                                                                : 'bg-gray-100 text-gray-500 border-2 border-transparent hover:border-yellow-500/30'
+                                                        }`}
+                                                    >
+                                                        <Sparkles className="w-3.5 h-3.5" />
+                                                        {product.isNewArrival ? 'جديد' : 'عادي'}
+                                                    </button>
                                                 </td>
                                                 <td className="p-4">
                                                     <div className="flex items-center justify-end gap-2">
@@ -818,28 +861,6 @@ export default function ProductsPage() {
                                         <option value="inactive">غير نشط</option>
                                     </select>
                                 </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="isNewArrival" className="text-base flex items-center gap-2">
-                                    <Sparkles className="w-4 h-4 text-yellow-500" />
-                                    وصل جديداً
-                                </Label>
-                                <button
-                                    type="button"
-                                    onClick={() => setFormData(prev => ({ ...prev, isNewArrival: !prev.isNewArrival }))}
-                                    className={`w-full h-11 rounded-md px-4 font-medium transition-all flex items-center justify-center gap-2 border-2 ${
-                                        formData.isNewArrival
-                                            ? 'border-yellow-500 bg-yellow-500/10 text-yellow-600'
-                                            : 'border-border bg-background hover:border-yellow-500/30'
-                                    }`}
-                                >
-                                    <Sparkles className="w-4 h-4" />
-                                    {formData.isNewArrival ? 'منتج جديد ✨' : 'منتج عادي'}
-                                </button>
-                                <p className="text-xs text-muted-foreground">
-                                    المنتجات الجديدة ستظهر في الأعلى مع علامة "وصل جديداً"
-                                </p>
                             </div>
                         </div>
 

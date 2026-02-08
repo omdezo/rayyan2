@@ -18,6 +18,7 @@ interface LanguageVariant {
     lang: 'ar' | 'en';
     price: number;
     fileUrl: string;
+    fileName?: string;
 }
 
 interface Product {
@@ -345,16 +346,16 @@ export default function ProductsPage() {
                         enabled: languages.some(l => l.lang === 'ar'),
                         price: languages.find(l => l.lang === 'ar')?.price.toString() || "",
                         fileUrl: languages.find(l => l.lang === 'ar')?.fileUrl || "",
-                        fileName: languages.find(l => l.lang === 'ar')?.fileUrl ?
-                            languages.find(l => l.lang === 'ar')?.fileUrl.split('/').pop() || "" : "",
+                        fileName: languages.find(l => l.lang === 'ar')?.fileName ||
+                            (languages.find(l => l.lang === 'ar')?.fileUrl?.split('/').pop() || ""),
                         uploading: false
                     },
                     en: {
                         enabled: languages.some(l => l.lang === 'en'),
                         price: languages.find(l => l.lang === 'en')?.price.toString() || "",
                         fileUrl: languages.find(l => l.lang === 'en')?.fileUrl || "",
-                        fileName: languages.find(l => l.lang === 'en')?.fileUrl ?
-                            languages.find(l => l.lang === 'en')?.fileUrl.split('/').pop() || "" : "",
+                        fileName: languages.find(l => l.lang === 'en')?.fileName ||
+                            (languages.find(l => l.lang === 'en')?.fileUrl?.split('/').pop() || ""),
                         uploading: false
                     }
                 }

@@ -22,6 +22,7 @@ interface LanguageVariant {
     lang: 'ar' | 'en';
     price: number;
     fileUrl: string;
+    fileName?: string;
 }
 
 interface Product {

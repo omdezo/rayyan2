@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Download, Package, Loader2, ShoppingBag, ShieldAlert, ChevronLeft, ChevronRight } from "lucide-react";
+import { Download, Package, Loader2, ShoppingBag, ShieldAlert, ChevronLeft, ChevronRight, Mail } from "lucide-react";
 import { toast } from "sonner";
 
 interface Order {
@@ -36,6 +36,8 @@ export default function MyOrdersPage() {
     const router = useRouter();
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
+    const [sendingEmail, setSendingEmail] = useState<string | null>(null);
+    const [emailSent, setEmailSent] = useState<Set<string>>(new Set());
     const [pagination, setPagination] = useState<Pagination>({
         total: 0,
         page: 1,
@@ -165,6 +167,37 @@ export default function MyOrdersPage() {
             toast.dismiss(loadingToast);
             console.error('Download error:', error);
             toast.error('فشل في تحميل الملف');
+        }
+    };
+
+    const handleSendEmail = async (orderId: string) => {
+        setSendingEmail(orderId);
+        const loadingToast = toast.loading('جاري إرسال البريد الإلكتروني...');
+
+        try {
+            const response = await fetch('/api/send-order-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ orderId }),
+            });
+
+            const data = await response.json();
+            toast.dismiss(loadingToast);
+
+            if (data.success) {
+                toast.success('✅ تم إرسال المنتجات إلى بريدك الإلكتروني بنجاح!');
+                setEmailSent(prev => new Set(prev).add(orderId));
+            } else {
+                toast.error(data.error || 'فشل في إرسال البريد الإلكتروني');
+            }
+        } catch (error) {
+            toast.dismiss(loadingToast);
+            console.error('Send email error:', error);
+            toast.error('حدث خطأ أثناء إرسال البريد الإلكتروني');
+        } finally {
+            setSendingEmail(null);
         }
     };
 
@@ -299,8 +332,36 @@ export default function MyOrdersPage() {
                                         ))}
                                     </div>
 
-                                    {/* Canva Request Button */}
-                                    <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t">
+                                    {/* Action Buttons */}
+                                    <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t space-y-2 sm:space-y-0 sm:flex sm:items-center sm:gap-3">
+                                        {/* Send Email Button - Only for completed orders */}
+                                        {order.status === 'completed' && (
+                                            <Button
+                                                size="sm"
+                                                onClick={() => handleSendEmail(order._id)}
+                                                disabled={sendingEmail === order._id}
+                                                className="w-full sm:w-auto h-10 sm:h-9 text-sm font-medium gap-2 bg-blue-600 hover:bg-blue-700"
+                                            >
+                                                {sendingEmail === order._id ? (
+                                                    <>
+                                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                                        جاري الإرسال...
+                                                    </>
+                                                ) : emailSent.has(order._id) ? (
+                                                    <>
+                                                        <Mail className="w-4 h-4" />
+                                                        تم الإرسال ✓
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Mail className="w-4 h-4" />
+                                                        إرسال على الإيميل
+                                                    </>
+                                                )}
+                                            </Button>
+                                        )}
+
+                                        {/* Canva Request Button */}
                                         <Button
                                             variant="outline"
                                             size="sm"

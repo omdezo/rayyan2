@@ -24,6 +24,7 @@ interface Product {
     subcategory?: string;
     image: string;
     status: string;
+    isNewArrival?: boolean;
 }
 
 interface Pagination {

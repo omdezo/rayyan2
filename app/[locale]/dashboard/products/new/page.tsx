@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { ArrowRight, Loader2, Upload, X, Check, Save, Languages, FileText, Image as ImageIcon, Tag, Eye, EyeOff } from "lucide-react";
+import { ArrowRight, Loader2, Upload, X, Check, Save, Languages, FileText, Image as ImageIcon, Tag, Eye, EyeOff, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { R2Image } from "@/components/ui/r2-image";
 import { MediaGalleryManager } from "@/components/dashboard/media-gallery-manager";
@@ -31,6 +31,7 @@ interface FormData {
     subcategory: string;
     image: string;
     status: string;
+    isNewArrival: boolean;
     media: IProductMedia[];
     languages: {
         ar: LanguageFormData;
@@ -54,6 +55,7 @@ export default function NewProductPage() {
         subcategory: "",
         image: "",
         status: "active",
+        isNewArrival: false,
         media: [],
         languages: {
             ar: { enabled: false, price: "", fileUrl: "", fileName: "", uploading: false },
@@ -279,6 +281,7 @@ export default function NewProductPage() {
                     media: formData.media,
                     languages,
                     status: formData.status,
+                    isNewArrival: formData.isNewArrival,
                 }),
             });
 
@@ -505,6 +508,23 @@ export default function NewProductPage() {
                                                     معطل
                                                 </button>
                                             </div>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label>وصل جديداً</Label>
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, isNewArrival: !formData.isNewArrival })}
+                                                className={cn(
+                                                    "w-full py-2.5 rounded-lg border-2 font-medium transition-all flex items-center justify-center gap-2",
+                                                    formData.isNewArrival
+                                                        ? "border-yellow-500 bg-yellow-500/10 text-yellow-600"
+                                                        : "border-border hover:border-yellow-500/30"
+                                                )}
+                                            >
+                                                <Sparkles className="w-4 h-4" />
+                                                {formData.isNewArrival ? 'منتج جديد' : 'منتج عادي'}
+                                            </button>
                                         </div>
                                     </div>
                                 </div>

@@ -30,6 +30,7 @@ export interface IProduct {
     media?: IProductMedia[];      // NEW: Media gallery (images and videos)
     languages?: ILanguageVariant[];
     status: 'active' | 'inactive';
+    isNewArrival?: boolean;       // Flag for new arrival products
     createdAt: Date;
     updatedAt: Date;
 }

@@ -2,7 +2,7 @@ import { Product } from "@/lib/products";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/routing";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Sparkles } from "lucide-react";
 import { R2Image } from "@/components/ui/r2-image";
 import { useLocale } from "next-intl";
 
@@ -16,6 +16,14 @@ export function ProductCard({ product }: ProductCardProps) {
         <Link href={`/products/${product.id}`} className="block h-full">
             <Card className="group overflow-hidden border-primary/10 bg-card/50 backdrop-blur-sm hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10 transition-all duration-500 cursor-pointer h-full">
                 <div className="relative aspect-[4/3] bg-secondary/50 overflow-hidden">
+                    {/* New Arrival Badge */}
+                    {product.isNewArrival && (
+                        <div className="absolute top-2 right-2 z-10 bg-gradient-to-r from-yellow-500 to-amber-500 text-white px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5 text-xs font-bold animate-pulse">
+                            <Sparkles className="w-3.5 h-3.5" />
+                            وصل جديداً
+                        </div>
+                    )}
+
                     {/* Product Image - automatically converts R2 keys to presigned URLs */}
                     <R2Image
                         r2Key={product.image}

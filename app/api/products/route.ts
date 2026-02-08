@@ -31,8 +31,9 @@ export async function GET(req: NextRequest) {
             }
 
             // Fetch products with pagination
+            // Sort: New arrivals first, then by creation date
             const products = await Product.find(filter)
-                .sort({ createdAt: -1 })
+                .sort({ isNewArrival: -1, createdAt: -1 })
                 .skip((page - 1) * limit)
                 .limit(limit)
                 .lean();
@@ -61,7 +62,7 @@ export async function POST(req: NextRequest) {
         if (authError) return authError;
 
         const body = await req.json();
-        const { titleAr, titleEn, descriptionAr, descriptionEn, category, subcategory, image, media, languages, status } = body;
+        const { titleAr, titleEn, descriptionAr, descriptionEn, category, subcategory, image, media, languages, status, isNewArrival } = body;
 
         // Validation for new bilingual products
         if (!titleAr || !titleEn || !descriptionAr || !descriptionEn) {
@@ -117,6 +118,7 @@ export async function POST(req: NextRequest) {
                 media: media || [], // Media gallery (images/videos)
                 languages,
                 status: status || 'active',
+                isNewArrival: isNewArrival || false,
             });
 
             return successResponse(product, 'Product created successfully', 201);

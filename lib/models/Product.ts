@@ -110,6 +110,10 @@ const ProductSchema = new Schema<IProduct>({
         },
         default: 'active',
     },
+    isNewArrival: {
+        type: Boolean,
+        default: false,
+    },
 }, {
     timestamps: true,
 });

@@ -11,6 +11,7 @@ export interface Product {
     category: string;
     subcategory?: string;
     image: string;
+    isNewArrival?: boolean;
 }
 
 // Mock products array - deprecated, now using database

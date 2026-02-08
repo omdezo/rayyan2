@@ -35,7 +35,7 @@ export async function PUT(
         if (authError) return authError;
 
         const body = await req.json();
-        const { titleAr, titleEn, descriptionAr, descriptionEn, category, subcategory, image, media, languages, status } = body;
+        const { titleAr, titleEn, descriptionAr, descriptionEn, category, subcategory, image, media, languages, status, isNewArrival } = body;
 
         // Validation for bilingual fields
         if (!titleAr || !titleEn || !descriptionAr || !descriptionEn) {
@@ -93,6 +93,7 @@ export async function PUT(
                     media: media || [], // Media gallery (images/videos)
                     languages,
                     status,
+                    isNewArrival: isNewArrival !== undefined ? isNewArrival : false,
                     updatedAt: new Date(),
                 },
                 { new: true, runValidators: false }

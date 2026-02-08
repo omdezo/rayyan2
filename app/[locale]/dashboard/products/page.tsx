@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Edit, Trash2, Loader2, Upload, X, FileText, Check, Package, Video, Image as ImageIcon } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Loader2, Upload, X, FileText, Check, Package, Video, Image as ImageIcon, Sparkles } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -37,6 +37,7 @@ interface Product {
     media?: IProductMedia[];
     languages: LanguageVariant[];
     status: string;
+    isNewArrival?: boolean;
 }
 
 interface LanguageFormData {
@@ -56,6 +57,7 @@ interface ProductFormData {
     subcategory: string;
     image: string;
     status: string;
+    isNewArrival: boolean;
     media: IProductMedia[];
     languages: {
         ar: LanguageFormData;
@@ -85,6 +87,7 @@ export default function ProductsPage() {
         subcategory: "",
         image: "",
         status: "active",
+        isNewArrival: false,
         media: [],
         languages: {
             ar: {
@@ -340,6 +343,7 @@ export default function ProductsPage() {
                 subcategory: product.subcategory || "",
                 image: product.image,
                 status: product.status,
+                isNewArrival: product.isNewArrival || false,
                 media: product.media || [],
                 languages: {
                     ar: {
@@ -372,6 +376,7 @@ export default function ProductsPage() {
                 subcategory: "",
                 image: "",
                 status: "active",
+                isNewArrival: false,
                 media: [],
                 languages: {
                     ar: { enabled: true, price: "", fileUrl: "", fileName: "", uploading: false },
@@ -469,6 +474,7 @@ export default function ProductsPage() {
                 media: formData.media,
                 languages,
                 status: formData.status,
+                isNewArrival: formData.isNewArrival,
             };
 
             const url = editingProduct
@@ -812,6 +818,28 @@ export default function ProductsPage() {
                                         <option value="inactive">غير نشط</option>
                                     </select>
                                 </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="isNewArrival" className="text-base flex items-center gap-2">
+                                    <Sparkles className="w-4 h-4 text-yellow-500" />
+                                    وصل جديداً
+                                </Label>
+                                <button
+                                    type="button"
+                                    onClick={() => setFormData(prev => ({ ...prev, isNewArrival: !prev.isNewArrival }))}
+                                    className={`w-full h-11 rounded-md px-4 font-medium transition-all flex items-center justify-center gap-2 border-2 ${
+                                        formData.isNewArrival
+                                            ? 'border-yellow-500 bg-yellow-500/10 text-yellow-600'
+                                            : 'border-border bg-background hover:border-yellow-500/30'
+                                    }`}
+                                >
+                                    <Sparkles className="w-4 h-4" />
+                                    {formData.isNewArrival ? 'منتج جديد ✨' : 'منتج عادي'}
+                                </button>
+                                <p className="text-xs text-muted-foreground">
+                                    المنتجات الجديدة ستظهر في الأعلى مع علامة "وصل جديداً"
+                                </p>
                             </div>
                         </div>
 

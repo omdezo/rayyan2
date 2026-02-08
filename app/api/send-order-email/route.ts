@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server';
 import { Resend } from 'resend';
 import { successResponse, errorResponse, handleError, withDB } from '@/lib/api-utils';
 import Order from '@/lib/models/Order';
+import { r2Client } from '@/lib/r2';
+import { GetObjectCommand } from '@aws-sdk/client-s3';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -31,30 +33,12 @@ export async function POST(req: NextRequest) {
             const customerEmail = order.customerInfo.email;
             const customerName = order.customerInfo.name;
 
-            // Generate direct download links for each item
-            const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://rayiandesign.com';
+            // Fetch actual files from R2 to attach to email
+            const attachments: any[] = [];
 
-            // Build product list HTML with direct download URLs
-            const productListHtml = await Promise.all(order.items.map(async (item: any) => {
+            // Build product list HTML (no download buttons needed, files are attached)
+            const productListHtml = order.items.map((item: any) => {
                 const languageLabel = item.language === 'ar' ? 'النسخة العربية' : 'English Version';
-
-                // Generate direct download URL for each product
-                let downloadUrl = '';
-                if (item.fileUrl) {
-                    const response = await fetch(`${appUrl}/api/download`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            fileKey: item.fileUrl,
-                            fileName: item.fileName || item.title,
-                        }),
-                    });
-                    const data = await response.json();
-                    if (data.success) {
-                        downloadUrl = data.data.url;
-                    }
-                }
-
                 return `
                     <div style="background-color: #f9fafb; border-radius: 8px; padding: 16px; margin-bottom: 12px; text-align: right;">
                         <h3 style="margin: 0 0 8px 0; color: #111827; font-size: 16px; font-weight: 600; text-align: right;">
@@ -68,17 +52,54 @@ export async function POST(req: NextRequest) {
                         <p style="margin: 0 0 12px 0; color: #6b7280; font-size: 14px; text-align: right;">
                             السعر: ${item.price.toFixed(3)} ر.ع
                         </p>
-                        ${downloadUrl ? `
-                            <a href="${downloadUrl}"
-                               style="display: inline-block; background-color: #10b981; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">
-                                تحميل المنتج
-                            </a>
-                        ` : ''}
+                        <p style="margin: 0; color: #10b981; font-size: 14px; font-weight: 600; text-align: right;">
+                            ✅ مرفق في الإيميل
+                        </p>
                     </div>
                 `;
-            }));
+            });
 
             const productListHtmlString = productListHtml.join('');
+
+            // Fetch files from R2 and prepare attachments
+            for (const item of order.items) {
+                if (item.fileUrl) {
+                    try {
+                        console.log(`Fetching file from R2: ${item.fileUrl}`);
+
+                        // Get file from R2
+                        const command = new GetObjectCommand({
+                            Bucket: process.env.R2_BUCKET_NAME!,
+                            Key: item.fileUrl,
+                        });
+
+                        const response = await r2Client.send(command);
+
+                        // Convert stream to buffer
+                        const chunks: Uint8Array[] = [];
+                        for await (const chunk of response.Body as any) {
+                            chunks.push(chunk);
+                        }
+                        const fileBuffer = Buffer.concat(chunks);
+
+                        // Determine filename
+                        const fileName = item.fileName || item.title;
+                        const fileExtension = item.fileUrl.split('.').pop() || 'pdf';
+                        const fullFileName = fileName.includes('.') ? fileName : `${fileName}.${fileExtension}`;
+
+                        // Add to attachments
+                        attachments.push({
+                            filename: fullFileName,
+                            content: fileBuffer,
+                        });
+
+                        console.log(`✅ File attached: ${fullFileName} (${fileBuffer.length} bytes)`);
+                    } catch (error) {
+                        console.error(`Failed to fetch file ${item.fileUrl}:`, error);
+                        // Continue with other files even if one fails
+                    }
+                }
+            }
 
             // Create email HTML
             const emailHtml = `
@@ -117,10 +138,10 @@ export async function POST(req: NextRequest) {
 
         <!-- Download Instructions -->
         <div style="background-color: #fef3c7; border-right: 4px solid #f59e0b; padding: 20px; margin: 30px 0; border-radius: 8px; text-align: right;">
-            <h3 style="margin: 0 0 12px 0; color: #92400e; font-size: 16px; text-align: right;">📥 كيفية التحميل:</h3>
+            <h3 style="margin: 0 0 12px 0; color: #92400e; font-size: 16px; text-align: right;">📥 ملفاتك المرفقة:</h3>
             <ol style="margin: 0; padding-right: 20px; color: #78350f; font-size: 14px; line-height: 1.8; text-align: right;">
-                <li>اضغط على زر "تحميل المنتج" لكل منتج</li>
-                <li>سيبدأ تحميل الملف مباشرة إلى جهازك</li>
+                <li>جميع المنتجات مرفقة مباشرة في هذا الإيميل</li>
+                <li>انزل للأسفل وستجد الملفات المرفقة</li>
                 <li>يمكنك أيضاً تحميل المنتجات في أي وقت من صفحة "طلباتي"</li>
             </ol>
         </div>
@@ -152,12 +173,15 @@ export async function POST(req: NextRequest) {
 </html>
             `;
 
-            // Send email using Resend
+            // Send email using Resend with file attachments
+            console.log(`Sending email to ${customerEmail} with ${attachments.length} attachments`);
+
             const { data, error } = await resend.emails.send({
                 from: 'ريان للتصاميم <noreply@rayiandesign.com>',
                 to: customerEmail,
                 subject: `🎉 طلبك جاهز! رقم الطلب #${order._id.toString().slice(-8).toUpperCase()}`,
                 html: emailHtml,
+                attachments: attachments.length > 0 ? attachments : undefined,
             });
 
             if (error) {

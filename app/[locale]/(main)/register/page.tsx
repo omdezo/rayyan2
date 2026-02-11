@@ -72,9 +72,9 @@ export default function RegisterPage() {
 
             if (data.success) {
                 toast.success("تم إنشاء الحساب بنجاح!", {
-                    description: "يمكنك الآن تسجيل الدخول",
+                    description: "يرجى التحقق من بريدك الإلكتروني",
                 });
-                router.push("/ar/login");
+                router.push(`/ar/auth/check-email?email=${encodeURIComponent(email)}`);
             } else {
                 setError(data.error || "حدث خطأ أثناء إنشاء الحساب");
                 toast.error("فشل إنشاء الحساب", {

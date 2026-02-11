@@ -78,10 +78,13 @@ export default function LoginPage() {
 
                 // Check if error is about email verification
                 if (result.error.includes('تأكيد بريدك الإلكتروني') || result.error.includes('verify')) {
-                    setError("يرجى تأكيد بريدك الإلكتروني قبل تسجيل الدخول. تحقق من بريدك الإلكتروني.");
                     toast.error("البريد الإلكتروني غير مؤكد", {
-                        description: "يرجى التحقق من بريدك الإلكتروني وتأكيد الحساب",
+                        description: "يرجى تأكيد بريدك الإلكتروني أولاً",
                     });
+                    // Redirect to verification reminder page
+                    setTimeout(() => {
+                        router.push(`/ar/auth/verify-reminder?email=${encodeURIComponent(email)}`);
+                    }, 1500);
                 } else {
                     setError("البريد الإلكتروني أو كلمة المرور غير صحيحة");
                     toast.error("فشل تسجيل الدخول", {

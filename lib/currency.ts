@@ -6,6 +6,9 @@ export interface Currency {
   nameAr: string;
   symbol: string;
   symbolAr: string;
+  flag: string; // Flag emoji
+  country: string;
+  countryAr: string;
   // Conversion rate to OMR (base currency)
   toOMR: number;
 }
@@ -17,6 +20,9 @@ export const CURRENCIES: Record<CurrencyCode, Currency> = {
     nameAr: 'ريال عماني',
     symbol: 'OMR',
     symbolAr: 'ر.ع',
+    flag: '🇴🇲',
+    country: 'Oman',
+    countryAr: 'عمان',
     toOMR: 1,
   },
   SAR: {
@@ -25,6 +31,9 @@ export const CURRENCIES: Record<CurrencyCode, Currency> = {
     nameAr: 'ريال سعودي',
     symbol: 'SAR',
     symbolAr: 'ر.س',
+    flag: '🇸🇦',
+    country: 'Saudi Arabia',
+    countryAr: 'السعودية',
     toOMR: 0.1027, // 1 SAR = 0.1027 OMR
   },
   QAR: {
@@ -33,6 +42,9 @@ export const CURRENCIES: Record<CurrencyCode, Currency> = {
     nameAr: 'ريال قطري',
     symbol: 'QAR',
     symbolAr: 'ر.ق',
+    flag: '🇶🇦',
+    country: 'Qatar',
+    countryAr: 'قطر',
     toOMR: 0.106, // 1 QAR = 0.106 OMR
   },
   AED: {
@@ -41,6 +53,9 @@ export const CURRENCIES: Record<CurrencyCode, Currency> = {
     nameAr: 'درهم اماراتي',
     symbol: 'AED',
     symbolAr: 'د.إ',
+    flag: '🇦🇪',
+    country: 'UAE',
+    countryAr: 'الإمارات',
     toOMR: 0.105, // 1 AED = 0.105 OMR
   },
   BHD: {
@@ -49,6 +64,9 @@ export const CURRENCIES: Record<CurrencyCode, Currency> = {
     nameAr: 'دينار بحريني',
     symbol: 'BHD',
     symbolAr: 'د.ب',
+    flag: '🇧🇭',
+    country: 'Bahrain',
+    countryAr: 'البحرين',
     toOMR: 1.024, // 1 BHD = 1.024 OMR
   },
   KWD: {
@@ -57,6 +75,9 @@ export const CURRENCIES: Record<CurrencyCode, Currency> = {
     nameAr: 'دينار كويتي',
     symbol: 'KWD',
     symbolAr: 'د.ك',
+    flag: '🇰🇼',
+    country: 'Kuwait',
+    countryAr: 'الكويت',
     toOMR: 1.257, // 1 KWD = 1.257 OMR
   },
 };

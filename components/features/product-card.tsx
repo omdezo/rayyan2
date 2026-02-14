@@ -5,6 +5,7 @@ import { Link } from "@/i18n/routing";
 import { ArrowLeft, Sparkles } from "lucide-react";
 import { R2Image } from "@/components/ui/r2-image";
 import { useLocale } from "next-intl";
+import { PriceDisplay } from "@/components/ui/price-display";
 
 interface ProductCardProps {
     product: Product;
@@ -51,9 +52,10 @@ export function ProductCard({ product }: ProductCardProps) {
                         <CardTitle className="line-clamp-1 text-lg font-bold group-hover:text-primary transition-colors">
                             {locale === 'ar' ? product.titleAr || product.title : product.titleEn || product.title}
                         </CardTitle>
-                        <span className="font-bold text-primary whitespace-nowrap">
-                            {product.price.toFixed(3)} ر.ع
-                        </span>
+                        <PriceDisplay
+                            priceInOMR={product.price}
+                            className="font-bold text-primary whitespace-nowrap"
+                        />
                     </div>
                 </CardHeader>
 

@@ -10,6 +10,7 @@ import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { Toaster } from 'sonner';
 import { AuthProvider } from '@/components/providers';
+import { CurrencyProvider } from '@/lib/contexts/currency-context';
 
 const cairo = Cairo({
   subsets: ["arabic", "latin"],
@@ -55,8 +56,10 @@ export default async function RootLayout({
               enableSystem
               disableTransitionOnChange
             >
-              {children}
-              <Toaster position="top-center" richColors />
+              <CurrencyProvider>
+                {children}
+                <Toaster position="top-center" richColors />
+              </CurrencyProvider>
             </ThemeProvider>
           </NextIntlClientProvider>
         </AuthProvider>

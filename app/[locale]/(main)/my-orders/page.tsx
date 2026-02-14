@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Download, Package, Loader2, ShoppingBag, ShieldAlert, ChevronLeft, ChevronRight, Mail } from "lucide-react";
 import { toast } from "sonner";
+import { PriceDisplay } from "@/components/ui/price-display";
 
 interface Order {
     _id: string;
@@ -283,7 +284,10 @@ export default function MyOrdersPage() {
                                                 </span>
                                             </div>
                                             <div className="flex items-center justify-between sm:text-left">
-                                                <p className="font-bold text-base sm:text-lg">{order.total.toFixed(3)} ر.ع</p>
+                                                <PriceDisplay
+                                                    priceInOMR={order.total}
+                                                    className="font-bold text-base sm:text-lg"
+                                                />
                                                 <span className={`hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mr-3 ${
                                                     order.status === 'completed' ? 'bg-emerald-500/10 text-emerald-500' :
                                                     order.status === 'pending' ? 'bg-amber-500/10 text-amber-500' :
@@ -342,9 +346,10 @@ export default function MyOrdersPage() {
                                                                 </span>
                                                             </div>
                                                         )}
-                                                        <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                                                            {item.price.toFixed(3)} ر.ع
-                                                        </p>
+                                                        <PriceDisplay
+                                                            priceInOMR={item.price}
+                                                            className="text-xs sm:text-sm text-muted-foreground mt-1"
+                                                        />
                                                     </div>
                                                 </div>
                                                 {order.status === 'completed' && item.fileUrl && (

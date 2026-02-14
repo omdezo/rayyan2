@@ -9,6 +9,7 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { cn } from "@/lib/utils";
 import { useTranslations, useLocale } from "next-intl";
 import { useSession, signOut } from "next-auth/react";
+import { CurrencySelector } from "@/components/features/currency-selector";
 
 export function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -100,6 +101,7 @@ export function Header() {
                 </nav>
 
                 <div className="flex items-center gap-2">
+                    <CurrencySelector />
                     <Button variant="ghost" size="icon" onClick={toggleLanguage} aria-label="Switch Language">
                         <Globe className="h-5 w-5" />
                     </Button>

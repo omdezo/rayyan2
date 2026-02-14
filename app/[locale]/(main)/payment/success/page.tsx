@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation";
 import { Loader2, CheckCircle, Package, Download, Mail } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
+import { PriceDisplay } from "@/components/ui/price-display";
 
 interface OrderItem {
     productId: string;
@@ -218,7 +219,10 @@ function SuccessContent() {
                                 </div>
                                 <div>
                                     <p className="text-muted-foreground">المبلغ المدفوع</p>
-                                    <p className="font-bold text-green-600">{order.total.toFixed(3)} ر.ع</p>
+                                    <PriceDisplay
+                                        priceInOMR={order.total}
+                                        className="font-bold text-green-600"
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -237,7 +241,10 @@ function SuccessContent() {
                                                 </span>
                                             )}
                                         </div>
-                                        <p className="font-bold text-primary mr-4">{item.price.toFixed(3)} ر.ع</p>
+                                        <PriceDisplay
+                                            priceInOMR={item.price}
+                                            className="font-bold text-primary mr-4"
+                                        />
                                     </div>
                                     {isPaid && item.fileUrl && (
                                         <a

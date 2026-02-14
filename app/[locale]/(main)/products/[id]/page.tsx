@@ -17,6 +17,9 @@ import { ProductMediaGallery } from "@/components/features/product-media-gallery
 import type { IProductMedia } from "@/lib/types/models";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { PriceDisplay } from "@/components/ui/price-display";
+import { useCurrency } from "@/lib/contexts/currency-context";
+import { formatPrice } from "@/lib/currency";
 
 interface LanguageVariant {
     lang: 'ar' | 'en';
@@ -41,6 +44,7 @@ interface Product {
 export default function ProductDetailsPage() {
     const params = useParams();
     const router = useRouter();
+    const { currency } = useCurrency();
     const [product, setProduct] = useState<Product | null>(null);
     const [loading, setLoading] = useState(true);
     const [notFound, setNotFound] = useState(false);
@@ -432,9 +436,10 @@ export default function ProductDetailsPage() {
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            <div className="text-2xl font-bold text-primary">
-                                                                {languages.ar.price.toFixed(3)} ر.ع
-                                                            </div>
+                                                            <PriceDisplay
+                                                                priceInOMR={languages.ar.price}
+                                                                className="text-2xl font-bold text-primary"
+                                                            />
                                                         </motion.label>
                                                     )}
 
@@ -465,9 +470,10 @@ export default function ProductDetailsPage() {
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            <div className="text-2xl font-bold text-primary">
-                                                                {languages.en.price.toFixed(3)} OMR
-                                                            </div>
+                                                            <PriceDisplay
+                                                                priceInOMR={languages.en.price}
+                                                                className="text-2xl font-bold text-primary"
+                                                            />
                                                         </motion.label>
                                                     )}
                                                 </div>
@@ -476,9 +482,10 @@ export default function ProductDetailsPage() {
                                                 {calculateTotal() > 0 && (
                                                     <div className="flex items-center justify-between p-6 bg-gradient-to-br from-primary/15 via-primary/10 to-primary/5 rounded-2xl shadow-md">
                                                         <span className="font-bold text-xl">المجموع:</span>
-                                                        <span className="text-4xl font-bold text-primary">
-                                                            {calculateTotal().toFixed(3)} ر.ع
-                                                        </span>
+                                                        <PriceDisplay
+                                                            priceInOMR={calculateTotal()}
+                                                            className="text-4xl font-bold text-primary"
+                                                        />
                                                     </div>
                                                 )}
                                             </div>
@@ -487,9 +494,10 @@ export default function ProductDetailsPage() {
                                         return (
                                             <div className="flex items-center justify-between p-8 bg-gradient-to-br from-primary/15 via-primary/10 to-primary/5 rounded-2xl shadow-md">
                                                 <span className="font-bold text-2xl">السعر:</span>
-                                                <span className="text-5xl font-bold text-primary">
-                                                    {product.price.toFixed(3)} ر.ع
-                                                </span>
+                                                <PriceDisplay
+                                                    priceInOMR={product.price}
+                                                    className="text-5xl font-bold text-primary"
+                                                />
                                             </div>
                                         );
                                     }
@@ -536,10 +544,10 @@ export default function ProductDetailsPage() {
                                                 >
                                                     {hasLanguages ? (
                                                         total > 0
-                                                            ? `شراء الآن - ${total.toFixed(3)} ر.ع`
+                                                            ? `شراء الآن - ${formatPrice(total, currency, 'ar')}`
                                                             : 'اختر لغة للمتابعة'
                                                     ) : (
-                                                        `شراء الآن - ${product.price.toFixed(3)} ر.ع`
+                                                        `شراء الآن - ${formatPrice(product.price, currency, 'ar')}`
                                                     )}
                                                 </Button>
                                                 <Button
@@ -587,9 +595,9 @@ export default function ProductDetailsPage() {
                                     const total = calculateTotal();
 
                                     if (hasLanguages && total > 0) {
-                                        return `${total.toFixed(3)} ر.ع`;
+                                        return formatPrice(total, currency, 'ar');
                                     } else if (!hasLanguages && product) {
-                                        return `${product.price.toFixed(3)} ر.ع`;
+                                        return formatPrice(product.price, currency, 'ar');
                                     }
                                     return "---";
                                 })()}

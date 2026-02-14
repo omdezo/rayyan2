@@ -12,6 +12,9 @@ import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 import { R2Image } from "@/components/ui/r2-image";
 import { useTranslations } from "next-intl";
+import { PriceDisplay } from "@/components/ui/price-display";
+import { useCurrency } from "@/lib/contexts/currency-context";
+import { formatPrice } from "@/lib/currency";
 
 interface LanguageVariant {
     lang: 'ar' | 'en';
@@ -58,6 +61,7 @@ function CheckoutContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { data: session, status } = useSession();
+    const { currency } = useCurrency();
     const productId = searchParams.get("productId");
     const fromCart = searchParams.get("fromCart") === "true";
     const languagesParam = searchParams.get("languages"); // e.g., "ar,en" or "ar" or "en"
@@ -535,7 +539,7 @@ function CheckoutContent() {
                                                 جاري المعالجة...
                                             </>
                                         ) : (
-                                            `المتابعة للدفع - ${totalAmount.toFixed(3)} ر.ع`
+                                            `المتابعة للدفع - ${formatPrice(totalAmount, currency, 'ar')}`
                                         )}
                                     </Button>
                                 </form>
@@ -573,7 +577,10 @@ function CheckoutContent() {
                                                             {item.language === 'ar' ? 'AR - النسخة العربية' : 'EN - English'}
                                                         </span>
                                                     )}
-                                                    <p className="text-sm font-bold text-primary">{item.price.toFixed(3)} ر.ع</p>
+                                                    <PriceDisplay
+                                                        priceInOMR={item.price}
+                                                        className="text-sm font-bold text-primary"
+                                                    />
                                                 </div>
                                             </div>
                                         ))
@@ -604,7 +611,10 @@ function CheckoutContent() {
                                                                     <span className="inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium transition-colors border-transparent bg-secondary text-secondary-foreground">
                                                                         {lang === 'ar' ? 'AR - النسخة العربية' : 'EN - English'}
                                                                     </span>
-                                                                    <p className="text-sm font-bold text-primary">{langVariant.price.toFixed(3)} ر.ع</p>
+                                                                    <PriceDisplay
+                                                                        priceInOMR={langVariant.price}
+                                                                        className="text-sm font-bold text-primary"
+                                                                    />
                                                                 </div>
                                                             </div>
                                                         );
@@ -625,7 +635,10 @@ function CheckoutContent() {
                                                     />
                                                     <div className="space-y-1 flex-1">
                                                         <h4 className="font-medium line-clamp-2 text-sm">{product.title}</h4>
-                                                        <p className="text-sm font-bold text-primary">{product.price.toFixed(3)} ر.ع</p>
+                                                        <PriceDisplay
+                                                            priceInOMR={product.price}
+                                                            className="text-sm font-bold text-primary"
+                                                        />
                                                     </div>
                                                 </div>
                                             )
@@ -704,17 +717,17 @@ function CheckoutContent() {
                                     </div>
                                     <div className="flex justify-between text-muted-foreground">
                                         <span>المجموع الفرعي</span>
-                                        <span>{subtotal.toFixed(3)} ر.ع</span>
+                                        <PriceDisplay priceInOMR={subtotal} />
                                     </div>
                                     {appliedDiscount && (
                                         <div className="flex justify-between text-green-600 font-medium">
                                             <span>الخصم ({appliedDiscount.discountPercent}%)</span>
-                                            <span>- {appliedDiscount.discountAmount.toFixed(3)} ر.ع</span>
+                                            <span>- <PriceDisplay priceInOMR={appliedDiscount.discountAmount} /></span>
                                         </div>
                                     )}
                                     <div className="flex justify-between text-muted-foreground">
                                         <span>الضريبة</span>
-                                        <span>0.000 ر.ع</span>
+                                        <PriceDisplay priceInOMR={0} />
                                     </div>
                                 </div>
 
@@ -722,7 +735,10 @@ function CheckoutContent() {
 
                                 <div className="flex justify-between items-center font-bold text-xl">
                                     <span>الإجمالي</span>
-                                    <span className="text-[#8B7355]">{totalAmount.toFixed(3)} ر.ع</span>
+                                    <PriceDisplay
+                                        priceInOMR={totalAmount}
+                                        className="text-[#8B7355]"
+                                    />
                                 </div>
                             </CardContent>
                         </Card>

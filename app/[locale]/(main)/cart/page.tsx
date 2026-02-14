@@ -9,6 +9,7 @@ import { Trash2, ShoppingBag, Loader2 } from "lucide-react";
 import { Link } from "@/i18n/routing";
 import { toast } from "sonner";
 import { R2Image } from "@/components/ui/r2-image";
+import { PriceDisplay } from "@/components/ui/price-display";
 
 interface CartItem {
     id: string;
@@ -124,7 +125,10 @@ export default function CartPage() {
                                                 </span>
                                             </div>
                                         )}
-                                        <p className="text-primary font-bold mt-1">{item.price.toFixed(3)} ر.ع</p>
+                                        <PriceDisplay
+                                            priceInOMR={item.price}
+                                            className="text-primary font-bold mt-1"
+                                        />
                                     </div>
                                     <Button
                                         variant="ghost"
@@ -153,7 +157,10 @@ export default function CartPage() {
                                     </div>
                                     <div className="flex justify-between text-lg font-bold border-t pt-2">
                                         <span>الإجمالي</span>
-                                        <span className="text-primary">{total.toFixed(3)} ر.ع</span>
+                                        <PriceDisplay
+                                            priceInOMR={total}
+                                            className="text-primary"
+                                        />
                                     </div>
                                 </div>
                                 <Button className="w-full h-12 text-lg" onClick={handleCheckout}>

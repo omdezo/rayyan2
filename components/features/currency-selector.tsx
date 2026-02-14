@@ -15,11 +15,11 @@ export function CurrencySelector() {
     <Select
       value={currency}
       onChange={(e) => setCurrency(e.target.value as CurrencyCode)}
-      className="h-9 w-auto min-w-[140px] text-sm border-border/50 bg-background/95 backdrop-blur-sm pr-8"
+      className="h-9 w-auto min-w-[160px] text-sm border-border/50 bg-background/95 backdrop-blur-sm pr-8"
     >
       {currencyList.map((code) => (
         <option key={code} value={code}>
-          {CURRENCIES[code].flag} {locale === 'ar' ? CURRENCIES[code].countryAr : CURRENCIES[code].country}
+          {CURRENCIES[code].flag} {locale === 'ar' ? CURRENCIES[code].countryAr : CURRENCIES[code].country} {locale === 'ar' ? CURRENCIES[code].symbolAr : CURRENCIES[code].symbol}
         </option>
       ))}
     </Select>

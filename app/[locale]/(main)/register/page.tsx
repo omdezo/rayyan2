@@ -204,7 +204,7 @@ export default function RegisterPage() {
                             className="mt-8 text-center text-sm text-muted-foreground"
                         >
                             لديك حساب بالفعل؟{" "}
-                            <Link href="/ar/login" className="text-primary hover:text-primary/80 font-bold hover:underline transition-all inline-flex items-center gap-1">
+                            <Link href="/ar/auth" className="text-primary hover:text-primary/80 font-bold hover:underline transition-all inline-flex items-center gap-1">
                                 تسجيل الدخول <ArrowLeft className="w-3 h-3" />
                             </Link>
                         </motion.div>

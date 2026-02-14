@@ -67,7 +67,7 @@ export default function CartPage() {
         if (status === 'unauthenticated') {
             toast.error('يجب تسجيل الدخول أولاً للمتابعة');
             const currentPath = '/ar/cart';
-            router.push(`/login?callbackUrl=${encodeURIComponent(currentPath)}` as any);
+            router.push(`/auth?callbackUrl=${encodeURIComponent(currentPath)}` as any);
             return;
         }
 

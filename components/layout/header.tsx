@@ -137,7 +137,7 @@ export function Header() {
                         </>
                     ) : (
                         <Button variant="default" size="sm" className="hidden md:flex font-bold" asChild>
-                            <Link href="/login">
+                            <Link href="/auth">
                                 {t('login')}
                             </Link>
                         </Button>
@@ -203,7 +203,7 @@ export function Header() {
                                     className="w-full mt-2 font-bold"
                                     asChild
                                 >
-                                    <Link href="/login" onClick={() => setIsMenuOpen(false)}>
+                                    <Link href="/auth" onClick={() => setIsMenuOpen(false)}>
                                         {t('login')}
                                     </Link>
                                 </Button>

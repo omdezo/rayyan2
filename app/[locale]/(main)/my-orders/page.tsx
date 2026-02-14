@@ -49,7 +49,7 @@ export default function MyOrdersPage() {
     useEffect(() => {
         if (status === 'unauthenticated') {
             toast.error('يجب تسجيل الدخول لعرض طلباتك');
-            router.push('/login?callbackUrl=/ar/my-orders' as any);
+            router.push('/auth?callbackUrl=/ar/my-orders' as any);
         } else if (status === 'authenticated') {
             fetchMyOrders(1);
         }

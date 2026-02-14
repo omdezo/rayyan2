@@ -92,7 +92,7 @@ function CheckoutContent() {
             const currentPath = fromCart
                 ? '/ar/cart'
                 : `/ar/checkout?productId=${productId}${languagesParam ? `&languages=${languagesParam}` : ''}`;
-            router.push(`/login?callbackUrl=${encodeURIComponent(currentPath)}` as any);
+            router.push(`/auth?callbackUrl=${encodeURIComponent(currentPath)}` as any);
         }
     }, [status, router, productId, fromCart, languagesParam]);
 
